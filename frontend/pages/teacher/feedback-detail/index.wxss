@@ -1,0 +1,212 @@
+.feedback-detail-page {
+  padding-top: 28rpx;
+  padding-bottom: 80rpx;
+}
+
+.feedback-detail-page__overview {
+  display: block;
+}
+
+.feedback-summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20rpx;
+  margin-top: 34rpx;
+}
+
+.feedback-summary__title {
+  font-family: var(--teacher-font-display);
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.feedback-summary__progress {
+  flex: none;
+  font-size: 23rpx;
+  color: var(--teacher-muted);
+}
+
+.feedback-students {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+  margin-top: 20rpx;
+}
+
+.feedback-card {
+  padding: 24rpx 26rpx;
+  border-left: 8rpx solid var(--teacher-orange);
+  border-radius: 16rpx;
+  background: var(--teacher-surface);
+  box-shadow: var(--teacher-shadow);
+}
+
+.feedback-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.feedback-card__name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.feedback-card__attendance {
+  flex: none;
+  padding: 7rpx 14rpx;
+  border-radius: 14rpx;
+  background: rgba(35, 135, 96, 0.12);
+  font-size: 22rpx;
+  color: var(--teacher-success);
+}
+
+.feedback-card__input {
+  width: 100%;
+  min-height: 180rpx;
+  margin-top: 18rpx;
+  padding: 18rpx;
+  box-sizing: border-box;
+  border: 2rpx solid var(--teacher-line);
+  border-radius: 16rpx;
+  background: rgba(36, 59, 54, 0.03);
+  font-size: 25rpx;
+}
+
+.feedback-card__save,
+.feedback-card__add-image,
+.page-command {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--teacher-touch-min);
+  margin: 16rpx 0 0;
+  padding: 0 28rpx;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 16rpx;
+  background: var(--teacher-orange);
+  font-size: 24rpx;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.feedback-card__save {
+  width: 100%;
+}
+
+.feedback-card__add-image {
+  width: 100%;
+  border: 2rpx dashed rgba(217, 96, 21, 0.55);
+  background: rgba(255, 255, 255, 0.62);
+  color: var(--teacher-orange);
+}
+
+.feedback-card__images {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.feedback-card__images--readonly {
+  margin-top: 18rpx;
+}
+
+.feedback-image {
+  position: relative;
+  aspect-ratio: 1;
+}
+
+.feedback-image__thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1;
+  border-radius: 12rpx;
+  background: rgba(36, 59, 54, 0.08);
+}
+
+.feedback-image__remove {
+  position: absolute;
+  top: 6rpx;
+  right: 6rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44rpx;
+  min-width: 44rpx;
+  height: 44rpx;
+  min-height: 44rpx;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(30, 30, 30, 0.72);
+  font-size: 30rpx;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.feedback-card__readonly {
+  min-height: 120rpx;
+  margin-top: 18rpx;
+  padding: 20rpx;
+  box-sizing: border-box;
+  border-radius: 16rpx;
+  background: rgba(36, 59, 54, 0.05);
+  overflow-wrap: anywhere;
+  font-size: 25rpx;
+  line-height: 1.6;
+}
+
+.mutation-state {
+  margin-top: 20rpx;
+  padding: 20rpx 22rpx;
+  border-left: 6rpx solid var(--teacher-danger);
+  background: rgba(201, 63, 72, 0.08);
+  overflow-wrap: anywhere;
+  font-size: 24rpx;
+  color: var(--teacher-danger);
+}
+
+.page-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 380rpx;
+  margin-top: 28rpx;
+  padding: 32rpx;
+  box-sizing: border-box;
+  border-radius: var(--teacher-card-radius);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.page-state__title {
+  font-family: var(--teacher-font-display);
+  font-size: 42rpx;
+  font-weight: 700;
+}
+
+.page-state__message {
+  margin-top: 14rpx;
+  font-size: 25rpx;
+  color: var(--teacher-muted);
+}
+
+.control--hover {
+  opacity: 0.72;
+}
+
+button::after {
+  border: 0;
+}
+
+button[disabled] {
+  opacity: 0.45;
+}

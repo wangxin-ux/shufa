@@ -1,0 +1,183 @@
+<parent-page-shell
+  markTitle="拼团详情"
+  markIcon="/pages/parent/assets/icon-mark-hours.png"
+  bg="yellow"
+  showBack="{{true}}"
+  fixedHeader="{{true}}"
+  showWave="{{false}}"
+  backgroundColor="#fef07f"
+>
+  <view-state
+    wx:if="{{viewState !== 'ready'}}"
+    state="{{viewState}}"
+    errorText="{{errorMessage}}"
+    retryText="{{needsLogin ? '返回登录' : '重新加载'}}"
+    variant="panel"
+    bind:retry="onRetry"
+  />
+  <view wx:else class="detail">
+    <view wx:if="{{campaign.posterImages.length}}" class="poster-stream">
+      <view
+        class="poster-sheet"
+        wx:for="{{campaign.posterImages}}"
+        wx:for-item="poster"
+        wx:for-index="posterIndex"
+        wx:key="id"
+      >
+        <image class="poster-stream__image" src="{{poster.accessUrl}}" mode="widthFix" />
+
+        <view
+          wx:if="{{posterIndex === 0 && campaign.posterImages.length === 5}}"
+          class="poster-panel poster-panel--student"
+        >
+          <view class="poster-panel__head">
+            <text class="poster-panel__title">马上参团</text>
+            <text class="poster-panel__status">{{campaign.teamCountLabel}}</text>
+          </view>
+          <text class="poster-panel__label">选择参与学员</text>
+          <picker range="{{students}}" range-key="name" value="{{studentIndex}}" bindchange="onStudentChange">
+            <view class="poster-picker">
+              <text>{{students[studentIndex].name || '请选择已绑定学员'}}</text>
+              <text class="poster-picker__arrow">⌄</text>
+            </view>
+          </picker>
+          <text class="poster-panel__meta">活动截止 {{campaign.endsAtLabel}}</text>
+        </view>
+
+        <view
+          wx:if="{{posterIndex === 4 && campaign.posterImages.length === 5}}"
+          class="poster-panel poster-panel--teams"
+        >
+          <view class="poster-panel__head">
+            <text class="poster-panel__title">当前拼团</text>
+            <text class="poster-panel__hint">仅已支付成员计数</text>
+          </view>
+          <scroll-view wx:if="{{teams.length}}" class="poster-teams" scroll-y="{{true}}">
+            <view class="poster-team" wx:for="{{teams}}" wx:for-item="team" wx:key="id">
+              <view class="poster-team__people">
+                <view
+                  class="poster-avatar {{member ? 'poster-avatar--filled' : ''}}"
+                  wx:for="{{team.memberSlots}}"
+                  wx:for-item="member"
+                  wx:key="index"
+                >{{member ? member.avatarLabel : '+'}}</view>
+              </view>
+              <view class="poster-team__main">
+                <text class="poster-team__progress">{{team.progressLabel}}</text>
+                <text class="poster-team__remain">还差 {{team.remainingSlots}} 人</text>
+              </view>
+              <button
+                class="poster-team__button"
+                disabled="{{submitting || !campaign.canParticipate}}"
+                data-team="{{team.id}}"
+                bindtap="onJoin"
+              >加入</button>
+            </view>
+          </scroll-view>
+          <view wx:else class="poster-empty">
+            <text class="poster-empty__title">还没有进行中的队伍</text>
+            <text>可点击底部按钮发起新团</text>
+          </view>
+          <view wx:if="{{paymentConfirming}}" class="poster-confirming">
+            <text class="poster-confirming__title">支付确认中</text>
+            <text>以服务端结果为准</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view wx:else class="hero"><text class="hero__course">{{campaign.courseName}}</text><text class="hero__title">{{campaign.title}}</text><text class="hero__desc">{{campaign.description}}</text><view class="hero__price"><text class="hero__mark">¥</text><text class="hero__value">{{campaign.priceLabel}}</text></view><text class="hero__rule">1 人 1 次 · 2 人 3 次 · 3 人 5 次</text><text class="hero__time">活动截止 {{campaign.endsAtLabel}}</text></view>
+    <block wx:if="{{campaign.posterImages.length !== 5}}">
+      <view class="card"><text class="card__title">选择学员</text><picker range="{{students}}" range-key="name" value="{{studentIndex}}" bindchange="onStudentChange"><view class="picker">{{students[studentIndex].name || '请选择已绑定学员'}}<text>⌄</text></view></picker></view>
+      <view class="card"><view class="card__head"><text class="card__title">可加入的拼团</text><text class="card__hint">仅已支付成员计数</text></view><view wx:if="{{teams.length}}" class="teams"><view class="team" wx:for="{{teams}}" wx:key="id"><view class="team__people"><view wx:for="{{item.memberSlots}}" wx:for-item="member" wx:key="index" class="avatar {{member ? 'avatar--filled' : ''}}">{{member ? member.avatarLabel : '+'}}</view></view><view class="team__main"><text class="team__progress">{{item.progressLabel}}</text><text class="team__remain">还差 {{item.remainingSlots}} 人</text></view><button class="small-button" disabled="{{submitting || !campaign.canParticipate}}" data-team="{{item.id}}" bindtap="onJoin">加入该团</button></view></view><text wx:else class="empty-tip">暂无可加入队伍，可直接发起新团</text></view>
+      <view wx:if="{{paymentConfirming}}" class="confirming"><text class="confirming__title">支付确认中</text><text>页面只展示服务端确认结果，不会提前增加人数或课时。</text></view>
+    </block>
+    <view class="bottom-space"></view>
+    <view class="bottom-bar">
+      <view class="bottom-bar__tools">
+        <button class="bottom-tool" bindtap="onOpenService">
+          <image class="bottom-tool__icon" src="/pages/parent/assets/group-action-service.png" mode="aspectFit" />
+          <text class="bottom-tool__label">客服</text>
+        </button>
+        <button class="bottom-tool" bindtap="onOpenPoster">
+          <image class="bottom-tool__icon" src="/pages/parent/assets/group-action-poster.png" mode="aspectFit" />
+          <text class="bottom-tool__label">海报</text>
+        </button>
+      </view>
+      <button class="pay-button" disabled="{{submitting || !students.length || !campaign.canParticipate}}" bindtap="onStart">{{submitting ? '处理中' : (campaign.actionLabel || '发起拼团')}}</button>
+    </view>
+  </view>
+  <view wx:if="{{showService}}" class="overlay overlay--sheet" bindtap="onCloseService" catchtouchmove="noop">
+    <view class="modal modal--service modal--sheet" catchtap="noop">
+      <view class="modal__grabber"></view>
+      <button class="modal__close" aria-label="关闭联系方式" bindtap="onCloseService">×</button>
+      <view class="service-hero">
+        <view class="service-hero__icon-wrap">
+          <image class="service-hero__icon" src="/pages/parent/assets/group-action-service.png" mode="aspectFit" />
+        </view>
+        <text class="service-hero__title">联系校区</text>
+        <text class="service-hero__subtitle">课程咨询与拼团服务</text>
+      </view>
+      <view class="service-qr" bindtap="onPreviewQr">
+        <image wx:if="{{campaign.customerService.qrCodeUrl}}" class="service-qr__image" src="{{campaign.customerService.qrCodeUrl}}" mode="aspectFit" />
+        <view wx:else class="service-qr__placeholder"><text>校区暂未配置</text><text>客服二维码</text></view>
+      </view>
+      <view class="service-info">
+        <view class="service-info__row">
+          <text class="service-info__label">服务校区</text>
+          <text class="service-info__value">{{campaign.customerService.name}}</text>
+        </view>
+        <view class="service-info__row">
+          <text class="service-info__label">联系电话</text>
+          <text class="service-info__value service-info__value--phone">{{campaign.customerService.phone || '暂未配置'}}</text>
+        </view>
+      </view>
+      <view class="service-actions">
+        <button
+          class="service-action service-action--primary"
+          disabled="{{!campaign.customerService.phone}}"
+          bindtap="onCall"
+        >拨打电话</button>
+        <button
+          class="service-action service-action--secondary"
+          disabled="{{!campaign.customerService.qrCodeUrl}}"
+          bindtap="onPreviewQr"
+        >查看二维码</button>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{showPoster}}" class="overlay overlay--sheet" bindtap="onClosePoster" catchtouchmove="noop">
+    <view class="modal modal--poster modal--sheet" catchtap="noop">
+      <view class="modal__grabber"></view>
+      <view class="poster-heading">
+        <view class="poster-heading__icon-wrap">
+          <image class="poster-heading__icon" src="/pages/parent/assets/group-action-poster.png" mode="aspectFit" />
+        </view>
+        <view class="poster-heading__copy">
+          <text class="poster-heading__title">邀请海报</text>
+          <text class="poster-heading__subtitle">{{campaign.title}}</text>
+        </view>
+        <button class="modal__close modal__close--inline" aria-label="关闭邀请海报" bindtap="onClosePoster">×</button>
+      </view>
+      <canvas class="poster-canvas" canvas-id="groupPoster"></canvas>
+      <view class="poster-stage">
+        <image wx:if="{{posterPath}}" class="poster-preview" src="{{posterPath}}" mode="aspectFit" />
+        <view wx:if="{{posterGenerating}}" class="poster-loading">
+          <view class="poster-loading__dot"></view>
+          <text>正在生成海报</text>
+        </view>
+      </view>
+      <view class="share-copy">
+        <text class="share-copy__title">分享文案</text>
+        <text class="share-copy__content">{{shareCopy}}</text>
+      </view>
+      <view class="poster-actions">
+        <button class="poster-action poster-action--share" open-type="share">发送给好友</button>
+        <view class="poster-secondary-actions">
+              <button class="poster-action poster-action--secondary" bindtap="onSavePoster">保存海报</button>
+              <button class="poster-action poster-action--secondary" bindtap="onCopyPosterText">复制发圈配文</button>
+        </view>
+      </view>
+    </view>
+  </view>
+</parent-page-shell>

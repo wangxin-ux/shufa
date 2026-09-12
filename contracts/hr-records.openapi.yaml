@@ -1,0 +1,201 @@
+attachmentUpload:
+  post:
+    operationId: uploadHrTeacherRecordAttachment
+    summary: Upload a private teacher record attachment
+    tags: [HR]
+    description: HR_TEACHER_RECORD_WRITE and a single headquarters HR identity required. Accepts one PNG, JPEG or PDF up to 3 MiB. An unlinked upload is readable only after it is attached to a teacher record.
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required: [file]
+            properties:
+              file: { type: string, format: binary }
+    responses:
+      '201':
+        description: Stored private attachment metadata.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data: { $ref: '#/schemas/Attachment' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+records:
+  get:
+    operationId: listHrTeacherRecords
+    summary: List qualification, training and growth records for one teacher
+    tags: [HR]
+    description: HR_TEACHER_READ and a single headquarters HR identity required. Archived records remain traceable and are returned only when requested.
+    parameters:
+      - { name: teacherId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { $ref: './hr.openapi.yaml#/parameters/Page' }
+      - { $ref: './hr.openapi.yaml#/parameters/PageSize' }
+      - { name: kind, in: query, schema: { $ref: '#/schemas/Kind' } }
+      - { name: status, in: query, schema: { type: string, enum: [ACTIVE, ARCHIVED, ALL], default: ACTIVE } }
+    responses:
+      '200':
+        description: Stable descending occurred date and ID pagination.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  allOf:
+                    - { $ref: './hr.openapi.yaml#/schemas/Page' }
+                    - type: object
+                      required: [items]
+                      properties:
+                        items: { type: array, items: { $ref: '#/schemas/Record' } }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+  post:
+    operationId: createHrTeacherRecord
+    summary: Add a teacher qualification, training or growth record
+    tags: [HR]
+    description: HR_TEACHER_RECORD_WRITE and a single headquarters HR identity required. The optional attachment must be uploader-owned and must never have been linked to another HR record, including historical links. The mutation is idempotent and audited.
+    parameters:
+      - { name: teacherId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/RecordInput' }
+    responses:
+      '201':
+        description: Created record.
+        content:
+          application/json:
+            schema: { type: object, required: [data], properties: { data: { $ref: '#/schemas/Record' } } }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+record:
+  patch:
+    operationId: updateHrTeacherRecord
+    summary: Edit an active teacher record with optimistic versioning
+    tags: [HR]
+    description: HR_TEACHER_RECORD_WRITE and a single headquarters HR identity required. Archived records are immutable. Replacement attachments must be uploader-owned and must never have been linked to another HR record, including historical links. The mutation is idempotent and audited.
+    parameters:
+      - { name: recordId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            allOf:
+              - { $ref: '#/schemas/RecordInput' }
+              - type: object
+                required: [expectedVersion]
+                properties:
+                  expectedVersion: { type: integer, minimum: 1 }
+    responses:
+      '200':
+        description: Updated record with incremented version.
+        content:
+          application/json:
+            schema: { type: object, required: [data], properties: { data: { $ref: '#/schemas/Record' } } }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+archive:
+  post:
+    operationId: archiveHrTeacherRecord
+    summary: Archive an active teacher record without deleting history
+    tags: [HR]
+    description: HR_TEACHER_RECORD_WRITE and a single headquarters HR identity required. Archiving is version checked, idempotent and audited; it never deletes the record or attachment.
+    parameters:
+      - { name: recordId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [expectedVersion, reason]
+            properties:
+              expectedVersion: { type: integer, minimum: 1 }
+              reason: { type: string, minLength: 1, maxLength: 500 }
+    responses:
+      '200':
+        description: Archived record with incremented version.
+        content:
+          application/json:
+            schema: { type: object, required: [data], properties: { data: { $ref: '#/schemas/Record' } } }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+attachment:
+  get:
+    operationId: readHrTeacherRecordAttachment
+    summary: Read an attachment through its authorized teacher record
+    tags: [HR]
+    description: HR_TEACHER_READ and a single headquarters HR identity required. Returns private no-store bytes only for an attachment linked to the requested active or archived record.
+    parameters:
+      - { name: recordId, in: path, required: true, schema: { type: string, format: uuid } }
+    responses:
+      '200':
+        description: PNG, JPEG or PDF attachment bytes.
+        headers:
+          Cache-Control: { schema: { type: string }, description: 'Always private, no-store.' }
+        content:
+          image/png: { schema: { type: string, format: binary } }
+          image/jpeg: { schema: { type: string, format: binary } }
+          application/pdf: { schema: { type: string, format: binary } }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+schemas:
+  Kind: { type: string, enum: [QUALIFICATION, TRAINING, GROWTH] }
+  Attachment:
+    type: object
+    required: [id, originalName, mimeType, sizeBytes]
+    properties:
+      id: { type: string, format: uuid }
+      originalName: { type: string }
+      mimeType: { type: string, enum: [image/png, image/jpeg, application/pdf] }
+      sizeBytes: { type: integer, minimum: 1, maximum: 3145728 }
+  RecordInput:
+    type: object
+    required: [kind, title, occurredOn]
+    properties:
+      kind: { $ref: '#/schemas/Kind' }
+      title: { type: string, minLength: 1, maxLength: 200 }
+      organization: { type: [string, 'null'], maxLength: 200 }
+      occurredOn: { type: string, format: date }
+      expiresOn: { type: [string, 'null'], format: date, description: Must not precede occurredOn. }
+      note: { type: string, maxLength: 1000, default: '' }
+      attachmentFileId: { type: [string, 'null'], format: uuid }
+  Record:
+    allOf:
+      - { $ref: '#/schemas/RecordInput' }
+      - type: object
+        required: [id, teacherId, organization, expiresOn, note, attachmentFileId, attachment, version, status, archivedAt, createdByName, createdAt, updatedAt]
+        properties:
+          id: { type: string, format: uuid }
+          teacherId: { type: string, format: uuid }
+          attachment: { oneOf: [{ $ref: '#/schemas/Attachment' }, { type: 'null' }] }
+          version: { type: integer, minimum: 1 }
+          status: { type: string, enum: [ACTIVE, ARCHIVED] }
+          archivedAt: { type: [string, 'null'], format: date-time }
+          createdByName: { type: string }
+          createdAt: { type: string, format: date-time }
+          updatedAt: { type: string, format: date-time }

@@ -1,0 +1,103 @@
+<partner-page-shell
+  markTitle="收益"
+  markIcon="/pages/partner/assets/profile-mark-glyph.png"
+  showBack="{{true}}"
+  plainGradient="{{true}}"
+>
+  <view class="partner-workspace earnings-page">
+    <view class="earnings-head">
+      <view class="earnings-head__title-row">
+        <view class="earnings-head__accent"></view>
+        <text class="earnings-head__title">合作收益</text>
+      </view>
+      <text class="earnings-head__subtitle">内部预计收益，仅记录有效课耗对应的合作收益</text>
+    </view>
+
+    <view class="period-toolbar">
+      <view class="period-segments" aria-label="统计周期">
+        <button wx:for="{{periodOptions}}" wx:key="value" class="period-segment {{index === periodIndex ? 'period-segment--active' : ''}}" data-period="{{item.value}}" bindtap="onPeriodTap">{{item.label}}</button>
+      </view>
+      <picker mode="date" value="{{anchorDate}}" bindchange="onAnchorDateChange">
+        <view class="period-anchor"><text class="period-anchor__label">统计日期</text><text class="period-anchor__value">{{periodLabel}}</text></view>
+      </picker>
+    </view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="partner-state">
+      <text class="partner-state__title">正在加载合作收益</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="partner-state">
+      <text class="partner-state__title">无访问权限</text>
+      <text class="partner-state__message">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="partner-state">
+      <text class="partner-state__title">合作收益加载失败</text>
+      <text class="partner-state__message">{{errorMessage}}</text>
+      <button class="partner-command" bindtap="onRetry">重试</button>
+    </view>
+
+    <block wx:else>
+      <view class="earnings-summary">
+        <view class="earnings-summary__top">
+          <text class="earnings-summary__label">内部预计收益</text>
+          <text class="earnings-summary__period">{{periodLabel}}</text>
+        </view>
+        <text class="earnings-summary__value">{{summary.estimatedTotalLabel}}</text>
+        <view class="earnings-summary__grid">
+          <view class="earnings-summary__item">
+            <text class="earnings-summary__item-label">待审核</text>
+            <text class="earnings-summary__item-value">{{summary.pendingReviewLabel}}</text>
+          </view>
+          <view class="earnings-summary__item">
+            <text class="earnings-summary__item-label">可结算</text>
+            <text class="earnings-summary__item-value">{{summary.availableLabel}}</text>
+          </view>
+          <view class="earnings-summary__item">
+            <text class="earnings-summary__item-label">冲正净额</text>
+            <text class="earnings-summary__item-value">{{summary.reversedNetLabel}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{rule}}" class="earning-rule">
+        <view class="earning-rule__head">
+          <text class="earning-rule__title">当前校区规则</text>
+          <text class="earning-rule__version">版本 {{rule.version}}</text>
+        </view>
+        <view class="earning-rule__grid">
+          <view class="earning-rule__item"><text class="earning-rule__label">课耗单价</text><text class="earning-rule__value">{{rule.unitPriceLabel}} / 人次</text></view>
+          <view class="earning-rule__item"><text class="earning-rule__label">合作比例</text><text class="earning-rule__value">{{rule.shareLabel}}</text></view>
+          <view class="earning-rule__item"><text class="earning-rule__label">有效出勤</text><text class="earning-rule__value">{{rule.attendanceLabel}}</text></view>
+          <view class="earning-rule__item"><text class="earning-rule__label">生效时间</text><text class="earning-rule__value">{{rule.effectiveFromLabel}}</text></view>
+        </view>
+      </view>
+      <view wx:else class="earning-rule earning-rule--empty">
+        <text class="earning-rule__title">当前校区尚未配置合作方分成规则</text>
+      </view>
+
+      <view class="earnings-list-head">
+        <view class="earnings-list-head__title-group">
+          <view class="earnings-list-head__accent"></view>
+          <text class="earnings-list-head__title">收益明细</text>
+          <text class="earnings-list-head__count">{{total}} 条</text>
+        </view>
+        <picker range="{{statusOptions}}" range-key="label" value="{{statusIndex}}" bindchange="onStatusChange">
+          <view class="earnings-filter">{{statusOptions[statusIndex].label}}</view>
+        </picker>
+      </view>
+
+      <view wx:if="{{viewState === 'empty'}}" class="partner-state earnings-empty">
+        <text class="partner-state__title">暂无收益记录</text>
+        <text class="partner-state__message">课程完成并形成有效课耗后将在这里显示</text>
+      </view>
+      <view wx:else class="earnings-list">
+        <view wx:for="{{entries}}" wx:key="id" class="earning-row earning-row--{{item.status}}">
+          <view class="earning-row__head"><text class="earning-row__course">{{item.courseName}}</text><text class="earning-row__amount">{{item.amountLabel}}</text></view>
+          <text class="earning-row__meta">{{item.completedAtLabel}} · 有效 {{item.attendeeLabel}}</text>
+          <text class="earning-row__meta">课耗 {{item.unitPriceLabel}} × {{item.shareLabel}} = 每人 {{item.perAttendeeLabel}}</text>
+          <view class="earning-row__foot"><text class="earning-row__status">{{item.statusLabel}}</text><text wx:if="{{item.reviewReason}}" class="earning-row__reason">{{item.reviewReason}}</text></view>
+        </view>
+        <button wx:if="{{hasMore}}" class="partner-command partner-command--load-more" loading="{{loadingMore}}" disabled="{{loadingMore}}" bindtap="onLoadMore">{{loadingMore ? '加载中' : '加载更多'}}</button>
+      </view>
+    </block>
+  </view>
+</partner-page-shell>

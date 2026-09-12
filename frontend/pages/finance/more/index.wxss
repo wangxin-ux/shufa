@@ -1,0 +1,16 @@
+@import "../../../styles/super-admin-workspace.wxss";
+@import "../../../styles/finance-overview.wxss";
+
+.directory-section + .directory-section {
+  margin-top: 34rpx;
+}
+
+.directory-section__title {
+  display: block;
+  margin: 0 0 14rpx 8rpx;
+  font-family: var(--super-admin-font-display);
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--super-admin-ink);
+}

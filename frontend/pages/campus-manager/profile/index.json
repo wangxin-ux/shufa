@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "campus-manager-page-shell": "/components/campus-manager-page-shell/campus-manager-page-shell",
+    "session-logout": "/components/session-logout/session-logout"
+  },
+  "enablePullDownRefresh": true
+}

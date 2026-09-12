@@ -1,0 +1,12 @@
+@import "../../../styles/partner-workspace.wxss";
+
+.warning-card {
+  border-left-color: var(--partner-red);
+}
+
+.warning-note {
+  display: block;
+  margin: -6rpx 0 18rpx;
+  font-size: 22rpx;
+  color: var(--partner-muted);
+}

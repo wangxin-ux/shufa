@@ -1,0 +1,142 @@
+@import "../../../styles/super-admin-workspace.wxss";
+
+.student-hero {
+  align-items: flex-start;
+}
+
+.student-hero .status {
+  flex: none;
+}
+
+.metric--total {
+  grid-column: 1 / -1;
+  border-left-color: var(--super-admin-accent);
+}
+
+.section-head,
+.package-card__head,
+.package-card__balances {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.package-card__validity-button {
+  width: 100%;
+  margin-top: 14rpx;
+}
+
+.validity-editor {
+  margin-top: 18rpx;
+  padding: 20rpx;
+  border-radius: 8rpx;
+  background: rgba(255, 247, 219, 0.92);
+}
+
+.validity-editor__row + .validity-editor__row,
+.validity-editor__switch-row + .validity-editor__row {
+  margin-top: 16rpx;
+}
+
+.validity-editor__switch-row {
+  display: flex;
+  min-height: 72rpx;
+  margin-top: 16rpx;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.validity-editor__reason {
+  min-height: 150rpx;
+}
+
+.validity-editor__error {
+  display: block;
+  margin: 12rpx 0 0;
+  color: #b9322f;
+}
+
+.validity-editor__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx;
+  margin-top: 18rpx;
+}
+
+.section-head {
+  margin: 26rpx 0 16rpx;
+}
+
+.section-head__title {
+  font-family: var(--super-admin-font-display);
+  font-size: 38rpx;
+  font-weight: 700;
+}
+
+.section-head__meta {
+  font-size: 20rpx;
+  color: var(--super-admin-muted);
+  text-align: right;
+}
+
+.package-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.package-card {
+  padding: 24rpx;
+  box-sizing: border-box;
+  border-left: 8rpx solid var(--super-admin-accent);
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 9rpx 20rpx rgba(84, 59, 13, 0.15);
+}
+
+.package-card__title {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 29rpx;
+  font-weight: 700;
+}
+
+.package-card__validity {
+  display: block;
+  margin-top: 10rpx;
+  overflow-wrap: anywhere;
+  font-size: 21rpx;
+  color: var(--super-admin-muted);
+}
+
+.package-card__balances {
+  margin-top: 18rpx;
+  padding: 16rpx;
+  border-radius: 8rpx;
+  background: rgba(255, 215, 94, 0.28);
+  font-size: 22rpx;
+}
+
+.status--warning {
+  background: rgba(232, 183, 57, 0.2);
+  color: #795907;
+}
+
+.status--muted {
+  background: rgba(77, 72, 62, 0.12);
+  color: var(--super-admin-muted);
+}
+
+.package-empty {
+  min-height: 240rpx;
+}
+
+@media (max-width: 380px) {
+  .package-card__balances {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8rpx;
+  }
+}

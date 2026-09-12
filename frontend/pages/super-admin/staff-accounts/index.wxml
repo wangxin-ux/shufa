@@ -1,0 +1,89 @@
+<super-admin-page-shell show-back mark-title="账号" mark-icon="/pages/super-admin/assets/icon-dashboard.png">
+  <view class="workspace">
+    <view class="workspace__head">
+      <view>
+        <text class="workspace__title">登录账号</text>
+        <text class="workspace__subtitle">校区及总部工作人员账号</text>
+      </view>
+      <button class="head-action" bindtap="onToggleCreate">{{createOpen ? '收起' : '新建登录账号'}}</button>
+    </view>
+
+    <view wx:if="{{createOpen}}" class="form">
+      <view class="form-grid">
+        <view>
+          <text class="form__label">姓名</text>
+          <input class="field" maxlength="100" value="{{createName}}" bindinput="onNameInput" placeholder="请输入工作人员姓名" />
+        </view>
+        <view>
+          <text class="form__label">手机号</text>
+          <input class="field" type="number" maxlength="11" value="{{createPhone}}" bindinput="onPhoneInput" placeholder="请输入本人微信绑定手机号" />
+        </view>
+        <view>
+          <text class="form__label">角色</text>
+          <picker range="{{roleOptions}}" range-key="label" value="{{createRoleIndex}}" bindchange="onRoleChange">
+            <view class="select">{{roleOptions[createRoleIndex].label}}</view>
+          </picker>
+        </view>
+        <view wx:if="{{!createHeadquarters}}">
+          <text class="form__label">所属校区</text>
+          <picker range="{{campuses}}" range-key="name" value="{{createCampusIndex}}" bindchange="onCampusChange">
+            <view class="select">{{campuses[createCampusIndex].name || '请选择校区'}}</view>
+          </picker>
+        </view>
+        <view wx:else><text class="form__label">所属机构</text><view class="select">总部</view></view>
+      </view>
+      <button class="button form-submit" disabled="{{submitting || (!createHeadquarters && campuses.length === 0)}}" bindtap="onCreate">{{submitting ? '正在创建' : '确认创建'}}</button>
+    </view>
+
+    <view class="toolbar">
+      <input class="field search-field" value="{{keyword}}" bindinput="onKeywordInput" confirm-type="search" bindconfirm="onSearch" placeholder="搜索姓名或手机号" />
+      <button class="button search-button" bindtap="onSearch">查询</button>
+    </view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="state">
+      <text class="state__title">正在加载工作人员账号</text>
+    </view>
+    <view wx:elif="{{viewState === 'empty'}}" class="state">
+      <text class="state__title">暂无匹配账号</text>
+      <text class="state__message">可调整搜索条件，或在本页新建登录账号。</text>
+    </view>
+    <view wx:elif="{{viewState === 'error' || viewState === 'forbidden'}}" class="state">
+      <text class="state__title">{{viewState === 'forbidden' ? '无账号管理权限' : '账号加载失败'}}</text>
+      <text class="state__message">{{errorMessage}}</text>
+      <button class="button" bindtap="onRetry">重试</button>
+    </view>
+    <view wx:else class="account-list">
+      <view class="account-card" wx:for="{{accounts}}" wx:key="id">
+        <view class="account-card__head">
+          <view class="account-card__identity">
+            <text class="account-card__name">{{item.displayName}}</text>
+            <text class="account-card__phone">{{item.maskedPhone}}</text>
+          </view>
+          <text class="status {{item.status === 'ACTIVE' ? 'status--success' : 'status--danger'}}">{{item.statusLabel}}</text>
+        </view>
+        <view class="account-card__meta">
+          <text>{{item.roleLabel}}</text>
+          <text>{{item.campusName}}</text>
+          <text>{{item.bindingLabel}}</text>
+        </view>
+        <view class="account-actions">
+          <button
+            class="account-action {{item.status === 'ACTIVE' ? 'account-action--danger' : ''}}"
+            disabled="{{submittingId === item.id}}"
+            data-id="{{item.id}}"
+            data-version="{{item.version}}"
+            data-status="{{item.status}}"
+            bindtap="onStatusAction"
+          >{{submittingId === item.id ? '处理中' : (item.status === 'ACTIVE' ? '停用' : '启用')}}</button>
+          <button
+            class="account-action account-action--ghost"
+            disabled="{{submittingId === item.id || item.bindingStatus === 'UNBOUND'}}"
+            data-id="{{item.id}}"
+            data-version="{{item.version}}"
+            bindtap="onUnbindAction"
+          >解除绑定</button>
+        </view>
+      </view>
+    </view>
+  </view>
+</super-admin-page-shell>

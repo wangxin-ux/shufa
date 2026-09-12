@@ -1,0 +1,53 @@
+<view class="finance-report">
+  <view class="finance-report__wave" aria-hidden="true"></view>
+  <view class="finance-report__header" style="padding-top: {{headerTop}}px; padding-right: {{headerRight}}px;">
+    <button class="finance-report__back" bindtap="onBack" aria-label="返回上一页">‹</button>
+    <view class="finance-report__mark"><text class="finance-report__mark-icon">¥</text><text class="finance-report__mark-title">报表</text></view>
+  </view>
+  <view class="finance-report__body">
+    <view wx:if="{{!apiEnabled}}" class="state">
+      <text class="state__title">{{viewState === 'loading' ? '正在核验身份' : viewState === 'error' ? '暂时无法加载' : '请使用总部财务账号'}}</text>
+      <text wx:if="{{errorMessage}}" class="state__message">{{errorMessage}}</text>
+      <button wx:if="{{viewState === 'error'}}" class="button" bindtap="onRetry">重试</button>
+      <button wx:else class="button" bindtap="onBack">返回</button>
+    </view>
+    <view wx:else class="workspace">
+      <view class="workspace__head"><view><text class="workspace__title">财务报表</text><text class="workspace__subtitle">总部跨校区核对</text></view></view>
+      <view class="roster-tabs finance-report__tabs">
+        <button wx:for="{{tabs}}" wx:key="code" class="roster-tab {{kind === item.code ? 'roster-tab--active' : ''}}" data-kind="{{item.code}}" bindtap="onTab">{{item.name}}</button>
+      </view>
+      <view class="toolbar finance-report__filters">
+        <picker range="{{campuses}}" range-key="name" value="{{campusIndex}}" bindchange="onCampusChange"><view class="select">{{campuses[campusIndex].name}}</view></picker>
+        <view class="finance-report__dates">
+          <picker mode="date" value="{{startDate}}" bindchange="onStartChange"><view class="select">{{startDate}}</view></picker>
+          <text class="finance-report__date-separator">至</text>
+          <picker mode="date" value="{{endDate}}" bindchange="onEndChange"><view class="select">{{endDate}}</view></picker>
+        </view>
+        <button class="button button--ghost" loading="{{exporting}}" disabled="{{exporting}}" bindtap="onExport">导出 Excel</button>
+      </view>
+      <view wx:if="{{exportError}}" class="notice">{{exportError}}</view>
+      <view wx:if="{{viewState === 'ready' || viewState === 'empty'}}" class="metrics finance-report__metrics">
+        <view class="metric"><text class="metric__label">{{kind === 'lesson-consumption' ? '已核算课耗' : '实际退款'}} · {{total}} 笔</text><text class="metric__value">¥ {{amountLabel}}</text></view>
+        <view class="metric"><text class="metric__label">购买课时</text><text class="metric__value">{{mainUnitsLabel}} 节</text></view>
+        <view class="metric"><text class="metric__label">赠送课时</text><text class="metric__value">{{giftUnitsLabel}} 节</text></view>
+        <view wx:if="{{kind === 'lesson-consumption' && pendingCheckCount}}" class="metric"><text class="metric__label">历史待核对</text><text class="metric__value">{{pendingCheckCount}} 笔</text></view>
+      </view>
+      <view wx:if="{{viewState === 'loading'}}" class="state"><text class="state__title">正在加载报表</text></view>
+      <view wx:elif="{{viewState === 'error'}}" class="state"><text class="state__title">暂时无法展示</text><text class="state__message">{{errorMessage}}</text><button class="button" bindtap="onRetry">重试</button></view>
+      <view wx:elif="{{viewState === 'empty'}}" class="state"><text class="state__title">暂无报表记录</text><text class="state__message">当前日期与校区筛选下没有记录</text><button class="button" bindtap="onReset">重置筛选</button></view>
+      <view wx:else class="list">
+        <view class="row" wx:for="{{rows}}" wx:key="id">
+          <view class="row__main">
+            <view class="finance-report__row-head"><text class="row__title">{{item.studentName}}</text><text wx:if="{{item.pending}}" class="status">待核对</text></view>
+            <text class="row__meta">{{item.campusName}} · {{item.packageName}}</text>
+            <text class="row__meta">{{item.contextLabel}}</text>
+            <text class="row__meta">{{item.timeLabel}} · {{item.unitsLabel}}</text>
+          </view>
+          <text class="row__value">{{item.amountLabel}}</text>
+        </view>
+        <button wx:if="{{hasMore}}" class="button" bindtap="onLoadMore">加载更多记录</button>
+        <text wx:else class="row__meta finance-report__end">共 {{total}} 笔记录</text>
+      </view>
+    </view>
+  </view>
+</view>

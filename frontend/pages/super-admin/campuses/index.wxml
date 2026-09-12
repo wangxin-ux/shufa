@@ -1,0 +1,9 @@
+<super-admin-page-shell show-back mark-title="校区" mark-icon="/pages/super-admin/assets/icon-campuses.png">
+  <view class="workspace"><view class="workspace__head"><view><text class="workspace__title">校区管理</text><text class="workspace__subtitle">只读查看全局校区范围与预警</text></view></view>
+    <view class="toolbar"><input class="field" value="{{keyword}}" bindinput="onKeywordInput" placeholder="搜索校区名称或编码"/><button class="button" bindtap="onSearch">查询</button></view>
+    <view wx:if="{{viewState === 'loading'}}" class="state"><text class="state__title">正在加载校区</text></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="state"><text class="state__title">暂无校区</text><text class="state__message">当前查询没有结果</text></view>
+    <view wx:elif="{{viewState === 'error' || viewState === 'forbidden'}}" class="state"><text class="state__title">加载失败</text><text class="state__message">{{errorMessage}}</text><button class="button" bindtap="onRetry">重试</button></view>
+    <view wx:else class="list"><button class="row" wx:for="{{campuses}}" wx:key="id" data-id="{{item.id}}" bindtap="onCampusTap" hover-class="row-hover"><view class="row__main"><text class="row__title">{{item.name}}</text><text class="row__meta">学员{{item.activeStudentCount}}人 · 教师{{item.teacherCount}}人 · 班级{{item.classCount}}个</text></view><text class="row__value">预警{{item.warningStudentCount}}人 ›</text></button></view>
+  </view>
+</super-admin-page-shell>

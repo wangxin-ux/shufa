@@ -1,0 +1,55 @@
+<super-admin-page-shell
+  show-back
+  mark-title="我的"
+  mark-icon="/pages/finance/assets/home-mark-glyph.png"
+  surface-page
+  plain-mark="{{true}}"
+  style="--super-admin-surface: #ffffff;"
+>
+  <view class="profile">
+    <view wx:if="{{viewState === 'loading'}}" class="state" aria-live="polite">
+      <text class="state__title">正在加载财务资料</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden' || viewState === 'error'}}" class="state" aria-live="polite">
+      <text class="state__title">无法查看资料</text>
+      <text class="state__message">{{errorMessage}}</text>
+      <button wx:if="{{viewState === 'error'}}" class="state__retry" bindtap="onRetry" hover-class="button--hover">重试</button>
+    </view>
+
+    <block wx:else>
+      <view class="profile__hero">
+        <view class="profile__identity-card">
+          <text class="profile__name">{{displayName}}</text>
+          <text class="profile__role">{{roleLabel}}</text>
+          <text class="profile__account">{{roleCode}} · {{accountLabel}}</text>
+        </view>
+        <image
+          class="profile__character"
+          src="/pages/finance/assets/home-character.png"
+          mode="aspectFit"
+          aria-hidden="true"
+        />
+      </view>
+
+      <view class="profile__menu-stage">
+        <view class="profile__menu-card">
+          <button
+            wx:for="{{actions}}"
+            wx:key="key"
+            class="profile__menu-row"
+            data-key="{{item.key}}"
+            bindtap="onActionTap"
+            hover-class="button--hover"
+          >
+            <view class="profile__menu-main">
+              <view class="profile__menu-bullet" aria-hidden="true"></view>
+              <text class="profile__menu-label">{{item.label}}</text>
+            </view>
+            <text class="profile__menu-command">{{item.command}}</text>
+          </button>
+        </view>
+        <session-logout id="sessionLogout" />
+      </view>
+    </block>
+  </view>
+</super-admin-page-shell>

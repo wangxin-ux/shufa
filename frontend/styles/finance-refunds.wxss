@@ -1,0 +1,25 @@
+@import "./super-admin-workspace.wxss";
+
+.refund { min-height: 100vh; position: relative; overflow-x: hidden; background: var(--super-admin-gradient); color: var(--super-admin-ink); font-family: var(--super-admin-font-body); letter-spacing: 0; }
+.refund__wave { position: absolute; left: -12%; top: -292rpx; width: 124%; height: 480rpx; border-radius: 0 0 52% 46%; background: #fff; box-shadow: 0 7rpx 16rpx rgba(84,59,13,.16); pointer-events: none; }
+.refund__header { position: relative; display: flex; align-items: flex-start; gap: 12rpx; padding-left: 24rpx; min-height: 150rpx; box-sizing: content-box; }
+.refund__back { display: flex; align-items: center; justify-content: center; flex: none; width: var(--role-back-size); height: var(--role-back-size); padding: 0; margin: 2rpx 0 0; border-radius: 50%; background: var(--role-back-background); box-shadow: var(--role-back-shadow); font-size: var(--role-back-icon-size); line-height: 1; color: #343a32; }
+.refund button::after { border: 0; }
+.refund__mark { display: flex; flex-direction: column; align-items: center; justify-content: center; width: var(--role-page-mark-size); height: var(--role-page-mark-size); flex: none; border-radius: 50%; background: var(--role-page-mark-background); box-shadow: var(--role-page-mark-shadow); }
+.refund__mark-icon { font-size: var(--role-page-mark-icon-size); font-weight: 700; line-height: 1; }
+.refund__mark-title { margin-top: var(--role-page-mark-title-gap); font-size: var(--role-page-mark-title-font-size); color: var(--role-page-mark-ink); font-weight: 700; }
+.refund__body { position: relative; padding: 0 var(--super-admin-page-gap) 42rpx; }
+.refund .row__main { min-width: 0; }
+.refund .row__title,.refund .row__meta,.refund .row__value { white-space: normal; overflow: visible; overflow-wrap: anywhere; }
+.refund__mask { position: fixed; inset: 0; z-index: 30; background: rgba(27,35,28,.4); display: flex; align-items: flex-end; }
+.refund__sheet { width: 100%; box-sizing: border-box; padding: 24rpx 32rpx calc(32rpx + env(safe-area-inset-bottom)); background: var(--super-admin-surface); border-radius: 8rpx 8rpx 0 0; }
+.refund__sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12rpx; }
+.refund__sheet-head button { flex: none; width: 72rpx; height: 72rpx; padding: 0; font-size: 36rpx; }
+.refund__scroll { max-height: 65vh; }
+.refund__form-mask { z-index: 110; }
+.refund__form { display: flex; flex-direction: column; gap: 18rpx; padding-bottom: 40rpx; }
+.refund__form .field { box-sizing: border-box; width: 100%; }
+.refund__proof { width: 100%; height: 240rpx; }
+.refund__note { min-height: 120rpx; }
+.refund__more { flex: none; width: 72rpx; min-width: 72rpx; padding: 0; }
+.refund__review-tabs { grid-template-columns: repeat(2,minmax(0,1fr)); margin-bottom: 18rpx; }

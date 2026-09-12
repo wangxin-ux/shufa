@@ -1,0 +1,49 @@
+<partner-page-shell markTitle="学员" markIcon="/pages/partner/assets/icon-students.png" showBack="{{true}}">
+  <view class="partner-workspace student-detail-page">
+    <view wx:if="{{viewState === 'loading'}}" class="partner-state"><text class="partner-state__title">正在加载学员详情</text></view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="partner-state"><text class="partner-state__title">无访问权限</text><text class="partner-state__message">{{errorMessage}}</text></view>
+    <view wx:elif="{{viewState === 'error'}}" class="partner-state"><text class="partner-state__title">学员详情加载失败</text><text class="partner-state__message">{{errorMessage}}</text><button class="partner-command" bindtap="onRetry">重试</button></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="partner-state"><text class="partner-state__title">暂无学员详情</text><text class="partner-state__message">请返回学员档案后重新进入</text></view>
+
+    <block wx:elif="{{viewState === 'ready'}}">
+      <view class="detail-hero">
+        <view class="detail-hero__head"><text class="detail-hero__name">{{detail.displayName}}</text><text class="detail-hero__badge">在读</text></view>
+        <text class="detail-hero__class">{{detail.classLabel}}</text>
+        <text wx:if="{{detail.balances.reservationLabel}}" class="detail-hero__class">{{detail.balances.reservationLabel}}</text>
+        <text class="detail-hero__birth">{{detail.birthDateLabel}}</text>
+      </view>
+
+      <view class="detail-section-head"><text class="detail-section-head__title">课时账户</text><text class="detail-section-head__meta">实时汇总</text></view>
+      <view class="detail-metrics">
+        <view class="detail-metric"><text class="detail-metric__value">{{detail.balances.mainBalanceLabel}}</text><text class="detail-metric__label">主课时</text></view>
+        <view class="detail-metric"><text class="detail-metric__value">{{detail.balances.giftBalanceLabel}}</text><text class="detail-metric__label">赠送课时</text></view>
+        <view class="detail-metric detail-metric--total"><text class="detail-metric__value">{{detail.balances.totalBalanceLabel}}</text><text class="detail-metric__label">剩余合计</text></view>
+      </view>
+
+      <view class="detail-section-head"><text class="detail-section-head__title">个人出勤</text><text class="detail-section-head__meta">到课率 {{detail.attendance.attendanceRateLabel}}</text></view>
+      <view class="detail-attendance">
+        <view><text class="detail-attendance__value">{{detail.attendance.presentCountLabel}}</text><text class="detail-attendance__label">到课</text></view>
+        <view><text class="detail-attendance__value">{{detail.attendance.leaveCountLabel}}</text><text class="detail-attendance__label">请假</text></view>
+        <view><text class="detail-attendance__value">{{detail.attendance.absentCountLabel}}</text><text class="detail-attendance__label">缺勤</text></view>
+        <view><text class="detail-attendance__value">{{detail.attendance.recordedCountLabel}}</text><text class="detail-attendance__label">已记录</text></view>
+      </view>
+
+      <view class="detail-section-head"><text class="detail-section-head__title">在读班级</text><text class="detail-section-head__meta">{{detail.classes.length}} 个</text></view>
+      <view class="detail-list">
+        <view wx:for="{{detail.classes}}" wx:key="id" class="detail-row"><view><text class="detail-row__title">{{item.className}}</text><text class="detail-row__meta">{{item.courseName}}</text></view><text class="detail-row__aside">{{item.teacherLabel}}</text></view>
+      </view>
+
+      <view class="detail-section-head"><text class="detail-section-head__title">近期上课</text><text class="detail-section-head__meta">最近 {{detail.recentAttendance.length}} 条</text></view>
+      <view wx:if="{{detail.recentAttendance.length}}" class="detail-list">
+        <view wx:for="{{detail.recentAttendance}}" wx:key="id" class="detail-row"><view><text class="detail-row__title">{{item.lessonLabel}}</text><text class="detail-row__meta">授课教师：{{item.teacherLabel}}</text></view><text class="detail-row__status detail-row__status--{{item.statusTone}}">{{item.statusLabel}}</text></view>
+      </view>
+      <text wx:else class="detail-empty-line">暂无近期上课记录</text>
+
+      <view class="detail-section-head"><text class="detail-section-head__title">近期课时流水</text><text class="detail-section-head__meta">最近 {{detail.recentLessonLedger.length}} 条</text></view>
+      <view wx:if="{{detail.recentLessonLedger.length}}" class="detail-list">
+        <view wx:for="{{detail.recentLessonLedger}}" wx:key="id" class="detail-row"><view><text class="detail-row__title">{{item.packageName}} · {{item.typeLabel}}</text><text class="detail-row__meta">{{item.timeLabel}} · {{item.balanceAfterLabel}}</text></view><text class="detail-row__delta detail-row__delta--{{item.tone}}">{{item.deltaLabel}}</text></view>
+      </view>
+      <text wx:else class="detail-empty-line">暂无近期课时流水</text>
+    </block>
+  </view>
+</partner-page-shell>

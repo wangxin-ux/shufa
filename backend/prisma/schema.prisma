@@ -1,0 +1,1355 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RoleCode {
+  PARENT
+  PARTNER
+  TEACHER
+  OPERATOR
+  CAMPUS_MANAGER
+  SUPER_ADMIN
+  HR
+  FINANCE
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum ClassGroupStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum LessonSessionStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  REVERSED
+  CANCELLED
+}
+
+enum LessonKind {
+  REGULAR
+  MAKEUP
+  TRIAL
+}
+
+enum AttendanceStatus {
+  PRESENT
+  LEAVE
+  ABSENT
+}
+
+enum LessonLedgerEntryType {
+  GRANT
+  CONSUME
+  REVERSAL
+  ADJUSTMENT
+  REFUND
+  CORRECTION
+}
+
+enum LessonUnitBucket {
+  MAIN
+  GIFT
+}
+
+enum TeachingRecordStatus {
+  COMPLETED
+  REVERSED
+}
+
+enum IdempotencyStatus {
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+enum AuditOutcome {
+  SUCCESS
+  DENIED
+  FAILURE
+}
+
+enum ParentLeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AuthProvider {
+  MOCK
+  WECHAT
+}
+
+enum TeacherEarningBasisType {
+  PER_COMPLETED_SESSION
+  PER_LESSON_UNIT
+  PER_PRESENT_ATTENDEE
+}
+
+enum TeacherEarningBasisStatus {
+  PRICED
+  UNPRICED
+  REVERSED
+}
+
+enum TeacherEarningEntryType {
+  ACCRUAL
+  REVERSAL
+}
+
+enum TeacherEarningStatus {
+  PENDING_REVIEW
+  AVAILABLE
+  REJECTED
+  REVERSED
+}
+
+enum PartnerEarningBasisStatus {
+  PRICED
+  UNPRICED
+  REVERSED
+}
+
+enum PartnerEarningEntryType {
+  ACCRUAL
+  REVERSAL
+}
+
+enum PartnerEarningStatus {
+  PENDING_REVIEW
+  AVAILABLE
+  REJECTED
+  REVERSED
+}
+
+enum ConfigurationStatus {
+  DRAFT
+  ACTIVE
+  RETIRED
+}
+
+enum WithdrawalStatus {
+  SUBMITTED
+  APPROVED
+  PAYING
+  PAID
+  CANCELLED
+  REJECTED
+  FAILED
+}
+
+enum StoredFilePurpose {
+  HR_TEACHER_RECORD_ATTACHMENT
+  FINANCE_RECEIPT_PROOF
+  FINANCE_REFUND_PROOF
+  PAYOUT_PROOF
+  PAYMENT_PROOF
+  COURSE_PRODUCT_COVER
+  STUDENT_FEEDBACK_IMAGE
+  CUSTOMER_SERVICE_QR
+  GROUP_CAMPAIGN_POSTER
+}
+
+enum HrTeacherRecordKind {
+  QUALIFICATION
+  TRAINING
+  GROWTH
+}
+
+enum CourseProductStatus {
+  DRAFT
+  ACTIVE
+  RETIRED
+}
+
+enum EnrollmentOrderStatus {
+  AWAITING_PROOF
+  AWAITING_PAYMENT
+  PENDING_REVIEW
+  PAID
+  REJECTED
+  EFFECTIVE
+  REFUNDING
+  REFUNDED
+  CANCELLED
+  VOIDED
+}
+
+enum EnrollmentOrderReviewAction {
+  APPROVE
+  REJECT
+  VOID
+}
+
+enum GroupCampaignStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+  CANCELLED
+}
+
+enum GroupTeamStatus {
+  OPEN
+  SETTLED
+  CANCELLED
+}
+
+enum GroupMemberStatus {
+  PENDING_PAYMENT
+  PAID
+  SETTLED
+  REFUNDING
+  REFUNDED
+  CANCELLED
+}
+
+enum PaymentTransactionType {
+  PAYMENT
+  REFUND
+}
+
+enum PaymentProvider {
+  MOCK
+  WECHAT
+}
+
+enum PaymentTransactionStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+}
+
+model Campus {
+  financeReceipts             FinanceReceipt[]
+  id                          String                 @id @default(uuid()) @db.Uuid
+  code                        String                 @unique @db.VarChar(50)
+  name                        String                 @db.VarChar(200)
+  timezone                    String                 @default("Asia/Shanghai") @db.VarChar(50)
+  contactPhone                String?                @db.VarChar(30)
+  customerServiceName         String?                @db.VarChar(100)
+  customerServiceQrFileId     String?                @db.Uuid
+  address                     String?                @db.VarChar(300)
+  latitude                    Decimal?               @db.Decimal(10, 7)
+  longitude                   Decimal?               @db.Decimal(10, 7)
+  mapVisible                  Boolean                @default(false)
+  lessonWarningThresholdUnits Int                    @default(500)
+  version                     Int                    @default(1)
+  createdAt                   DateTime               @default(now()) @db.Timestamptz(3)
+  updatedAt                   DateTime               @updatedAt @db.Timestamptz(3)
+  userRoles                   UserRole[]
+  teacherProfiles             TeacherProfile[]
+  students                    Student[]
+  classGroups                 ClassGroup[]
+  classMembers                ClassMember[]
+  lessonSessions              LessonSession[]
+  coursePackages              CoursePackage[]
+  attendanceRecords           AttendanceRecord[]
+  lessonLedger                LessonLedgerEntry[]
+  teachingRecords             TeachingRecord[]
+  studentFeedback             StudentFeedback[]
+  idempotencyRecords          IdempotencyRecord[]
+  auditLogs                   AuditLog[]
+  parentBindings              ParentStudentBinding[]
+  parentLeaveRequests         ParentLeaveRequest[]
+  teacherEarningRules         TeacherEarningRule[]
+  teacherEarningBases         TeacherEarningBasis[]
+  teacherEarningEntries       TeacherEarningEntry[]
+  partnerEarningRules         PartnerEarningRule[]
+  partnerEarningBases         PartnerEarningBasis[]
+  partnerEarningEntries       PartnerEarningEntry[]
+  withdrawals                 Withdrawal[]
+  courseProducts              CourseProduct[]
+  enrollmentOrders            EnrollmentOrder[]
+  groupCampaigns              GroupCampaign[]
+  customerServiceQrFile       StoredFile?            @relation("CampusCustomerServiceQr", fields: [customerServiceQrFileId], references: [id], onDelete: Restrict)
+}
+
+model User {
+  createdHrTeacherRecords       HrTeacherRecord[]               @relation("HrTeacherRecordCreator")
+  financeCorrectionRequests     FinanceReceiptCorrection[]      @relation("FinanceCorrectionRequester")
+  financeCorrectionReviews      FinanceReceiptCorrection[]      @relation("FinanceCorrectionReviewer")
+  financeCorrectionApplications FinanceReceiptCorrection[]      @relation("FinanceCorrectionApplier")
+  financeCorrectionEvents       FinanceReceiptCorrectionEvent[]
+  financeRefundRequests         FinanceRefundRequest[]          @relation("FinanceRefundRequester")
+  financeRefundReviews          FinanceRefundRequest[]          @relation("FinanceRefundReviewer")
+  financeRefundEvents           FinanceRefundEvent[]
+  financeRefundPayments         FinanceRefundPayment[]
+  financeReceipts               FinanceReceipt[]
+  financeIssuances              FinancePackageIssuance[]
+  id                            String                          @id @default(uuid()) @db.Uuid
+  displayName                   String                          @db.VarChar(100)
+  staffPhone                    String?                         @unique @db.VarChar(20)
+  parentPhone                   String?                         @db.VarChar(20)
+  status                        UserStatus                      @default(ACTIVE)
+  accountVersion                Int                             @default(1)
+  createdAt                     DateTime                        @default(now()) @db.Timestamptz(3)
+  updatedAt                     DateTime                        @updatedAt @db.Timestamptz(3)
+  roles                         UserRole[]
+  teacherProfile                TeacherProfile?
+  recordedAttendance            AttendanceRecord[]              @relation("AttendanceRecorder")
+  lessonLedger                  LessonLedgerEntry[]             @relation("LessonLedgerActor")
+  teachingRecords               TeachingRecord[]                @relation("TeachingRecordActor")
+  idempotencyRecords            IdempotencyRecord[]             @relation("IdempotencyActor")
+  auditLogs                     AuditLog[]                      @relation("AuditActor")
+  authIdentities                AuthIdentity[]
+  staffBindTokens               StaffBindToken[]
+  parentStudentBindings         ParentStudentBinding[]          @relation("ParentStudentBindingUser")
+  parentLeaveRequests           ParentLeaveRequest[]            @relation("ParentLeaveRequestUser")
+  reviewedParentLeaves          ParentLeaveRequest[]            @relation("ParentLeaveRequestReviewer")
+  createdEarningRules           TeacherEarningRule[]            @relation("TeacherEarningRuleCreator")
+  createdWithdrawalPolicies     TeacherWithdrawalPolicy[]       @relation("TeacherWithdrawalPolicyCreator")
+  reviewedEarningEntries        TeacherEarningEntry[]           @relation("TeacherEarningEntryReviewer")
+  createdPartnerEarningRules    PartnerEarningRule[]            @relation("PartnerEarningRuleCreator")
+  reviewedPartnerEarningEntries PartnerEarningEntry[]           @relation("PartnerEarningEntryReviewer")
+  requestedWithdrawals          Withdrawal[]                    @relation("WithdrawalRequester")
+  reviewedWithdrawals           Withdrawal[]                    @relation("WithdrawalReviewer")
+  paidWithdrawals               Withdrawal[]                    @relation("WithdrawalPayer")
+  createdStoredFiles            StoredFile[]                    @relation("StoredFileCreator")
+  createdCourseProducts         CourseProduct[]                 @relation("CourseProductCreator")
+  enrollmentOrders              EnrollmentOrder[]               @relation("EnrollmentOrderParent")
+  reviewedEnrollmentOrders      EnrollmentOrder[]               @relation("EnrollmentOrderCurrentReviewer")
+  submittedPaymentProofs        EnrollmentPaymentProof[]        @relation("EnrollmentPaymentProofSubmitter")
+  enrollmentOrderReviews        EnrollmentOrderReview[]         @relation("EnrollmentOrderReviewActor")
+  createdGroupCampaigns         GroupCampaign[]                 @relation("GroupCampaignCreator")
+  ledGroupTeams                 GroupTeam[]                     @relation("GroupTeamLeader")
+  groupMemberships              GroupMember[]                   @relation("GroupMemberParent")
+
+  @@index([parentPhone])
+}
+
+model AuthIdentity {
+  id        String       @id @default(uuid()) @db.Uuid
+  userId    String       @db.Uuid
+  provider  AuthProvider
+  subject   String       @db.VarChar(256)
+  createdAt DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime     @updatedAt @db.Timestamptz(3)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([provider, subject])
+  @@unique([userId, provider])
+  @@index([userId])
+}
+
+model StaffBindToken {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @db.Uuid
+  tokenDigest String    @unique @db.VarChar(64)
+  tokenHash   String    @db.VarChar(255)
+  expiresAt   DateTime  @db.Timestamptz(3)
+  consumedAt  DateTime? @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId, expiresAt])
+}
+
+model UserRole {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  roleCode  RoleCode
+  campusId  String?  @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  campus    Campus?  @relation(fields: [campusId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, roleCode, campusId])
+  @@index([campusId, roleCode])
+}
+
+model TeacherProfile {
+  id              String                @id @default(uuid()) @db.Uuid
+  userId          String                @unique @db.Uuid
+  campusId        String                @db.Uuid
+  employeeCode    String                @unique @db.VarChar(50)
+  specialties     String[]              @default([])
+  isActive        Boolean               @default(true)
+  createdAt       DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime              @updatedAt @db.Timestamptz(3)
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Restrict)
+  campus          Campus                @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  classGroups     ClassGroup[]
+  lessonSessions  LessonSession[]
+  teachingRecords TeachingRecord[]
+  studentFeedback StudentFeedback[]
+  earningRules    TeacherEarningRule[]
+  earningBases    TeacherEarningBasis[]
+  earningEntries  TeacherEarningEntry[]
+  withdrawals     Withdrawal[]
+  hrRecords       HrTeacherRecord[]
+
+  @@index([campusId])
+}
+
+model HrTeacherRecord {
+  id               String              @id @default(uuid()) @db.Uuid
+  teacherId        String              @db.Uuid
+  kind             HrTeacherRecordKind
+  title            String              @db.VarChar(200)
+  organization     String?             @db.VarChar(200)
+  occurredOn       DateTime            @db.Date
+  expiresOn        DateTime?           @db.Date
+  note             String              @default("") @db.VarChar(1000)
+  attachmentFileId String?             @unique @db.Uuid
+  version          Int                 @default(1)
+  archivedAt       DateTime?           @db.Timestamptz(3)
+  createdByUserId  String              @db.Uuid
+  createdAt        DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime            @updatedAt @db.Timestamptz(3)
+  teacher          TeacherProfile      @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  attachment       StoredFile?         @relation("HrTeacherRecordAttachment", fields: [attachmentFileId], references: [id], onDelete: Restrict)
+  createdBy        User                @relation("HrTeacherRecordCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  @@index([teacherId, archivedAt, occurredOn, id])
+  @@index([kind, occurredOn])
+}
+
+model Student {
+  financeReceipts     FinanceReceipt[]
+  id                  String                 @id @default(uuid()) @db.Uuid
+  campusId            String                 @db.Uuid
+  displayName         String                 @db.VarChar(100)
+  birthDate           DateTime?              @db.Date
+  profileAge          Int?
+  homeAddress         String?                @db.VarChar(300)
+  profileVersion      Int                    @default(1)
+  isActive            Boolean                @default(true)
+  createdAt           DateTime               @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime               @updatedAt @db.Timestamptz(3)
+  campus              Campus                 @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  classMemberships    ClassMember[]
+  coursePackages      CoursePackage[]
+  attendanceRecords   AttendanceRecord[]
+  lessonLedger        LessonLedgerEntry[]
+  feedback            StudentFeedback[]
+  parentBindings      ParentStudentBinding[]
+  parentLeaveRequests ParentLeaveRequest[]
+  enrollmentOrders    EnrollmentOrder[]
+  groupMemberships    GroupMember[]
+
+  @@index([campusId, displayName])
+}
+
+model ClassGroup {
+  id                 String           @id @default(uuid()) @db.Uuid
+  campusId           String           @db.Uuid
+  teacherId          String           @db.Uuid
+  name               String           @db.VarChar(200)
+  courseName         String           @db.VarChar(200)
+  defaultLessonUnits Int              @default(100)
+  status             ClassGroupStatus @default(ACTIVE)
+  createdAt          DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime         @updatedAt @db.Timestamptz(3)
+  campus             Campus           @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  teacher            TeacherProfile   @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  members            ClassMember[]
+  lessonSessions     LessonSession[]
+
+  @@unique([campusId, name])
+  @@index([teacherId, status])
+}
+
+model ClassMember {
+  id           String     @id @default(uuid()) @db.Uuid
+  campusId     String     @db.Uuid
+  classGroupId String     @db.Uuid
+  studentId    String     @db.Uuid
+  joinedAt     DateTime   @default(now()) @db.Timestamptz(3)
+  leftAt       DateTime?  @db.Timestamptz(3)
+  campus       Campus     @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  classGroup   ClassGroup @relation(fields: [classGroupId], references: [id], onDelete: Restrict)
+  student      Student    @relation(fields: [studentId], references: [id], onDelete: Restrict)
+
+  @@unique([classGroupId, studentId])
+  @@index([campusId])
+  @@index([studentId])
+}
+
+model LessonSession {
+  id                  String                @id @default(uuid()) @db.Uuid
+  campusId            String                @db.Uuid
+  classGroupId        String                @db.Uuid
+  teacherId           String                @db.Uuid
+  startsAt            DateTime              @db.Timestamptz(3)
+  endsAt              DateTime              @db.Timestamptz(3)
+  status              LessonSessionStatus   @default(SCHEDULED)
+  kind                LessonKind            @default(REGULAR)
+  lessonUnits         Int                   @default(100)
+  version             Int                   @default(1)
+  completedAt         DateTime?             @db.Timestamptz(3)
+  reversedAt          DateTime?             @db.Timestamptz(3)
+  reversalReason      String?               @db.VarChar(500)
+  createdAt           DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime              @updatedAt @db.Timestamptz(3)
+  campus              Campus                @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  classGroup          ClassGroup            @relation(fields: [classGroupId], references: [id], onDelete: Restrict)
+  teacher             TeacherProfile        @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  attendanceRecords   AttendanceRecord[]
+  lessonLedger        LessonLedgerEntry[]
+  teachingRecord      TeachingRecord?
+  feedback            StudentFeedback[]
+  parentLeaveRequests ParentLeaveRequest[]
+  earningBases        TeacherEarningBasis[]
+  partnerEarningBases PartnerEarningBasis[]
+
+  @@index([teacherId, startsAt])
+  @@index([campusId])
+  @@index([classGroupId, startsAt])
+}
+
+model CoursePackage {
+  financeIssuance   FinancePackageIssuance?
+  id                String                  @id @default(uuid()) @db.Uuid
+  campusId          String                  @db.Uuid
+  studentId         String                  @db.Uuid
+  name              String                  @db.VarChar(200)
+  mainBalanceUnits  Int                     @default(0)
+  giftBalanceUnits  Int                     @default(0)
+  mainReservedUnits Int                     @default(0)
+  giftReservedUnits Int                     @default(0)
+  paidAmountFen     Int                     @default(0)
+  version           Int                     @default(1)
+  validFrom         DateTime                @default(now()) @db.Timestamptz(3)
+  expiresAt         DateTime?               @db.Timestamptz(3)
+  isActive          Boolean                 @default(true)
+  sourceOrderId     String?                 @unique @db.Uuid
+  createdAt         DateTime                @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime                @updatedAt @db.Timestamptz(3)
+  campus            Campus                  @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  student           Student                 @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  lessonLedger      LessonLedgerEntry[]
+  sourceOrder       EnrollmentOrder?        @relation("EnrollmentOrderCoursePackage", fields: [sourceOrderId], references: [id], onDelete: Restrict)
+
+  @@index([campusId, studentId])
+  @@index([studentId, isActive, expiresAt])
+}
+
+model CourseProduct {
+  id              String              @id @default(uuid()) @db.Uuid
+  campusId        String              @db.Uuid
+  name            String              @db.VarChar(200)
+  summary         String              @db.VarChar(1000)
+  coverFileId     String?             @db.Uuid
+  priceFen        Int
+  mainUnits       Int
+  giftUnits       Int
+  validityDays    Int
+  status          CourseProductStatus @default(DRAFT)
+  version         Int                 @default(1)
+  createdByUserId String              @db.Uuid
+  createdAt       DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime            @updatedAt @db.Timestamptz(3)
+  campus          Campus              @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  coverFile       StoredFile?         @relation("CourseProductCover", fields: [coverFileId], references: [id], onDelete: Restrict)
+  createdBy       User                @relation("CourseProductCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  orders          EnrollmentOrder[]
+  groupCampaigns  GroupCampaign[]
+
+  @@index([campusId, status, createdAt])
+}
+
+model EnrollmentOrder {
+  id                   String                   @id @default(uuid()) @db.Uuid
+  orderNo              String                   @unique @db.VarChar(64)
+  parentUserId         String                   @db.Uuid
+  studentId            String                   @db.Uuid
+  campusId             String                   @db.Uuid
+  courseProductId      String                   @db.Uuid
+  productNameSnapshot  String                   @db.VarChar(200)
+  priceFenSnapshot     Int
+  mainUnitsSnapshot    Int
+  giftUnitsSnapshot    Int
+  validityDaysSnapshot Int
+  status               EnrollmentOrderStatus    @default(AWAITING_PROOF)
+  version              Int                      @default(1)
+  reviewedByUserId     String?                  @db.Uuid
+  reviewedAt           DateTime?                @db.Timestamptz(3)
+  reviewReason         String?                  @db.VarChar(500)
+  cancelledAt          DateTime?                @db.Timestamptz(3)
+  voidedAt             DateTime?                @db.Timestamptz(3)
+  voidReason           String?                  @db.VarChar(500)
+  createdAt            DateTime                 @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime                 @updatedAt @db.Timestamptz(3)
+  parent               User                     @relation("EnrollmentOrderParent", fields: [parentUserId], references: [id], onDelete: Restrict)
+  student              Student                  @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  campus               Campus                   @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  courseProduct        CourseProduct            @relation(fields: [courseProductId], references: [id], onDelete: Restrict)
+  currentReviewer      User?                    @relation("EnrollmentOrderCurrentReviewer", fields: [reviewedByUserId], references: [id], onDelete: Restrict)
+  paymentProofs        EnrollmentPaymentProof[]
+  reviews              EnrollmentOrderReview[]
+  coursePackage        CoursePackage?           @relation("EnrollmentOrderCoursePackage")
+  groupMember          GroupMember?
+  paymentTransactions  PaymentTransaction[]
+
+  @@index([parentUserId, status, createdAt])
+  @@index([campusId, status, createdAt])
+  @@index([studentId, createdAt])
+}
+
+model EnrollmentPaymentProof {
+  id                String                  @id @default(uuid()) @db.Uuid
+  orderId           String                  @db.Uuid
+  storedFileId      String                  @unique @db.Uuid
+  attemptNo         Int
+  submittedByUserId String                  @db.Uuid
+  submittedAt       DateTime                @default(now()) @db.Timestamptz(3)
+  order             EnrollmentOrder         @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  storedFile        StoredFile              @relation(fields: [storedFileId], references: [id], onDelete: Restrict)
+  submittedBy       User                    @relation("EnrollmentPaymentProofSubmitter", fields: [submittedByUserId], references: [id], onDelete: Restrict)
+  reviews           EnrollmentOrderReview[]
+
+  @@unique([orderId, attemptNo])
+  @@index([orderId, submittedAt])
+}
+
+model EnrollmentOrderReview {
+  id             String                      @id @default(uuid()) @db.Uuid
+  orderId        String                      @db.Uuid
+  paymentProofId String?                     @db.Uuid
+  action         EnrollmentOrderReviewAction
+  fromStatus     EnrollmentOrderStatus
+  toStatus       EnrollmentOrderStatus
+  reason         String?                     @db.VarChar(500)
+  actorUserId    String                      @db.Uuid
+  createdAt      DateTime                    @default(now()) @db.Timestamptz(3)
+  order          EnrollmentOrder             @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  paymentProof   EnrollmentPaymentProof?     @relation(fields: [paymentProofId], references: [id], onDelete: Restrict)
+  actor          User                        @relation("EnrollmentOrderReviewActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([orderId, createdAt])
+  @@index([actorUserId, createdAt])
+}
+
+model GroupCampaign {
+  id              String                @id @default(uuid()) @db.Uuid
+  code            String                @unique @db.VarChar(64)
+  campusId        String                @db.Uuid
+  courseProductId String                @db.Uuid
+  title           String                @db.VarChar(200)
+  description     String                @db.VarChar(1000)
+  priceFen        Int
+  maxPaidMembers  Int                   @default(3)
+  startsAt        DateTime              @db.Timestamptz(3)
+  endsAt          DateTime              @db.Timestamptz(3)
+  status          GroupCampaignStatus   @default(DRAFT)
+  version         Int                   @default(1)
+  createdByUserId String                @db.Uuid
+  createdAt       DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime              @updatedAt @db.Timestamptz(3)
+  campus          Campus                @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  courseProduct   CourseProduct         @relation(fields: [courseProductId], references: [id], onDelete: Restrict)
+  createdBy       User                  @relation("GroupCampaignCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  teams           GroupTeam[]
+  members         GroupMember[]
+  posters         GroupCampaignPoster[]
+
+  @@index([campusId, status, startsAt, endsAt])
+}
+
+model GroupCampaignPoster {
+  id           String        @id @default(uuid()) @db.Uuid
+  campaignId   String        @db.Uuid
+  storedFileId String        @unique @db.Uuid
+  sortOrder    Int
+  createdAt    DateTime      @default(now()) @db.Timestamptz(3)
+  campaign     GroupCampaign @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  storedFile   StoredFile    @relation(fields: [storedFileId], references: [id], onDelete: Restrict)
+
+  @@unique([campaignId, sortOrder])
+  @@index([campaignId])
+}
+
+model GroupTeam {
+  id              String          @id @default(uuid()) @db.Uuid
+  campaignId      String          @db.Uuid
+  leaderUserId    String          @db.Uuid
+  status          GroupTeamStatus @default(OPEN)
+  paidMemberCount Int             @default(0)
+  finalTier       Int?
+  settledAt       DateTime?       @db.Timestamptz(3)
+  version         Int             @default(1)
+  createdAt       DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime        @updatedAt @db.Timestamptz(3)
+  campaign        GroupCampaign   @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  leader          User            @relation("GroupTeamLeader", fields: [leaderUserId], references: [id], onDelete: Restrict)
+  members         GroupMember[]
+
+  @@index([campaignId, status, createdAt])
+}
+
+model GroupMember {
+  id                   String               @id @default(uuid()) @db.Uuid
+  campaignId           String               @db.Uuid
+  teamId               String               @db.Uuid
+  parentUserId         String               @db.Uuid
+  studentId            String               @db.Uuid
+  enrollmentOrderId    String               @unique @db.Uuid
+  status               GroupMemberStatus    @default(PENDING_PAYMENT)
+  reservationExpiresAt DateTime             @db.Timestamptz(3)
+  paidAt               DateTime?            @db.Timestamptz(3)
+  settledAt            DateTime?            @db.Timestamptz(3)
+  grantedMainUnits     Int?
+  grantedGiftUnits     Int?
+  version              Int                  @default(1)
+  createdAt            DateTime             @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime             @updatedAt @db.Timestamptz(3)
+  campaign             GroupCampaign        @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  team                 GroupTeam            @relation(fields: [teamId], references: [id], onDelete: Restrict)
+  parent               User                 @relation("GroupMemberParent", fields: [parentUserId], references: [id], onDelete: Restrict)
+  student              Student              @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  enrollmentOrder      EnrollmentOrder      @relation(fields: [enrollmentOrderId], references: [id], onDelete: Restrict)
+  transactions         PaymentTransaction[]
+
+  @@unique([campaignId, studentId])
+  @@index([teamId, status, reservationExpiresAt])
+  @@index([parentUserId, createdAt])
+}
+
+model PaymentTransaction {
+  id                String                   @id @default(uuid()) @db.Uuid
+  groupMemberId     String                   @db.Uuid
+  enrollmentOrderId String                   @db.Uuid
+  type              PaymentTransactionType
+  provider          PaymentProvider
+  outTradeNo        String                   @unique @db.VarChar(64)
+  providerTradeNo   String?                  @db.VarChar(128)
+  amountFen         Int
+  status            PaymentTransactionStatus @default(PENDING)
+  rawNotification   Json?
+  succeededAt       DateTime?                @db.Timestamptz(3)
+  failedAt          DateTime?                @db.Timestamptz(3)
+  createdAt         DateTime                 @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime                 @updatedAt @db.Timestamptz(3)
+  member            GroupMember              @relation(fields: [groupMemberId], references: [id], onDelete: Restrict)
+  enrollmentOrder   EnrollmentOrder          @relation(fields: [enrollmentOrderId], references: [id], onDelete: Restrict)
+
+  @@unique([provider, providerTradeNo])
+  @@index([groupMemberId, type, status])
+  @@index([enrollmentOrderId, createdAt])
+}
+
+model ParentStudentBinding {
+  id           String   @id @default(uuid()) @db.Uuid
+  campusId     String   @db.Uuid
+  parentUserId String   @db.Uuid
+  studentId    String   @db.Uuid
+  isPrimary    Boolean  @default(false)
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
+  campus       Campus   @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  parentUser   User     @relation("ParentStudentBindingUser", fields: [parentUserId], references: [id], onDelete: Restrict)
+  student      Student  @relation(fields: [studentId], references: [id], onDelete: Restrict)
+
+  @@unique([parentUserId, studentId])
+  @@index([parentUserId, isPrimary])
+  @@index([campusId, studentId])
+}
+
+model ParentLeaveRequest {
+  id              String            @id @default(uuid()) @db.Uuid
+  campusId        String            @db.Uuid
+  parentUserId    String            @db.Uuid
+  studentId       String            @db.Uuid
+  lessonSessionId String            @db.Uuid
+  reason          String            @db.VarChar(500)
+  status          ParentLeaveStatus @default(PENDING)
+  reviewerUserId  String?           @db.Uuid
+  reviewedAt      DateTime?         @db.Timestamptz(3)
+  reviewReason    String?           @db.VarChar(500)
+  version         Int               @default(1)
+  createdAt       DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime          @updatedAt @db.Timestamptz(3)
+  campus          Campus            @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  parentUser      User              @relation("ParentLeaveRequestUser", fields: [parentUserId], references: [id], onDelete: Restrict)
+  reviewer        User?             @relation("ParentLeaveRequestReviewer", fields: [reviewerUserId], references: [id], onDelete: Restrict)
+  student         Student           @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  lessonSession   LessonSession     @relation(fields: [lessonSessionId], references: [id], onDelete: Restrict)
+
+  @@unique([parentUserId, studentId, lessonSessionId])
+  @@index([parentUserId, createdAt])
+  @@index([campusId, studentId, createdAt])
+  @@index([lessonSessionId, studentId])
+  @@index([reviewerUserId, reviewedAt])
+}
+
+model AttendanceRecord {
+  id               String           @id @default(uuid()) @db.Uuid
+  campusId         String           @db.Uuid
+  lessonSessionId  String           @db.Uuid
+  studentId        String           @db.Uuid
+  status           AttendanceStatus
+  recordedByUserId String           @db.Uuid
+  recordedAt       DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime         @updatedAt @db.Timestamptz(3)
+  campus           Campus           @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  lessonSession    LessonSession    @relation(fields: [lessonSessionId], references: [id], onDelete: Restrict)
+  student          Student          @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  recordedBy       User             @relation("AttendanceRecorder", fields: [recordedByUserId], references: [id], onDelete: Restrict)
+
+  @@unique([lessonSessionId, studentId])
+  @@index([campusId, studentId])
+}
+
+model TeachingRecord {
+  id                  String               @id @default(uuid()) @db.Uuid
+  campusId            String               @db.Uuid
+  lessonSessionId     String               @unique @db.Uuid
+  teacherId           String               @db.Uuid
+  status              TeachingRecordStatus @default(COMPLETED)
+  attendeeCount       Int
+  lessonUnits         Int
+  recordedByUserId    String               @db.Uuid
+  completedAt         DateTime             @db.Timestamptz(3)
+  reversedAt          DateTime?            @db.Timestamptz(3)
+  reversalReason      String?              @db.VarChar(500)
+  createdAt           DateTime             @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime             @updatedAt @db.Timestamptz(3)
+  campus              Campus               @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  lessonSession       LessonSession        @relation(fields: [lessonSessionId], references: [id], onDelete: Restrict)
+  teacher             TeacherProfile       @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  recordedBy          User                 @relation("TeachingRecordActor", fields: [recordedByUserId], references: [id], onDelete: Restrict)
+  earningBasis        TeacherEarningBasis?
+  partnerEarningBasis PartnerEarningBasis?
+
+  @@index([campusId, teacherId, completedAt])
+}
+
+model StudentFeedback {
+  id              String                 @id @default(uuid()) @db.Uuid
+  campusId        String                 @db.Uuid
+  lessonSessionId String                 @db.Uuid
+  studentId       String                 @db.Uuid
+  teacherId       String                 @db.Uuid
+  content         String                 @db.VarChar(1000)
+  createdAt       DateTime               @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime               @updatedAt @db.Timestamptz(3)
+  campus          Campus                 @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  lessonSession   LessonSession          @relation(fields: [lessonSessionId], references: [id], onDelete: Restrict)
+  student         Student                @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  teacher         TeacherProfile         @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  images          StudentFeedbackImage[]
+
+  @@unique([lessonSessionId, studentId])
+  @@index([campusId, teacherId, updatedAt])
+}
+
+model StudentFeedbackImage {
+  id           String          @id @default(uuid()) @db.Uuid
+  feedbackId   String          @db.Uuid
+  storedFileId String          @unique @db.Uuid
+  sortOrder    Int
+  createdAt    DateTime        @default(now()) @db.Timestamptz(3)
+  feedback     StudentFeedback @relation(fields: [feedbackId], references: [id], onDelete: Restrict)
+  storedFile   StoredFile      @relation(fields: [storedFileId], references: [id], onDelete: Restrict)
+
+  @@unique([feedbackId, sortOrder])
+  @@index([feedbackId])
+}
+
+model LessonLedgerEntry {
+  financeCorrectionId String?                   @db.Uuid
+  financeCorrection   FinanceReceiptCorrection? @relation(fields: [financeCorrectionId], references: [id], onDelete: Restrict)
+  financeRefundId     String?                   @db.Uuid
+  financeRefund       FinanceRefundRequest?     @relation(fields: [financeRefundId], references: [id], onDelete: Restrict)
+  id                  String                    @id @default(uuid()) @db.Uuid
+  campusId            String                    @db.Uuid
+  studentId           String                    @db.Uuid
+  coursePackageId     String                    @db.Uuid
+  lessonSessionId     String?                   @db.Uuid
+  entryType           LessonLedgerEntryType
+  bucket              LessonUnitBucket
+  deltaUnits          Int
+  balanceBeforeUnits  Int
+  balanceAfterUnits   Int
+  idempotencyKey      String                    @db.VarChar(128)
+  reversalOfId        String?                   @unique @db.Uuid
+  actorUserId         String                    @db.Uuid
+  reason              String?                   @db.VarChar(500)
+  createdAt           DateTime                  @default(now()) @db.Timestamptz(3)
+  campus              Campus                    @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  student             Student                   @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  coursePackage       CoursePackage             @relation(fields: [coursePackageId], references: [id], onDelete: Restrict)
+  lessonSession       LessonSession?            @relation(fields: [lessonSessionId], references: [id], onDelete: Restrict)
+  actor               User                      @relation("LessonLedgerActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+  reversalOf          LessonLedgerEntry?        @relation("LedgerReversal", fields: [reversalOfId], references: [id], onDelete: Restrict)
+  reversedBy          LessonLedgerEntry?        @relation("LedgerReversal")
+
+  @@unique([idempotencyKey, studentId, coursePackageId, bucket])
+  @@unique([financeCorrectionId, bucket])
+  @@unique([financeRefundId, bucket])
+  @@index([campusId, studentId, createdAt])
+  @@index([lessonSessionId])
+}
+
+model IdempotencyRecord {
+  id             String            @id @default(uuid()) @db.Uuid
+  campusId       String?           @db.Uuid
+  actorUserId    String?           @db.Uuid
+  key            String            @db.VarChar(128)
+  route          String            @db.VarChar(255)
+  requestHash    String            @db.VarChar(128)
+  status         IdempotencyStatus @default(IN_PROGRESS)
+  responseStatus Int?
+  responseBody   Json?
+  expiresAt      DateTime          @db.Timestamptz(3)
+  createdAt      DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime          @updatedAt @db.Timestamptz(3)
+  campus         Campus?           @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  actor          User?             @relation("IdempotencyActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@unique([key, route])
+  @@index([campusId, expiresAt])
+  @@index([actorUserId, createdAt])
+}
+
+model FinanceReceipt {
+  id                       String                    @id @default(uuid()) @db.Uuid
+  campusId                 String                    @db.Uuid
+  studentId                String                    @db.Uuid
+  amountFen                Int
+  receivedOn               DateTime                  @db.Date
+  channel                  String                    @db.VarChar(20)
+  proofFileId              String                    @unique @db.Uuid
+  note                     String                    @default("") @db.VarChar(500)
+  createdByUserId          String                    @db.Uuid
+  createdAt                DateTime                  @default(now()) @db.Timestamptz(3)
+  campus                   Campus                    @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  student                  Student                   @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  proofFile                StoredFile                @relation(fields: [proofFileId], references: [id], onDelete: Restrict)
+  createdBy                User                      @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  issuance                 FinancePackageIssuance?
+  replacementForCorrection FinanceReceiptCorrection? @relation("FinanceCorrectionReplacementReceipt")
+
+  @@index([campusId, receivedOn, id])
+  @@index([studentId, createdAt])
+}
+
+model FinancePackageIssuance {
+  corrections       FinanceReceiptCorrection[]
+  refunds           FinanceRefundRequest[]
+  id                String                     @id @default(uuid()) @db.Uuid
+  receiptId         String                     @unique @db.Uuid
+  coursePackageId   String                     @unique @db.Uuid
+  originalAmountFen Int
+  initialMainUnits  Int
+  initialGiftUnits  Int
+  name              String                     @db.VarChar(200)
+  validFrom         DateTime                   @db.Timestamptz(3)
+  expiresAt         DateTime?                  @db.Timestamptz(3)
+  issuedByUserId    String                     @db.Uuid
+  createdAt         DateTime                   @default(now()) @db.Timestamptz(3)
+  receipt           FinanceReceipt             @relation(fields: [receiptId], references: [id], onDelete: Restrict)
+  coursePackage     CoursePackage              @relation(fields: [coursePackageId], references: [id], onDelete: Restrict)
+  issuedBy          User                       @relation(fields: [issuedByUserId], references: [id], onDelete: Restrict)
+}
+
+model AuditLog {
+  id           String       @id @default(uuid()) @db.Uuid
+  campusId     String?      @db.Uuid
+  actorUserId  String?      @db.Uuid
+  action       String       @db.VarChar(100)
+  resourceType String       @db.VarChar(100)
+  resourceId   String?      @db.VarChar(100)
+  outcome      AuditOutcome
+  details      Json
+  createdAt    DateTime     @default(now()) @db.Timestamptz(3)
+  campus       Campus?      @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  actor        User?        @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([campusId, createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([resourceType, resourceId])
+}
+
+model TeacherEarningRule {
+  id                        String                  @id @default(uuid()) @db.Uuid
+  campusId                  String                  @db.Uuid
+  teacherProfileId          String?                 @db.Uuid
+  scopeKey                  String                  @db.VarChar(100)
+  basisType                 TeacherEarningBasisType
+  unitAmountFen             Int
+  eligibleLessonKinds       LessonKind[]
+  countedAttendanceStatuses AttendanceStatus[]
+  settlementDelayDays       Int                     @default(0)
+  version                   Int
+  status                    ConfigurationStatus     @default(DRAFT)
+  effectiveFrom             DateTime                @db.Timestamptz(3)
+  effectiveTo               DateTime?               @db.Timestamptz(3)
+  createdByUserId           String                  @db.Uuid
+  createdAt                 DateTime                @default(now()) @db.Timestamptz(3)
+  updatedAt                 DateTime                @updatedAt @db.Timestamptz(3)
+  campus                    Campus                  @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  teacher                   TeacherProfile?         @relation(fields: [teacherProfileId], references: [id], onDelete: Restrict)
+  createdBy                 User                    @relation("TeacherEarningRuleCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  earningBases              TeacherEarningBasis[]
+
+  @@unique([scopeKey, version])
+  @@index([campusId, teacherProfileId, status, effectiveFrom])
+}
+
+model TeacherWithdrawalPolicy {
+  id                String              @id @default(uuid()) @db.Uuid
+  minimumAmountFen  Int
+  dailyRequestLimit Int
+  version           Int                 @unique
+  status            ConfigurationStatus @default(DRAFT)
+  effectiveFrom     DateTime            @db.Timestamptz(3)
+  effectiveTo       DateTime?           @db.Timestamptz(3)
+  createdByUserId   String              @db.Uuid
+  createdAt         DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime            @updatedAt @db.Timestamptz(3)
+  createdBy         User                @relation("TeacherWithdrawalPolicyCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  withdrawals       Withdrawal[]
+
+  @@index([status, effectiveFrom])
+}
+
+model TeacherEarningBasis {
+  id                 String                    @id @default(uuid()) @db.Uuid
+  campusId           String                    @db.Uuid
+  teacherProfileId   String                    @db.Uuid
+  teachingRecordId   String                    @db.Uuid
+  lessonSessionId    String                    @db.Uuid
+  selectedRuleId     String?                   @db.Uuid
+  lessonKind         LessonKind
+  lessonUnits        Int
+  attendeeCount      Int
+  attendanceSnapshot Json
+  completedAt        DateTime                  @db.Timestamptz(3)
+  status             TeacherEarningBasisStatus
+  createdAt          DateTime                  @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime                  @updatedAt @db.Timestamptz(3)
+  campus             Campus                    @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  teacher            TeacherProfile            @relation(fields: [teacherProfileId], references: [id], onDelete: Restrict)
+  teachingRecord     TeachingRecord            @relation(fields: [teachingRecordId], references: [id], onDelete: Restrict)
+  lessonSession      LessonSession             @relation(fields: [lessonSessionId], references: [id], onDelete: Restrict)
+  selectedRule       TeacherEarningRule?       @relation(fields: [selectedRuleId], references: [id], onDelete: Restrict)
+  entries            TeacherEarningEntry[]
+
+  @@unique([teachingRecordId])
+  @@index([teacherProfileId, status, createdAt])
+  @@index([campusId, status, createdAt])
+  @@index([lessonSessionId])
+}
+
+model TeacherEarningEntry {
+  id                    String                  @id @default(uuid()) @db.Uuid
+  campusId              String                  @db.Uuid
+  teacherProfileId      String                  @db.Uuid
+  earningBasisId        String                  @db.Uuid
+  entryType             TeacherEarningEntryType
+  amountFen             Int
+  status                TeacherEarningStatus
+  ruleSnapshot          Json
+  reviewableAt          DateTime                @db.Timestamptz(3)
+  reviewedByUserId      String?                 @db.Uuid
+  reviewedAt            DateTime?               @db.Timestamptz(3)
+  reviewReason          String?                 @db.VarChar(500)
+  reversalOfId          String?                 @db.Uuid
+  version               Int                     @default(1)
+  createdAt             DateTime                @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime                @updatedAt @db.Timestamptz(3)
+  campus                Campus                  @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  teacher               TeacherProfile          @relation(fields: [teacherProfileId], references: [id], onDelete: Restrict)
+  earningBasis          TeacherEarningBasis     @relation(fields: [earningBasisId], references: [id], onDelete: Restrict)
+  reviewedBy            User?                   @relation("TeacherEarningEntryReviewer", fields: [reviewedByUserId], references: [id], onDelete: Restrict)
+  reversalOf            TeacherEarningEntry?    @relation("TeacherEarningReversal", fields: [reversalOfId], references: [id], onDelete: Restrict)
+  reversedBy            TeacherEarningEntry?    @relation("TeacherEarningReversal")
+  withdrawalAllocations WithdrawalAllocation[]
+
+  @@unique([reversalOfId])
+  @@index([teacherProfileId, status, createdAt])
+  @@index([campusId, status, createdAt])
+  @@index([earningBasisId, entryType])
+}
+
+model PartnerEarningRule {
+  id                        String                @id @default(uuid()) @db.Uuid
+  campusId                  String                @db.Uuid
+  scopeKey                  String                @db.VarChar(100)
+  unitPriceFen              Int
+  shareBasisPoints          Int
+  eligibleLessonKinds       LessonKind[]
+  countedAttendanceStatuses AttendanceStatus[]
+  settlementDelayDays       Int                   @default(0)
+  version                   Int
+  status                    ConfigurationStatus   @default(DRAFT)
+  effectiveFrom             DateTime              @db.Timestamptz(3)
+  effectiveTo               DateTime?             @db.Timestamptz(3)
+  createdByUserId           String                @db.Uuid
+  createdAt                 DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt                 DateTime              @updatedAt @db.Timestamptz(3)
+  campus                    Campus                @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  createdBy                 User                  @relation("PartnerEarningRuleCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  earningBases              PartnerEarningBasis[]
+
+  @@unique([scopeKey, version])
+  @@index([campusId, status, effectiveFrom])
+}
+
+model PartnerEarningBasis {
+  id                   String                    @id @default(uuid()) @db.Uuid
+  campusId             String                    @db.Uuid
+  teachingRecordId     String                    @unique @db.Uuid
+  lessonSessionId      String                    @db.Uuid
+  selectedRuleId       String?                   @db.Uuid
+  lessonKind           LessonKind
+  lessonUnits          Int
+  actualAttendeeCount  Int
+  countedAttendeeCount Int
+  attendanceSnapshot   Json
+  completedAt          DateTime                  @db.Timestamptz(3)
+  status               PartnerEarningBasisStatus
+  createdAt            DateTime                  @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime                  @updatedAt @db.Timestamptz(3)
+  campus               Campus                    @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  teachingRecord       TeachingRecord            @relation(fields: [teachingRecordId], references: [id], onDelete: Restrict)
+  lessonSession        LessonSession             @relation(fields: [lessonSessionId], references: [id], onDelete: Restrict)
+  selectedRule         PartnerEarningRule?       @relation(fields: [selectedRuleId], references: [id], onDelete: Restrict)
+  entries              PartnerEarningEntry[]
+
+  @@index([campusId, status, createdAt])
+  @@index([lessonSessionId])
+}
+
+model PartnerEarningEntry {
+  id               String                  @id @default(uuid()) @db.Uuid
+  campusId         String                  @db.Uuid
+  earningBasisId   String                  @db.Uuid
+  entryType        PartnerEarningEntryType
+  amountFen        Int
+  status           PartnerEarningStatus
+  ruleSnapshot     Json
+  reviewableAt     DateTime                @db.Timestamptz(3)
+  reviewedByUserId String?                 @db.Uuid
+  reviewedAt       DateTime?               @db.Timestamptz(3)
+  reviewReason     String?                 @db.VarChar(500)
+  reversalOfId     String?                 @unique @db.Uuid
+  version          Int                     @default(1)
+  createdAt        DateTime                @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime                @updatedAt @db.Timestamptz(3)
+  campus           Campus                  @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  earningBasis     PartnerEarningBasis     @relation(fields: [earningBasisId], references: [id], onDelete: Restrict)
+  reviewedBy       User?                   @relation("PartnerEarningEntryReviewer", fields: [reviewedByUserId], references: [id], onDelete: Restrict)
+  reversalOf       PartnerEarningEntry?    @relation("PartnerEarningReversal", fields: [reversalOfId], references: [id], onDelete: Restrict)
+  reversedBy       PartnerEarningEntry?    @relation("PartnerEarningReversal")
+
+  @@index([campusId, status, createdAt])
+  @@index([earningBasisId, entryType])
+}
+
+model Withdrawal {
+  id                String                  @id @default(uuid()) @db.Uuid
+  requestNo         String                  @unique @db.VarChar(64)
+  campusId          String                  @db.Uuid
+  teacherProfileId  String                  @db.Uuid
+  requestedByUserId String                  @db.Uuid
+  policyId          String                  @db.Uuid
+  amountFen         Int
+  status            WithdrawalStatus        @default(SUBMITTED)
+  policySnapshot    Json
+  reviewedByUserId  String?                 @db.Uuid
+  reviewedAt        DateTime?               @db.Timestamptz(3)
+  rejectionReason   String?                 @db.VarChar(500)
+  payingAt          DateTime?               @db.Timestamptz(3)
+  paidByUserId      String?                 @db.Uuid
+  paidAt            DateTime?               @db.Timestamptz(3)
+  payoutReference   String?                 @db.VarChar(128)
+  payoutProofFileId String?                 @db.Uuid
+  failedAt          DateTime?               @db.Timestamptz(3)
+  failureReason     String?                 @db.VarChar(500)
+  version           Int                     @default(1)
+  createdAt         DateTime                @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime                @updatedAt @db.Timestamptz(3)
+  campus            Campus                  @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  teacher           TeacherProfile          @relation(fields: [teacherProfileId], references: [id], onDelete: Restrict)
+  requestedBy       User                    @relation("WithdrawalRequester", fields: [requestedByUserId], references: [id], onDelete: Restrict)
+  policy            TeacherWithdrawalPolicy @relation(fields: [policyId], references: [id], onDelete: Restrict)
+  reviewedBy        User?                   @relation("WithdrawalReviewer", fields: [reviewedByUserId], references: [id], onDelete: Restrict)
+  paidBy            User?                   @relation("WithdrawalPayer", fields: [paidByUserId], references: [id], onDelete: Restrict)
+  payoutProof       StoredFile?             @relation(fields: [payoutProofFileId], references: [id], onDelete: Restrict)
+  allocations       WithdrawalAllocation[]
+
+  @@index([teacherProfileId, status, createdAt])
+  @@index([campusId, status, createdAt])
+  @@index([requestedByUserId, createdAt])
+}
+
+model WithdrawalAllocation {
+  id             String              @id @default(uuid()) @db.Uuid
+  withdrawalId   String              @db.Uuid
+  earningEntryId String              @db.Uuid
+  amountFen      Int
+  createdAt      DateTime            @default(now()) @db.Timestamptz(3)
+  withdrawal     Withdrawal          @relation(fields: [withdrawalId], references: [id], onDelete: Restrict)
+  earningEntry   TeacherEarningEntry @relation(fields: [earningEntryId], references: [id], onDelete: Restrict)
+
+  @@unique([withdrawalId, earningEntryId])
+  @@index([earningEntryId])
+}
+
+model StoredFile {
+  hrTeacherRecordAttachment HrTeacherRecord?          @relation("HrTeacherRecordAttachment")
+  financeCorrectionProposal FinanceReceiptCorrection? @relation("FinanceCorrectionProposedProof")
+  financeRefundPayment      FinanceRefundPayment?
+  financeReceipt            FinanceReceipt?
+  id                        String                    @id @default(uuid()) @db.Uuid
+  purpose                   StoredFilePurpose
+  storageKey                String                    @unique @db.VarChar(255)
+  originalName              String                    @db.VarChar(255)
+  mimeType                  String                    @db.VarChar(100)
+  sizeBytes                 Int
+  sha256                    String                    @db.VarChar(64)
+  createdByUserId           String                    @db.Uuid
+  createdAt                 DateTime                  @default(now()) @db.Timestamptz(3)
+  createdBy                 User                      @relation("StoredFileCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  withdrawals               Withdrawal[]
+  courseProductCovers       CourseProduct[]           @relation("CourseProductCover")
+  enrollmentPaymentProof    EnrollmentPaymentProof?
+  studentFeedbackImage      StudentFeedbackImage?
+  customerServiceCampuses   Campus[]                  @relation("CampusCustomerServiceQr")
+  groupCampaignPoster       GroupCampaignPoster?
+
+  @@index([createdByUserId, createdAt])
+}
+
+enum FinanceRefundStatus {
+  SUBMITTED
+  APPROVED
+  REJECTED
+  WITHDRAWN
+  CANCEL_REQUESTED
+  CANCELLED
+  PAYING
+  UNCERTAIN
+  PAID
+}
+
+enum FinanceCorrectionType {
+  VOID
+  REPLACE
+}
+
+enum FinanceCorrectionStatus {
+  SUBMITTED
+  APPROVED
+  REJECTED
+  WITHDRAWN
+  APPLIED
+}
+
+model FinanceReceiptCorrection {
+  ledger               LessonLedgerEntry[]
+  id                   String                          @id @default(uuid()) @db.Uuid
+  originalIssuanceId   String                          @db.Uuid
+  type                 FinanceCorrectionType
+  status               FinanceCorrectionStatus         @default(SUBMITTED)
+  reason               String                          @db.VarChar(500)
+  version              Int                             @default(1)
+  originalAmountFen    Int
+  sourcePackageVersion Int
+  replacementSnapshot  Json?
+  proposedProofFileId  String?                         @unique @db.Uuid
+  replacementReceiptId String?                         @unique @db.Uuid
+  requestedByUserId    String                          @db.Uuid
+  reviewedByUserId     String?                         @db.Uuid
+  reviewedAt           DateTime?                       @db.Timestamptz(3)
+  appliedByUserId      String?                         @db.Uuid
+  appliedAt            DateTime?                       @db.Timestamptz(3)
+  createdAt            DateTime                        @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime                        @updatedAt @db.Timestamptz(3)
+  originalIssuance     FinancePackageIssuance          @relation(fields: [originalIssuanceId], references: [id], onDelete: Restrict)
+  proposedProof        StoredFile?                     @relation("FinanceCorrectionProposedProof", fields: [proposedProofFileId], references: [id], onDelete: Restrict)
+  replacementReceipt   FinanceReceipt?                 @relation("FinanceCorrectionReplacementReceipt", fields: [replacementReceiptId], references: [id], onDelete: Restrict)
+  requestedBy          User                            @relation("FinanceCorrectionRequester", fields: [requestedByUserId], references: [id], onDelete: Restrict)
+  reviewedBy           User?                           @relation("FinanceCorrectionReviewer", fields: [reviewedByUserId], references: [id], onDelete: Restrict)
+  appliedBy            User?                           @relation("FinanceCorrectionApplier", fields: [appliedByUserId], references: [id], onDelete: Restrict)
+  events               FinanceReceiptCorrectionEvent[]
+
+  @@index([originalIssuanceId, status])
+  @@index([status, createdAt, id])
+}
+
+model FinanceReceiptCorrectionEvent {
+  id           String                   @id @default(uuid()) @db.Uuid
+  correctionId String                   @db.Uuid
+  actorUserId  String                   @db.Uuid
+  action       String                   @db.VarChar(20)
+  fromStatus   FinanceCorrectionStatus?
+  toStatus     FinanceCorrectionStatus
+  version      Int
+  reason       String                   @db.VarChar(500)
+  createdAt    DateTime                 @default(now()) @db.Timestamptz(3)
+  correction   FinanceReceiptCorrection @relation(fields: [correctionId], references: [id], onDelete: Restrict)
+  actor        User                     @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@unique([correctionId, version])
+}
+
+model FinanceRefundRequest {
+  ledger             LessonLedgerEntry[]
+  id                 String                 @id @default(uuid()) @db.Uuid
+  issuanceId         String                 @db.Uuid
+  mainUnits          Int
+  giftUnits          Int
+  referenceAmountFen Int
+  amountFen          Int
+  reason             String                 @db.VarChar(500)
+  status             FinanceRefundStatus    @default(SUBMITTED)
+  version            Int                    @default(1)
+  requestedByUserId  String                 @db.Uuid
+  reviewedByUserId   String?                @db.Uuid
+  reviewedAt         DateTime?              @db.Timestamptz(3)
+  paymentStartedAt   DateTime?              @db.Timestamptz(3)
+  createdAt          DateTime               @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime               @updatedAt @db.Timestamptz(3)
+  issuance           FinancePackageIssuance @relation(fields: [issuanceId], references: [id], onDelete: Restrict)
+  requestedBy        User                   @relation("FinanceRefundRequester", fields: [requestedByUserId], references: [id], onDelete: Restrict)
+  reviewedBy         User?                  @relation("FinanceRefundReviewer", fields: [reviewedByUserId], references: [id], onDelete: Restrict)
+  events             FinanceRefundEvent[]
+  payment            FinanceRefundPayment?
+
+  @@index([issuanceId, status])
+  @@index([status, createdAt, id])
+}
+
+model FinanceRefundEvent {
+  id          String               @id @default(uuid()) @db.Uuid
+  refundId    String               @db.Uuid
+  actorUserId String               @db.Uuid
+  action      String               @db.VarChar(40)
+  fromStatus  FinanceRefundStatus?
+  toStatus    FinanceRefundStatus
+  version     Int
+  reason      String               @db.VarChar(500)
+  createdAt   DateTime             @default(now()) @db.Timestamptz(3)
+  refund      FinanceRefundRequest @relation(fields: [refundId], references: [id], onDelete: Restrict)
+  actor       User                 @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@unique([refundId, version])
+}
+
+model FinanceRefundPayment {
+  id                String               @id @default(uuid()) @db.Uuid
+  refundId          String               @unique @db.Uuid
+  amountFen         Int
+  paidAt            DateTime             @db.Timestamptz(3)
+  proofFileId       String               @unique @db.Uuid
+  externalReference String               @unique @db.VarChar(100)
+  recordedByUserId  String               @db.Uuid
+  recordedAt        DateTime             @default(now()) @db.Timestamptz(3)
+  refund            FinanceRefundRequest @relation(fields: [refundId], references: [id], onDelete: Restrict)
+  proof             StoredFile           @relation(fields: [proofFileId], references: [id], onDelete: Restrict)
+  recordedBy        User                 @relation(fields: [recordedByUserId], references: [id], onDelete: Restrict)
+}

@@ -1,0 +1,38 @@
+@import "../../../styles/finance-refunds.wxss";
+
+.hr-report__filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.hr-report__filters picker {
+  min-width: 0;
+}
+
+.hr-report__filters .select {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.hr-report__metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+  margin: 16rpx 0;
+}
+
+.hr-report__metrics .metric,
+.hr-report__metrics .metric__value {
+  min-width: 0;
+}
+
+.hr-report__metrics .metric__value {
+  font-size: 34rpx;
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
+}
+
+.hr-report__metrics .metric__unit {
+  font-size: 22rpx;
+}

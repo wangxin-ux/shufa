@@ -1,0 +1,9 @@
+{
+  "navigationStyle": "custom",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#e8b739",
+  "backgroundTextStyle": "light",
+  "usingComponents": {
+    "super-admin-page-shell": "/components/super-admin-page-shell/super-admin-page-shell"
+  }
+}

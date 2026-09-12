@@ -1,0 +1,36 @@
+<view class="refund">
+  <view class="refund__wave" aria-hidden="true"></view>
+  <view class="refund__header" style="padding-top: {{headerTop}}px; padding-right: {{headerRight}}px;">
+    <button class="refund__back" bindtap="onBack" aria-label="返回">‹</button>
+    <view class="refund__mark"><text class="refund__mark-icon">人</text><text class="refund__mark-title">人力</text></view>
+  </view>
+  <view class="refund__body workspace">
+    <view class="workspace__head"><view><text class="workspace__title">课时费与结算</text><text class="workspace__subtitle">课时记录、审核与当前结算状态 · 总部人力</text></view></view>
+    <block wx:if="{{authorized}}">
+      <view class="toolbar hr-report__filters">
+        <picker mode="date" value="{{from}}" data-field="from" bindchange="onDate"><view class="select">起 {{from || '不限'}}</view></picker>
+        <picker mode="date" value="{{to}}" data-field="to" bindchange="onDate"><view class="select">止 {{to || '不限'}}</view></picker>
+        <picker range="{{campuses}}" range-key="name" value="{{campusIndex}}" bindchange="onCampus"><view class="select">{{campuses[campusIndex].name}}</view></picker>
+        <picker range="{{teachers}}" range-key="name" value="{{teacherIndex}}" bindchange="onTeacher"><view class="select">{{teachers[teacherIndex].name}}</view></picker>
+        <button class="button" bindtap="onSearch">查询</button>
+        <button class="button button--ghost" loading="{{exporting}}" disabled="{{exporting}}" bindtap="onExport">导出 Excel</button>
+      </view>
+      <text wx:if="{{exportError}}" class="state__message">{{exportError}}</text>
+      <text class="row__meta">授课完成日期 · 北京时间</text>
+      <view wx:if="{{viewState === 'ready' || viewState === 'empty'}}" class="hr-report__metrics">
+        <view wx:for="{{metrics}}" wx:key="label" class="metric"><text class="metric__label">{{item.label}}</text><text class="metric__value">{{item.value}}<text class="metric__unit"> {{item.unit}}</text></text></view>
+      </view>
+    </block>
+    <view wx:if="{{viewState === 'loading'}}" class="state"><text class="state__title">正在加载课时费与结算报表</text></view>
+    <view wx:elif="{{viewState === 'error'}}" class="state"><text class="state__message">{{errorMessage}}</text><button class="button" bindtap="onRetry">重试</button></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="state"><text class="state__title">暂无符合条件的课时费记录</text></view>
+    <view wx:else class="list">
+      <text class="row__meta">共 {{total}} 条课时费记录</text>
+      <view wx:for="{{rows}}" wx:key="id" class="row">
+        <view class="row__main"><text class="row__title">{{item.title}}</text><text class="row__meta">{{item.subtitle}}</text><text wx:for="{{item.lines}}" wx:for-item="line" wx:key="*this" class="row__meta">{{line}}</text></view>
+        <text class="status">{{item.status}}</text>
+      </view>
+      <button wx:if="{{hasMore}}" class="button" loading="{{loadingMore}}" disabled="{{loadingMore}}" bindtap="onMore">加载更多</button>
+    </view>
+  </view>
+</view>

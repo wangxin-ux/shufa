@@ -1,0 +1,78 @@
+<parent-page-shell markTitle="学员资料" markIcon="/pages/parent/assets/icon-mark-profile.png" bg="yellow" showBack="{{true}}">
+  <view-state
+    wx:if="{{viewState !== 'ready'}}"
+    state="{{viewState}}"
+    errorText="{{errorMessage}}"
+    bind:retry="onRetry"
+  />
+
+  <view-state
+    wx:elif="{{isEmpty}}"
+    state="empty"
+    emptyText="{{emptyMessage}}"
+  />
+
+  <view wx:else class="student-profile">
+    <view class="student-profile__card">
+      <view class="student-profile__header">
+        <view class="student-profile__header-top">
+          <text class="student-profile__eyebrow">当前绑定学员</text>
+          <view class="student-profile__status">
+            <view class="student-profile__status-dot" aria-hidden="true"></view>
+            <text>已绑定</text>
+          </view>
+        </view>
+        <view class="student-profile__identity">
+          <text class="student-profile__name">{{studentName}}</text>
+        </view>
+      </view>
+
+      <view class="student-profile__details">
+        <view class="student-profile__details-heading">
+          <text class="student-profile__details-title">资料概览</text>
+          <button
+            wx:if="{{!isEditing}}"
+            class="student-profile__edit-button"
+            bindtap="onEdit"
+          >编辑资料</button>
+        </view>
+        <view class="student-profile__detail-row">
+          <text class="student-profile__detail-label">年龄</text>
+          <input
+            wx:if="{{isEditing}}"
+            class="student-profile__input student-profile__input--age"
+            type="number"
+            maxlength="3"
+            value="{{studentAgeInput}}"
+            bindinput="onAgeInput"
+          />
+          <text wx:else class="student-profile__detail-value">{{studentAgeLabel}}</text>
+        </view>
+        <view class="student-profile__detail-row">
+          <text class="student-profile__detail-label">家庭住址</text>
+          <textarea
+            wx:if="{{isEditing}}"
+            class="student-profile__input student-profile__textarea"
+            maxlength="300"
+            auto-height
+            value="{{homeAddress}}"
+            placeholder="请输入家庭住址（可留空）"
+            bindinput="onAddressInput"
+          />
+          <text
+            wx:else
+            class="student-profile__detail-value {{homeAddress ? '' : 'student-profile__detail-value--empty'}}"
+          >{{homeAddressLabel || '暂未填写'}}</text>
+        </view>
+        <view class="student-profile__detail-row">
+          <text class="student-profile__detail-label">绑定关系</text>
+          <text class="student-profile__detail-value">当前家长账号</text>
+        </view>
+        <view wx:if="{{isEditing}}" class="student-profile__actions">
+          <button class="student-profile__button student-profile__button--ghost" disabled="{{submitting}}" bindtap="onCancel">取消</button>
+          <button class="student-profile__button student-profile__button--primary" loading="{{submitting}}" disabled="{{submitting}}" bindtap="onSave">{{submitting ? '保存中' : '保存资料'}}</button>
+        </view>
+      </view>
+    </view>
+  </view>
+</parent-page-shell>

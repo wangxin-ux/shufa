@@ -1,0 +1,94 @@
+.shell {
+  position: relative;
+  min-height: 100vh;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.shell--yellow {
+  background: var(--parent-yellow);
+}
+
+.shell--white {
+  background: #ffffff;
+}
+
+/* 顶部白色波浪：超大椭圆只露出下缘曲线 */
+.shell__wave {
+  position: absolute;
+  top: -520rpx;
+  left: -50%;
+  width: 200%;
+  height: 700rpx;
+  border-radius: 50%;
+  background: #ffffff;
+  pointer-events: none;
+}
+
+.shell__header {
+  position: relative;
+  z-index: 2;
+}
+
+.shell__header--fixed {
+  z-index: 31;
+}
+
+.shell__header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 24rpx;
+  padding-right: 24rpx;
+  box-sizing: border-box;
+}
+
+.shell__leading {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.shell__leading--fixed {
+  position: fixed;
+  left: 24rpx;
+  z-index: 32;
+}
+
+.shell__back {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--role-back-size);
+  height: var(--role-back-size);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--role-back-background);
+  box-shadow: var(--role-back-shadow);
+  line-height: 1;
+}
+
+.shell__back::after {
+  border: 0;
+}
+
+.shell__back--hover {
+  opacity: 0.72;
+}
+
+.shell__back-icon {
+  margin-top: var(--role-back-icon-offset-y);
+  font-size: var(--role-back-icon-size);
+  line-height: 1;
+  color: var(--parent-ink);
+}
+
+.shell__body {
+  position: relative;
+  z-index: 1;
+  padding: 0 var(--parent-page-gap);
+}

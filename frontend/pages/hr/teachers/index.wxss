@@ -1,0 +1,148 @@
+@import "../../../styles/finance-refunds.wxss";
+
+.hr__filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.hr__filters picker {
+  min-width: 0;
+}
+.hr__search {
+  display: flex;
+  gap: 12rpx;
+  grid-column: 1 / -1;
+}
+.hr__search .field {
+  flex: 1;
+  min-width: 0;
+}
+.hr__search .button {
+  flex: none;
+}
+.hr__specialties {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.hr-detail__identity {
+  box-sizing: border-box;
+  width: calc(100% + 32rpx);
+  margin-right: -16rpx;
+  margin-left: -16rpx;
+}
+.hr-detail__reports {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: calc(100% + 32rpx);
+  margin-right: -16rpx;
+  margin-left: -16rpx;
+}
+.hr-detail__reports .button {
+  width: 100%;
+  min-width: 0;
+  padding-right: 12rpx;
+  padding-left: 12rpx;
+}
+.hr-records {
+  margin-top: 28rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid rgba(25, 59, 52, 0.12);
+}
+.hr-records__head,
+.hr-records__form-head,
+.hr-records__row-title,
+.hr-records__attachment,
+.hr-records__actions {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.hr-records__head,
+.hr-records__form-head {
+  justify-content: space-between;
+}
+.hr-records__filters,
+.hr-records__dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-top: 18rpx;
+}
+.hr-records__filters picker,
+.hr-records__dates > view {
+  min-width: 0;
+}
+.hr-records__form {
+  margin-top: 18rpx;
+  padding: 20rpx 0;
+  border-top: 1rpx solid rgba(25, 59, 52, 0.1);
+  border-bottom: 1rpx solid rgba(25, 59, 52, 0.1);
+}
+.hr-records__form > .form__label,
+.hr-records__dates .form__label {
+  display: block;
+  margin: 16rpx 0 8rpx;
+}
+.hr-records__note {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 128rpx;
+}
+.hr-records__attachment {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-top: 16rpx;
+}
+.hr-records__attachment .row__meta {
+  flex: 1;
+  min-width: 180rpx;
+  overflow-wrap: anywhere;
+}
+.hr-records__link {
+  flex: none;
+  min-height: 56rpx;
+  margin: 0;
+  padding: 0 8rpx;
+  border: 0;
+  background: transparent;
+  color: #26725f;
+  font-size: 24rpx;
+  line-height: 56rpx;
+}
+.hr-records__link::after {
+  border: 0;
+}
+.hr-records__submit {
+  width: 100%;
+  margin-top: 18rpx;
+}
+.hr-records__state {
+  margin-top: 18rpx;
+}
+.hr-records__list {
+  margin-top: 18rpx;
+}
+.hr-records__row {
+  align-items: flex-start;
+}
+.hr-records__row-title {
+  flex-wrap: wrap;
+}
+.hr-records__row-title .status {
+  flex: none;
+}
+.hr-records__note-text {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.hr-records__actions {
+  flex-wrap: wrap;
+  margin-top: 12rpx;
+}
+.hr-records__actions .button {
+  min-height: 56rpx;
+  margin: 0;
+  padding: 0 18rpx;
+  font-size: 24rpx;
+  line-height: 56rpx;
+}

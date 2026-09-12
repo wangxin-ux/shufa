@@ -1,0 +1,14 @@
+FROM node:24-alpine
+
+WORKDIR /app
+
+RUN corepack enable
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY backend/package.json backend/package.json
+RUN pnpm install --filter backend... --frozen-lockfile
+
+COPY backend backend
+RUN pnpm --dir backend prisma:generate
+
+CMD ["sh", "backend/docker-entrypoint.dev.sh"]

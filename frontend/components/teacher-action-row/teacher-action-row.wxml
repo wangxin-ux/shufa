@@ -1,0 +1,16 @@
+<view
+  class="row {{disabled ? 'row--disabled' : ''}}"
+  role="button"
+  aria-disabled="{{disabled}}"
+  bindtap="onTap"
+  hover-class="row--hover"
+>
+  <image wx:if="{{icon}}" class="row__icon" src="{{icon}}" mode="aspectFit" />
+  <view wx:if="{{bullet}}" class="row__bullet" aria-hidden="true"></view>
+  <view class="row__content">
+    <text class="row__label">{{label}}</text>
+    <text wx:if="{{description}}" class="row__description">{{description}}</text>
+  </view>
+  <text wx:if="{{commandLabel}}" class="row__command">{{commandLabel}}</text>
+  <text wx:else class="row__arrow" aria-hidden="true">&gt;</text>
+</view>

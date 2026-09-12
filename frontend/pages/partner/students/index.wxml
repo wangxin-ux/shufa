@@ -1,0 +1,78 @@
+<partner-page-shell
+  markTitle="学员"
+  markIcon="/pages/partner/assets/icon-students.png"
+  showBack="{{true}}"
+>
+  <view class="partner-workspace students-page">
+    <view class="partner-heading">
+      <text class="partner-heading__title">学员档案</text>
+      <text class="partner-heading__count">{{total}}人</text>
+    </view>
+
+    <view class="partner-search">
+      <image class="partner-search__icon" src="/pages/partner/assets/icon-students.png" mode="aspectFit" />
+      <input
+        class="partner-search__input"
+        value="{{searchValue}}"
+        placeholder="搜索学员姓名"
+        maxlength="100"
+        confirm-type="search"
+        bindinput="onSearchInput"
+      />
+    </view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="partner-state" aria-live="polite">
+      <text class="partner-state__title">正在加载学员档案</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="partner-state" aria-live="polite">
+      <text class="partner-state__title">无访问权限</text>
+      <text class="partner-state__message">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="partner-state" aria-live="polite">
+      <text class="partner-state__title">学员档案加载失败</text>
+      <text class="partner-state__message">{{errorMessage}}</text>
+      <button class="partner-command" bindtap="onRetry" hover-class="partner-control--hover">重试</button>
+    </view>
+    <view wx:elif="{{viewState === 'empty'}}" class="partner-state" aria-live="polite">
+      <text class="partner-state__title">暂无匹配学员</text>
+      <text class="partner-state__message">可清空或调整姓名关键词</text>
+    </view>
+
+    <view wx:else class="partner-list">
+      <view wx:for="{{items}}" wx:key="id" class="partner-card student-card" data-id="{{item.id}}" bindtap="onStudentTap" hover-class="partner-control--hover" role="button" aria-label="查看{{item.displayName}}的学员详情">
+        <view class="partner-card__head">
+          <view class="partner-card__identity">
+            <text class="partner-card__title">{{item.displayName}}</text>
+            <text class="partner-card__subtitle">{{item.birthDateLabel}}</text>
+          </view>
+          <text class="partner-card__status">在读</text>
+        </view>
+        <text class="partner-card__line">{{item.classLabel}}</text>
+        <text wx:if="{{item.reservationLabel}}" class="partner-card__line">{{item.reservationLabel}}</text>
+        <view class="partner-card__meta">
+          <view class="partner-metric">
+            <text class="partner-metric__value">{{item.mainBalanceLabel}}</text>
+            <text class="partner-metric__label">主课时</text>
+          </view>
+          <view class="partner-metric">
+            <text class="partner-metric__value">{{item.giftBalanceLabel}}</text>
+            <text class="partner-metric__label">赠送课时</text>
+          </view>
+          <view class="partner-metric partner-metric--accent">
+            <text class="partner-metric__value">{{item.totalBalanceLabel}}</text>
+            <text class="partner-metric__label">合计课时</text>
+          </view>
+        </view>
+        <text class="student-card__command">查看详情</text>
+      </view>
+      <button
+        wx:if="{{hasMore}}"
+        class="partner-command partner-command--load-more"
+        loading="{{loadingMore}}"
+        disabled="{{loadingMore}}"
+        bindtap="onLoadMore"
+        hover-class="partner-control--hover"
+      >{{loadingMore ? '加载中' : '加载更多'}}</button>
+    </view>
+  </view>
+</partner-page-shell>

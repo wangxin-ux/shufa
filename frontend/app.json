@@ -1,0 +1,143 @@
+{
+  "pages": [
+    "pages/bootstrap/index"
+  ],
+  "subPackages": [
+    {
+      "root": "pages/parent",
+      "pages": [
+        "home/index",
+        "hours/index",
+        "leave/index",
+        "profile/index",
+        "student-profile/index",
+        "updates/index",
+        "group-campaigns/index",
+        "group-detail/index",
+        "group-orders/index",
+        "campuses/index"
+      ]
+    },
+    {
+      "root": "pages/teacher",
+      "pages": [
+        "home/index",
+        "schedule/index",
+        "students/index",
+        "student-detail/index",
+        "lesson/index",
+        "feedback/index",
+        "feedback-detail/index",
+        "records/index",
+        "ledger/index",
+        "profile/index",
+        "settings/index",
+        "earnings/index",
+        "group-campaigns/index",
+        "group-detail/index"
+      ]
+    },
+    {
+      "root": "pages/campus-manager",
+      "pages": [
+        "home/index",
+        "students/index",
+        "teachers/index",
+        "student-detail/index",
+        "schedule/index",
+        "leave-requests/index",
+        "warnings/index",
+        "campus-settings/index",
+        "profile/index"
+      ]
+    },
+    {
+      "root": "pages/super-admin",
+      "pages": [
+        "home/index",
+        "dashboard/index",
+        "students/index",
+        "teachers/index",
+        "student-detail/index",
+        "campuses/index",
+        "campus-detail/index",
+        "lesson-ledger/index",
+        "lesson-adjust/index",
+        "earnings/index",
+        "withdrawals/index",
+        "earning-rules/index",
+        "partner-earning-rules/index",
+        "partner-earnings/index",
+        "withdrawal-policies/index",
+        "profile/index",
+        "settings/index",
+        "role-permissions/index",
+        "audit-logs/index",
+        "brand/index",
+        "group-campaigns/index",
+        "group-orders/index",
+        "staff-accounts/index",
+        "finance-review/index"
+      ]
+    },
+    {
+      "root": "pages/partner",
+      "pages": [
+        "home/index",
+        "students/index",
+        "student-detail/index",
+        "warnings/index",
+        "attendance/index",
+        "teachers/index",
+        "profile/index",
+        "earnings/index",
+        "operations/index",
+        "group-campaigns/index",
+        "group-detail/index"
+      ]
+    },
+    {
+      "root": "pages/finance",
+      "pages": [
+        "home/index",
+        "packages/index",
+        "receipts/index",
+        "hours/index",
+        "refunds/index",
+        "reports/index",
+        "profile/index",
+        "more/index",
+        "orders/index",
+        "earnings/index",
+        "payouts/index",
+        "cash-flow/index",
+        "profitability/index"
+      ]
+    },
+    {
+      "root": "pages/hr",
+      "pages": [
+        "home/index",
+        "teachers/index",
+        "teaching/index",
+        "earnings/index",
+        "profile/index"
+      ]
+    }
+  ],
+  "window": {
+    "navigationStyle": "custom",
+    "backgroundColor": "#ffffff",
+    "backgroundTextStyle": "dark"
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于查找并展示附近门店"
+    }
+  },
+  "requiredPrivateInfos": [
+    "getLocation",
+    "chooseLocation"
+  ],
+  "sitemapLocation": "sitemap.json"
+}

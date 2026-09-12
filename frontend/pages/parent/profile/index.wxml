@@ -1,0 +1,44 @@
+<parent-page-shell markTitle="我的" markIcon="/pages/parent/assets/icon-mark-profile.png" bg="white" showBack="{{true}}">
+  <view-state
+    wx:if="{{viewState !== 'ready'}}"
+    state="{{viewState}}"
+    errorText="{{errorMessage}}"
+    bind:retry="onRetry"
+  />
+
+  <view wx:else class="profile">
+    <image class="profile__backdrop" src="/pages/parent/assets/profile-backdrop.png" mode="widthFix" aria-hidden="true" />
+    <view class="profile__hero">
+      <view class="profile__student-card-bg" aria-hidden="true"></view>
+      <image class="profile__mascot" src="/pages/parent/assets/profile-mascot.png" mode="widthFix" aria-hidden="true" />
+      <view class="profile__student-card">
+        <block wx:if="{{!isEmpty}}">
+          <text class="profile__student-name">{{studentName}}</text>
+          <text class="profile__student-age">{{studentAgeLabel}}</text>
+        </block>
+        <text wx:else class="profile__empty">{{emptyMessage}}</text>
+      </view>
+    </view>
+
+    <parent-action-card>
+      <view class="actions">
+        <view
+          class="actions__row"
+          wx:for="{{actions}}"
+          wx:key="key"
+          data-action="{{item.key}}"
+          bindtap="onActionTap"
+          hover-class="tap-hover"
+        >
+          <view class="actions__label-wrap">
+            <view class="actions__dot" aria-hidden="true"></view>
+            <text class="actions__label">{{item.label}}</text>
+            <text wx:if="{{item.key === 'messages' && unreadBadge}}" class="actions__badge">{{unreadBadge}}</text>
+          </view>
+          <view class="actions__button">{{item.commandLabel}}</view>
+        </view>
+      </view>
+    </parent-action-card>
+    <session-logout id="sessionLogout" />
+  </view>
+</parent-page-shell>

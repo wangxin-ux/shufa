@@ -1,0 +1,71 @@
+<teacher-page-shell
+  markTitle="学员"
+  markIcon="/pages/teacher/assets/icon-students.png"
+  tone="yellow"
+  showBack="{{true}}"
+>
+  <view class="students-page">
+    <teacher-workspace-banner
+      class="students-page__overview"
+      title="我的学员"
+      detail="当前列表 {{items.length}} 名学员"
+    />
+
+    <view class="student-search">
+      <image class="student-search__icon" src="/pages/teacher/assets/icon-student-record.png" mode="aspectFit" />
+      <input
+        class="student-search__input"
+        value="{{searchValue}}"
+        placeholder="搜索学员姓名"
+        confirm-type="search"
+        bindinput="onSearchInput"
+      />
+    </view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="page-state">
+      <text class="page-state__title">正在加载学员</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state">
+      <text class="page-state__title">学员加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-state__retry" bindtap="onRetry" hover-class="control--hover">重试</button>
+    </view>
+    <view wx:elif="{{viewState === 'empty'}}" class="page-state">
+      <text class="page-state__title">暂无匹配学员</text>
+      <text class="page-state__message">可清空或调整姓名关键词</text>
+    </view>
+
+    <view wx:else class="student-list">
+      <button class="student-row" wx:for="{{items}}" wx:key="id" data-id="{{item.id}}" bindtap="onStudentTap" hover-class="student-row--hover">
+        <view class="student-row__head">
+          <text class="student-row__name">{{item.displayName}}</text>
+          <text class="student-row__count">负责学员</text>
+        </view>
+        <text class="student-row__classes">{{item.classLabel}}</text>
+        <view class="student-row__meta">
+          <view class="student-row__meta-item">
+            <text class="student-row__meta-label">下一课</text>
+            <text class="student-row__meta-value">{{item.nextLessonLabel}}</text>
+          </view>
+          <view class="student-row__meta-item">
+            <text class="student-row__meta-label">最近反馈</text>
+            <text class="student-row__meta-value">{{item.latestFeedbackLabel}}</text>
+          </view>
+        </view>
+        <text class="student-row__link">查看教学详情 ›</text>
+      </button>
+
+      <button
+        wx:if="{{hasMore}}"
+        class="load-more"
+        disabled="{{loadingMore}}"
+        bindtap="onLoadMore"
+        hover-class="control--hover"
+      >{{loadingMore ? '加载中' : '加载更多'}}</button>
+    </view>
+  </view>
+</teacher-page-shell>

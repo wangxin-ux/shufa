@@ -1,0 +1,95 @@
+<campus-manager-page-shell
+  markTitle="人员"
+  markIcon="/pages/campus-manager/assets/icon-student-create.png"
+  showBack="{{true}}"
+>
+  <view class="students-page">
+    <view class="students-page__heading">
+      <view class="students-page__heading-copy">
+        <text class="students-page__title">人员管理</text>
+        <text class="students-page__summary">本校区共 {{total}} 名在读学员</text>
+      </view>
+    </view>
+
+    <view class="roster-tabs">
+      <button class="roster-tab roster-tab--active" hover-class="none">学员名册</button>
+      <button class="roster-tab" bindtap="onTeacherRosterTap">教师名册</button>
+    </view>
+
+    <view class="roster-actions">
+      <button class="roster-action roster-action--primary" bindtap="onQuickToggle">{{quickOpen ? '收起录入' : '快捷录入'}}</button>
+      <button class="roster-action" bindtap="onRosterImport">Excel 导入</button>
+      <button class="roster-action" bindtap="onRosterExport">导出 Excel</button>
+    </view>
+
+    <view wx:if="{{quickOpen}}" class="quick-form">
+      <text class="quick-form__title">录入顾客</text>
+      <input class="quick-form__field" maxlength="100" value="{{quickStudentName}}" bindinput="onQuickStudentInput" placeholder="学员姓名" />
+      <input class="quick-form__field" type="number" maxlength="11" value="{{quickParentPhone}}" bindinput="onQuickPhoneInput" placeholder="家长手机号" />
+      <button class="quick-form__submit" disabled="{{rosterBusy}}" bindtap="onQuickSubmit">{{rosterBusy ? '正在录入' : '确认录入'}}</button>
+    </view>
+
+    <view class="student-search">
+      <text class="student-search__icon" aria-hidden="true">⌕</text>
+      <input
+        class="student-search__input"
+        value="{{searchValue}}"
+        placeholder="搜索学员姓名"
+        confirm-type="search"
+        maxlength="100"
+        bindinput="onSearchInput"
+      />
+    </view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">正在加载学员</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">学员加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-state__retry" bindtap="onRetry" hover-class="control--hover">重试</button>
+    </view>
+    <view wx:elif="{{viewState === 'empty'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">暂无匹配学员</text>
+      <text class="page-state__message">可调整姓名关键词，或使用上方快捷录入</text>
+    </view>
+
+    <view wx:elif="{{viewState === 'ready'}}" class="student-list">
+      <view
+        class="student-row"
+        wx:for="{{items}}"
+        wx:key="id"
+        role="button"
+        aria-label="查看{{item.displayName}}的学员详情"
+        data-id="{{item.id}}"
+        bindtap="onStudentTap"
+        hover-class="student-row--hover"
+      >
+        <view class="student-row__head">
+          <text class="student-row__name">{{item.displayName}}</text>
+          <text class="student-row__status">{{item.statusLabel}}</text>
+        </view>
+        <text class="student-row__classes">{{item.classLabel}}</text>
+        <view class="student-row__meta">
+          <text class="student-row__meta-label">出生日期</text>
+          <view class="student-row__meta-command">
+            <text class="student-row__meta-value">{{item.birthDateLabel}}</text>
+            <text class="student-row__chevron" aria-hidden="true">›</text>
+          </view>
+        </view>
+      </view>
+
+      <button
+        wx:if="{{hasMore}}"
+        class="load-more"
+        disabled="{{loadingMore}}"
+        bindtap="onLoadMore"
+        hover-class="control--hover"
+      >{{loadingMore ? '加载中' : '加载更多'}}</button>
+    </view>
+  </view>
+</campus-manager-page-shell>

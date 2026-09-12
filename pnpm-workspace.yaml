@@ -1,0 +1,9 @@
+packages:
+  - backend
+  - frontend
+allowBuilds:
+  '@prisma/engines': true
+  '@scarf/scarf': false
+  argon2: true
+  prisma: true
+  unrs-resolver: true

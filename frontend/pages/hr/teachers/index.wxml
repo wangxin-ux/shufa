@@ -1,0 +1,110 @@
+<view class="refund">
+  <view class="refund__wave" aria-hidden="true"></view>
+  <view class="refund__header" style="padding-top: {{headerTop}}px; padding-right: {{headerRight}}px;">
+    <button class="refund__back" bindtap="onBack" aria-label="返回上一页">‹</button>
+    <view class="refund__mark"><text class="refund__mark-icon">人</text><text class="refund__mark-title">人力</text></view>
+  </view>
+  <view class="refund__body workspace">
+    <view class="workspace__head"><view><text class="workspace__title">教师名册</text><text class="workspace__subtitle">总部人力{{displayName ? ' · ' + displayName : ''}}</text></view></view>
+    <block wx:if="{{authorized}}">
+      <view class="toolbar hr__filters">
+        <picker range="{{campuses}}" range-key="name" value="{{campusIndex}}" bindchange="onCampus"><view class="select">{{campuses[campusIndex].name}}</view></picker>
+        <picker range="{{statuses}}" range-key="name" value="{{statusIndex}}" bindchange="onStatus"><view class="select">{{statuses[statusIndex].name}}</view></picker>
+        <view class="hr__search"><input class="field" placeholder="教师姓名" value="{{keyword}}" bindinput="onKeyword" bindconfirm="onSearch" confirm-type="search" maxlength="100" /><button class="button" bindtap="onSearch">查询</button></view>
+      </view>
+      <text class="row__meta">共 {{total}} 位教师</text>
+    </block>
+    <view wx:if="{{viewState === 'loading'}}" class="state"><text class="state__title">正在加载教师名册</text></view>
+    <view wx:elif="{{viewState === 'error'}}" class="state"><text class="state__title">暂时无法加载</text><text class="state__message">{{errorMessage}}</text><button class="button" bindtap="onRetry">重试</button></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="state"><text class="state__title">暂无符合条件的教师</text></view>
+    <view wx:else class="list">
+      <button wx:for="{{rows}}" wx:key="id" class="row" data-id="{{item.id}}" bindtap="onDetail">
+        <view class="row__main"><text class="row__title">{{item.name}}</text><text class="row__meta">{{item.campusName}} · {{item.activeClassCount}} 个班级</text><text class="row__meta hr__specialties">{{item.specialtiesLabel}}</text></view>
+        <text class="status {{item.active ? 'status--success' : ''}}">{{item.statusLabel}}</text>
+      </button>
+      <button wx:if="{{hasMore}}" class="button" disabled="{{loadingMore}}" loading="{{loadingMore}}" bindtap="onMore">加载更多</button>
+    </view>
+  </view>
+  <view wx:if="{{detail || detailLoading || detailError}}" class="refund__mask" bindtap="onClose">
+    <view class="refund__sheet" catchtap="stopTap">
+      <view class="refund__sheet-head"><text class="form__label">教师档案</text><button class="button button--ghost" disabled="{{recordSubmitting || archiveSubmitting}}" bindtap="onClose" aria-label="关闭档案">×</button></view>
+      <scroll-view scroll-y class="refund__scroll">
+        <view wx:if="{{detailLoading}}" class="state"><text class="state__title">正在加载档案</text></view>
+        <view wx:elif="{{detailError}}" class="state"><text class="state__message">{{detailError}}</text></view>
+        <block wx:else>
+          <view class="workspace__head hr-detail__identity"><view><text class="workspace__title">{{detail.name}}</text><text class="workspace__subtitle">{{detail.campusName}} · {{detail.statusLabel}}</text></view></view>
+          <view class="toolbar hr-detail__reports"><button class="button" bindtap="onTeachingReport">查看课耗统计</button><button class="button button--ghost" bindtap="onEarningReport">查看课时费与结算</button></view>
+          <view class="list">
+            <view class="row"><view class="row__main"><text class="row__title">教师编号</text><text class="row__meta">{{detail.employeeCode}}</text></view></view>
+            <view class="row"><view class="row__main"><text class="row__title">擅长课程</text><text class="row__meta hr__specialties">{{detail.specialtiesLabel}}</text></view></view>
+            <view class="row"><view class="row__main"><text class="row__title">当前班级</text><text class="row__meta">{{detail.activeClassCount}} 个</text></view></view>
+            <view class="row"><view class="row__main"><text class="row__title">累计有效授课</text><text class="row__meta">{{detail.completedLessonCount}} 次</text></view></view>
+            <view class="row"><view class="row__main"><text class="row__title">档案建立日期</text><text class="row__meta">{{detail.createdLabel}}</text></view></view>
+          </view>
+          <view class="hr-records">
+            <view class="hr-records__head">
+              <view><text class="row__title">资质、培训与成长</text><text class="row__meta">共 {{recordTotal}} 条</text></view>
+              <button class="button" disabled="{{recordSubmitting || archiveSubmitting}}" bindtap="onNewRecord">新增记录</button>
+            </view>
+            <view class="hr-records__filters">
+              <picker disabled="{{recordSubmitting || archiveSubmitting}}" range="{{recordKinds}}" range-key="name" value="{{recordKindIndex}}" bindchange="onRecordKind"><view class="select">{{recordKinds[recordKindIndex].name}}</view></picker>
+              <picker disabled="{{recordSubmitting || archiveSubmitting}}" range="{{recordStatuses}}" range-key="name" value="{{recordStatusIndex}}" bindchange="onRecordStatus"><view class="select">{{recordStatuses[recordStatusIndex].name}}</view></picker>
+            </view>
+
+            <view wx:if="{{recordFormVisible}}" class="hr-records__form">
+              <view class="hr-records__form-head"><text class="form__label">{{editingRecordId ? '编辑记录' : '新增记录'}}</text><button class="button button--ghost" disabled="{{recordSubmitting}}" bindtap="onCancelRecordForm">取消</button></view>
+              <text class="form__label">记录类型</text>
+              <picker disabled="{{recordSubmitting}}" range="{{recordFormKinds}}" range-key="name" value="{{recordFormKindIndex}}" bindchange="onRecordFormKind"><view class="select">{{recordFormKinds[recordFormKindIndex].name}}</view></picker>
+              <text class="form__label">记录名称</text>
+              <input class="field" disabled="{{recordSubmitting}}" data-field="title" value="{{recordForm.title}}" maxlength="200" placeholder="例如：家庭教育指导师" bindinput="onRecordField" />
+              <text class="form__label">颁发或培训机构</text>
+              <input class="field" disabled="{{recordSubmitting}}" data-field="organization" value="{{recordForm.organization}}" maxlength="200" placeholder="选填" bindinput="onRecordField" />
+              <view class="hr-records__dates">
+                <view><text class="form__label">发生日期</text><picker disabled="{{recordSubmitting}}" mode="date" data-field="occurredOn" value="{{recordForm.occurredOn}}" bindchange="onRecordField"><view class="select">{{recordForm.occurredOn}}</view></picker></view>
+                <view><text class="form__label">有效期至</text><picker disabled="{{recordSubmitting}}" mode="date" data-field="expiresOn" value="{{recordForm.expiresOn || recordForm.occurredOn}}" bindchange="onRecordField"><view class="select">{{recordForm.expiresOn || '长期有效'}}</view></picker><button wx:if="{{recordForm.expiresOn}}" class="hr-records__link" disabled="{{recordSubmitting}}" bindtap="onClearRecordExpiry">清除</button></view>
+              </view>
+              <text class="form__label">备注</text>
+              <textarea class="field hr-records__note" disabled="{{recordSubmitting}}" data-field="note" value="{{recordForm.note}}" maxlength="1000" placeholder="选填" bindinput="onRecordField"></textarea>
+              <view class="hr-records__attachment">
+                <button class="button button--ghost" disabled="{{recordSubmitting}}" bindtap="onChooseRecordAttachment">选择附件</button>
+                <text class="row__meta">{{recordAttachmentDraft ? recordAttachmentDraft.name : (recordForm.attachmentFileId ? '沿用当前附件' : 'PNG/JPEG/PDF，不超过 3MB')}}</text>
+                <button wx:if="{{recordAttachmentDraft || recordForm.attachmentFileId}}" class="hr-records__link" disabled="{{recordSubmitting}}" bindtap="onRemoveRecordAttachment">移除</button>
+              </view>
+              <text wx:if="{{recordSubmitError}}" class="state__message">{{recordSubmitError}}</text>
+              <button class="button hr-records__submit" loading="{{recordSubmitting}}" disabled="{{recordSubmitting}}" bindtap="onSaveRecord">{{recordSubmitting ? '正在保存' : '保存记录'}}</button>
+            </view>
+
+            <view wx:if="{{recordArchiveId}}" class="hr-records__form">
+              <view class="hr-records__form-head"><text class="form__label">归档记录</text><button class="button button--ghost" disabled="{{archiveSubmitting}}" bindtap="onCancelArchive">取消</button></view>
+              <input class="field" disabled="{{archiveSubmitting}}" value="{{archiveReason}}" maxlength="500" placeholder="填写归档原因" bindinput="onArchiveReason" />
+              <text wx:if="{{recordSubmitError}}" class="state__message">{{recordSubmitError}}</text>
+              <button class="button hr-records__submit" loading="{{archiveSubmitting}}" disabled="{{archiveSubmitting}}" bindtap="onConfirmArchive">确认归档</button>
+            </view>
+
+            <view wx:if="{{recordsState === 'loading'}}" class="state hr-records__state"><text class="state__title">正在加载记录</text></view>
+            <view wx:elif="{{recordsState === 'error'}}" class="state hr-records__state"><text class="state__message">{{recordsError}}</text><button class="button" bindtap="loadRecords">重试</button></view>
+            <view wx:elif="{{recordsState === 'empty'}}" class="state hr-records__state"><text class="state__title">暂无符合条件的记录</text></view>
+            <view wx:else class="list hr-records__list">
+              <view wx:for="{{records}}" wx:key="id" class="row hr-records__row">
+                <view class="row__main">
+                  <view class="hr-records__row-title"><text class="status {{item.status === 'ACTIVE' ? 'status--success' : ''}}">{{item.kindLabel}}</text><text class="row__title">{{item.title}}</text></view>
+                  <text class="row__meta">{{item.occurredOn}} · {{item.organizationLabel}}</text>
+                  <text class="row__meta">{{item.expiryLabel}} · {{item.createdByName}}</text>
+                  <text wx:if="{{item.note}}" class="row__meta hr-records__note-text">{{item.note}}</text>
+                  <view class="hr-records__actions">
+                    <button wx:if="{{item.attachment}}" class="button button--ghost" data-id="{{item.id}}" loading="{{previewingRecordId === item.id}}" disabled="{{previewingRecordId}}" bindtap="onPreviewRecordAttachment">查看附件</button>
+                    <button wx:if="{{item.status === 'ACTIVE'}}" class="button button--ghost" disabled="{{recordSubmitting || archiveSubmitting}}" data-id="{{item.id}}" bindtap="onEditRecord">编辑</button>
+                    <button wx:if="{{item.status === 'ACTIVE'}}" class="button button--ghost" disabled="{{recordSubmitting || archiveSubmitting}}" data-id="{{item.id}}" bindtap="onStartArchive">归档</button>
+                  </view>
+                </view>
+                <text class="status {{item.status === 'ACTIVE' ? 'status--success' : ''}}">{{item.statusLabel}}</text>
+              </view>
+              <button wx:if="{{recordHasMore}}" class="button" loading="{{recordLoadingMore}}" disabled="{{recordLoadingMore}}" bindtap="onMoreRecords">加载更多记录</button>
+            </view>
+            <text wx:if="{{recordsError && recordsState !== 'error'}}" class="state__message">{{recordsError}}</text>
+          </view>
+        </block>
+      </scroll-view>
+    </view>
+  </view>
+</view>

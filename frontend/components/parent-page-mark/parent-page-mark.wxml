@@ -1,0 +1,6 @@
+<view class="page-mark" aria-role="img" aria-label="{{title}}">
+  <view class="page-mark__circle">
+    <image wx:if="{{icon}}" class="page-mark__icon" src="{{icon}}" mode="aspectFit" />
+    <text class="page-mark__title">{{title}}</text>
+  </view>
+</view>

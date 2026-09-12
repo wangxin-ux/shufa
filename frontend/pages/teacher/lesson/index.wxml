@@ -1,0 +1,90 @@
+<teacher-page-shell markTitle="课次" markIcon="/pages/teacher/assets/icon-confirm.png" tone="yellow" showBack="{{true}}">
+  <view class="lesson-page">
+    <view wx:if="{{viewState === 'loading'}}" class="page-state"><text class="page-state__title">正在加载课次</text></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="page-state">
+      <text class="page-state__title">请选择需要处理的课次</text>
+      <text class="page-state__message">可从今日课表或课表列表进入</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state">
+      <text class="page-state__title">无访问权限</text><text class="page-state__message">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state">
+      <text class="page-state__title">课次加载失败</text><text class="page-state__message">{{errorMessage}}</text>
+      <button class="secondary-command" bindtap="onRetry">重试</button>
+    </view>
+
+    <block wx:else>
+      <teacher-workspace-banner
+        class="lesson-page__overview"
+        eyebrow="{{statusLabel}}"
+        title="{{courseName}}"
+        detail="{{className}} · {{timeLabel}} · {{campusName}}"
+        compact="{{true}}"
+      />
+
+      <view wx:if="{{mutationMessage}}" class="mutation-state {{conflictCode ? 'mutation-state--conflict' : ''}}">
+        <text class="mutation-state__message">{{mutationMessage}}</text>
+        <text wx:if="{{balanceBlocked && insufficientStudents.length === 0}}" class="mutation-state__student">有学员课时余额不足，请联系管理员核对</text>
+        <text wx:for="{{insufficientStudents}}" wx:key="studentId" class="mutation-state__student">{{item.displayName}}</text>
+        <button wx:if="{{conflictCode}}" class="secondary-command" bindtap="onRefreshConflict">刷新课次</button>
+      </view>
+
+      <view class="section-head">
+        <text class="section-head__title">课堂点名</text>
+        <text class="section-head__meta">{{allMarked ? '已完成点名' : '请为每位学员选择状态'}}</text>
+      </view>
+
+      <view class="roster">
+        <view class="student-attendance" wx:for="{{students}}" wx:key="id">
+          <text class="student-attendance__name">{{item.displayName}}</text>
+          <view class="attendance-options">
+            <button
+              wx:for="{{['PRESENT', 'LEAVE', 'ABSENT']}}"
+              wx:for-item="statusItem"
+              wx:key="*this"
+              class="attendance-option {{item.selectedStatus === statusItem ? 'attendance-option--active' : ''}}"
+              data-id="{{item.id}}"
+              data-status="{{statusItem}}"
+              disabled="{{!canEditAttendance || submitting}}"
+              bindtap="onAttendanceTap"
+            >{{statusItem === 'PRESENT' ? '到课' : statusItem === 'LEAVE' ? '请假' : '缺席'}}</button>
+          </view>
+
+        </view>
+      </view>
+
+      <view wx:if="{{canEditAttendance}}" class="lesson-actions">
+        <button
+          class="secondary-command"
+          disabled="{{!allMarked || submitting}}"
+          bindtap="onSaveAttendance"
+        >{{submitting ? '处理中' : '保存点名'}}</button>
+        <button
+          class="primary-command"
+          disabled="{{!allMarked || !canComplete || submitting || balanceBlocked}}"
+          bindtap="onCompleteLesson"
+        >{{submitting ? '处理中' : '确认完成并扣课'}}</button>
+      </view>
+
+      <button
+        wx:if="{{detail.status === 'COMPLETED' || detail.status === 'REVERSED'}}"
+        class="feedback-command"
+        bindtap="onFeedbackTap"
+      >{{detail.status === 'COMPLETED' ? '去填写课堂反馈' : '查看课堂反馈'}}</button>
+
+      <view wx:if="{{canReverse}}" class="reverse-panel">
+        <text class="reverse-panel__title">撤销本次扣课</text>
+        <textarea
+          class="reverse-panel__input"
+          value="{{reverseReason}}"
+          maxlength="200"
+          placeholder="填写撤销原因"
+          bindinput="onReverseReasonInput"
+        />
+        <button class="danger-command" disabled="{{submitting}}" bindtap="onReverseLesson">
+          {{submitting ? '处理中' : '确认撤销'}}
+        </button>
+      </view>
+    </block>
+  </view>
+</teacher-page-shell>

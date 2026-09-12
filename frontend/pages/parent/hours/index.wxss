@@ -1,0 +1,340 @@
+.hours {
+  position: relative;
+  padding: 76rpx 0 72rpx;
+}
+
+/* 原稿的黄色上半页以斜弧过渡到白色内容区。 */
+.hours::before {
+  content: '';
+  position: absolute;
+  top: 350rpx;
+  left: -120rpx;
+  z-index: 0;
+  width: 1000rpx;
+  height: 1700rpx;
+  background: #ffffff;
+  transform: rotate(7deg);
+  transform-origin: top left;
+}
+
+.tap-hover {
+  opacity: 0.72;
+}
+
+.hours__title,
+.ledger__title {
+  position: relative;
+  z-index: 1;
+  display: block;
+  font-size: 64rpx;
+  font-family: var(--parent-font-display);
+  line-height: 1.1;
+  font-weight: 800;
+  color: var(--parent-orange);
+}
+
+.balance-card {
+  position: relative;
+  z-index: 1;
+  min-height: 364rpx;
+  margin: 14rpx 10rpx 0 8rpx;
+  padding: 62rpx 40rpx 28rpx;
+  overflow: visible;
+  box-sizing: border-box;
+  border-radius: 48rpx;
+  background: rgba(255, 123, 16, 0.9);
+  box-shadow: 0 8rpx 6rpx 1rpx rgba(24, 18, 14, 0.33);
+  color: var(--parent-on-color);
+}
+
+.balance-card__label,
+.balance-card__meta {
+  position: relative;
+  z-index: 2;
+  display: block;
+}
+
+.balance-card__label {
+  font-size: 28rpx;
+}
+
+.balance-card__value-row {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  margin: 18rpx 0 10rpx;
+}
+
+.balance-card__value {
+  max-width: 350rpx;
+  font-size: 190rpx;
+  font-family: var(--parent-font-display);
+  line-height: 1;
+  font-weight: 800;
+  color: #000000;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.balance-card__unit {
+  margin-left: 12rpx;
+  font-size: 40rpx;
+  font-family: var(--parent-font-display);
+  font-weight: 700;
+  color: #000000;
+}
+
+.balance-card__meta {
+  width: 360rpx;
+  margin-top: 0;
+}
+
+.balance-card__meta-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10rpx;
+}
+
+.balance-card__meta-row + .balance-card__meta-row {
+  margin-top: 6rpx;
+}
+
+.balance-card__meta-label {
+  flex: none;
+  width: auto;
+  font-size: 21rpx;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.balance-card__meta-value {
+  min-width: 0;
+  font-size: 23rpx;
+  line-height: 1.35;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.balance-card__mascot-frame {
+  position: absolute;
+  right: -16rpx;
+  bottom: -3rpx;
+  z-index: 1;
+  width: 495rpx;
+  height: 526rpx;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.balance-card__mascot {
+  display: block;
+  width: 495rpx;
+}
+
+.balance-card__renew {
+  position: absolute;
+  right: 9rpx;
+  bottom: 12rpx;
+  z-index: 3;
+  width: 117rpx;
+  text-align: center;
+}
+
+.hours parent-primary-button {
+  --parent-primary-deep-height: 117rpx;
+  --parent-primary-deep-padding: 6rpx 8rpx;
+  --parent-primary-deep-font-size: 34rpx;
+}
+
+.hour-cards {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  margin: 56rpx 8rpx 0;
+}
+
+.hour-cards--single .hour-card {
+  max-width: 276rpx;
+}
+
+.hour-card {
+  flex: 1;
+  min-width: 0;
+  min-height: 212rpx;
+  padding: 22rpx 28rpx;
+  box-sizing: border-box;
+  border-radius: 40rpx;
+  background: var(--parent-yellow-bright);
+  box-shadow: 0 7rpx 9rpx rgba(24, 18, 14, 0.28);
+}
+
+.hour-card__label {
+  display: block;
+  color: #000000;
+}
+
+.hour-card__label {
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.hour-card__value-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  margin: 8rpx 0 6rpx;
+}
+
+.hour-card__value {
+  flex: none;
+  max-width: 190rpx;
+  font-size: 132rpx;
+  font-family: var(--parent-font-display);
+  line-height: 1;
+  font-weight: 800;
+  color: #000000;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hour-card__value--compact {
+  font-size: 100rpx;
+}
+
+.hour-card__unit {
+  flex: none;
+  margin-left: 12rpx;
+  font-size: 30rpx;
+  font-family: var(--parent-font-display);
+  font-weight: 700;
+  color: #000000;
+}
+
+.hour-cards__plus {
+  flex: none;
+  font-size: 72rpx;
+  font-family: var(--parent-font-display);
+  line-height: 1;
+  font-weight: 800;
+  color: #ff0000;
+}
+
+.ledger {
+  position: relative;
+  z-index: 1;
+  margin: 0 -40rpx -72rpx;
+  padding: 47rpx 49rpx 80rpx;
+  background: #ffffff;
+}
+
+.ledger__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24rpx;
+}
+
+.ledger__filters {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.ledger__filter {
+  min-height: 56rpx;
+  padding: 0 22rpx;
+  border-radius: 999rpx;
+  line-height: 56rpx;
+  font-size: 24rpx;
+  color: #a0aaa8;
+}
+
+.ledger__filter--active {
+  background: var(--parent-orange);
+  color: #ffffff;
+}
+
+/* 流水整版黄卡：背面露出眼镜狗装饰，卡体微透光 */
+.ledger__card {
+  position: relative;
+  margin-top: 32rpx;
+}
+
+.ledger__mascot {
+  position: absolute;
+  top: -126rpx;
+  left: -43rpx;
+  z-index: 0;
+  width: 527rpx;
+  pointer-events: none;
+}
+
+.ledger__panel {
+  position: relative;
+  z-index: 1;
+  padding: 8rpx 32rpx;
+  border-radius: 40rpx;
+  background: rgba(246, 212, 104, 0.9);
+  box-shadow: 0 7rpx 9rpx rgba(24, 18, 14, 0.28);
+}
+
+.ledger__divider {
+  height: 3rpx;
+  margin: 0 8rpx;
+  border-radius: 2rpx;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.hours parent-record-card {
+  --parent-record-card-subtitle-size: 22rpx;
+  --parent-record-card-flat-padding: 23rpx 16rpx;
+}
+
+.ledger__detail {
+  display: block;
+  margin-top: 5rpx;
+  font-size: 22rpx;
+  line-height: 1.4;
+  color: rgba(44, 69, 63, 0.82);
+}
+
+@media (max-width: 350px) {
+  .balance-card__mascot {
+    right: -100rpx;
+  }
+
+  .hour-cards {
+    gap: 10rpx;
+  }
+
+  .hour-card {
+    padding: 22rpx 18rpx;
+  }
+
+  .ledger__head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+.hours__refund-status {
+  margin: 24rpx 0;
+  padding: 20rpx 0;
+  border-top: 1rpx solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1rpx solid rgba(0, 0, 0, 0.12);
+}
+.hours__refund-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333333;
+}
+.hours__refund-line {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 26rpx;
+  line-height: 1.5;
+  color: #555555;
+}

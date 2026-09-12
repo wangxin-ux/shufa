@@ -1,0 +1,30 @@
+<super-admin-page-shell show-back mark-title="拼团" mark-icon="/pages/super-admin/assets/icon-dashboard.png"><view class="workspace group-campaigns"><view class="workspace__head"><view><text class="workspace__title">拼团活动管理</text><text class="workspace__subtitle">单校区活动，按最终已支付人数发放课包</text></view><button class="button button--ghost head-button" bindtap="onOrders">拼团订单</button></view>
+  <view class="form"><view><text class="form__label">适用校区</text><picker range="{{campuses}}" range-key="name" value="{{campusIndex}}" bindchange="onCampusChange"><view class="select">{{campuses[campusIndex].name || '请选择校区'}}</view></picker></view><view><text class="form__label">课程产品</text><picker range="{{availableProducts}}" range-key="name" value="{{productIndex}}" bindchange="onProductChange"><view class="select">{{availableProducts[productIndex].name || '请先为该校区准备课程产品'}}</view></picker></view><view><text class="form__label">活动标题</text><input class="field" value="{{title}}" maxlength="200" bindinput="onTitleInput" /></view><view><text class="form__label">活动说明</text><textarea class="textarea" value="{{description}}" maxlength="1000" bindinput="onDescriptionInput" /></view><view><text class="form__label">拼团价格（元）</text><input class="field" type="digit" value="{{priceYuan}}" bindinput="onPriceInput" /></view><view class="date-grid"><view><text class="form__label">开始日期</text><picker mode="date" value="{{startsOn}}" bindchange="onStartDate"><view class="select">{{startsOn}}</view></picker></view><view><text class="form__label">结束日期</text><picker mode="date" value="{{endsOn}}" bindchange="onEndDate"><view class="select">{{endsOn}}</view></picker></view></view><view><text class="form__label">取消原因</text><input class="field" value="{{cancelReason}}" maxlength="500" bindinput="onReasonInput" /></view><view class="actions"><button class="button" disabled="{{submitting}}" bindtap="onSubmit">{{editId ? '修改草稿' : '创建草稿'}}</button><button wx:if="{{editId}}" class="button button--ghost" bindtap="onCancelEdit">取消编辑</button></view></view>
+  <view wx:if="{{viewState === 'loading'}}" class="state"><text class="state__title">正在加载拼团活动</text></view><view wx:elif="{{viewState === 'error'}}" class="state"><text class="state__title">加载失败</text><text class="state__message">{{errorMessage}}</text><button class="button" bindtap="onRetry">重试</button></view><view wx:elif="{{viewState === 'empty'}}" class="state"><text class="state__title">暂无拼团活动</text><text class="state__message">创建草稿后即可启用</text></view>
+  <view wx:else class="list">
+    <view class="row campaign-row" wx:for="{{campaigns}}" wx:key="id">
+      <view class="campaign-row__top">
+        <view class="row__main"><text class="row__title">{{item.title}}</text><text class="row__meta">{{item.campusName}} · {{item.courseName}} · {{item.priceLabel}}</text><text class="row__meta">{{item.periodLabel}} · 版本 {{item.version}}</text><view class="actions"><button wx:if="{{item.canEdit}}" class="button button--ghost" data-id="{{item.id}}" bindtap="onEdit">修改草稿</button><button wx:if="{{item.canActivate}}" class="button" data-id="{{item.id}}" data-version="{{item.version}}" data-action="activate" bindtap="onTransition">启用</button><button wx:if="{{item.canClose}}" class="button" data-id="{{item.id}}" data-version="{{item.version}}" data-action="close" bindtap="onTransition">结束活动</button><button wx:if="{{item.canCancel}}" class="button button--danger" data-id="{{item.id}}" data-version="{{item.version}}" data-action="cancel" bindtap="onTransition">取消活动</button></view></view>
+        <text class="status {{item.status === 'ACTIVE' ? 'status--success' : item.status === 'CANCELLED' ? 'status--danger' : ''}}">{{item.statusLabel}}</text>
+      </view>
+      <view class="poster-manager">
+        <view class="poster-manager__head">
+          <view><text class="poster-manager__title">活动长海报</text><text class="poster-manager__hint">按顺序连续展示，最多 6 张</text></view>
+          <button wx:if="{{item.canManagePosters && item.posterImages.length < 6}}" class="poster-upload" disabled="{{submitting}}" data-id="{{item.id}}" bindtap="onChoosePosters">上传图片</button>
+        </view>
+        <scroll-view wx:if="{{item.posterImages.length}}" class="poster-list" scroll-x enable-flex>
+          <view class="poster-item" wx:for="{{item.posterImages}}" wx:for-item="poster" wx:for-index="posterIndex" wx:key="id">
+            <image class="poster-item__image" src="{{poster.accessUrl}}" mode="aspectFill" />
+            <text class="poster-item__index">第 {{posterIndex + 1}} 张</text>
+            <view wx:if="{{item.canManagePosters}}" class="poster-item__actions">
+              <button disabled="{{submitting || posterIndex === 0}}" data-id="{{item.id}}" data-poster="{{poster.id}}" data-direction="-1" bindtap="onMovePoster">上移</button>
+              <button disabled="{{submitting || posterIndex === item.posterImages.length - 1}}" data-id="{{item.id}}" data-poster="{{poster.id}}" data-direction="1" bindtap="onMovePoster">下移</button>
+              <button disabled="{{submitting}}" data-id="{{item.id}}" data-poster="{{poster.id}}" data-version="{{item.version}}" bindtap="onDetachPoster">移除</button>
+            </view>
+          </view>
+        </scroll-view>
+        <text wx:else class="poster-manager__empty">尚未上传，家长端暂时显示文字版活动详情</text>
+      </view>
+    </view>
+  </view>
+</view></super-admin-page-shell>

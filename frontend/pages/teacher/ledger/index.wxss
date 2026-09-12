@@ -1,0 +1,118 @@
+.ledger-page {
+  padding-top: 28rpx;
+  padding-bottom: 70rpx;
+}
+
+.ledger-page__overview {
+  display: block;
+}
+
+.ledger-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+  margin-top: 28rpx;
+}
+
+.ledger-row {
+  padding: 24rpx 27rpx;
+  border-left: 8rpx solid var(--teacher-orange);
+  border-radius: var(--teacher-card-radius);
+  background: var(--teacher-surface);
+  box-shadow: var(--teacher-shadow);
+}
+
+.ledger-row__main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24rpx;
+}
+
+.ledger-row__identity {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ledger-row__student {
+  overflow-wrap: anywhere;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.ledger-row__type,
+.ledger-row__time {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: var(--teacher-muted);
+}
+
+.ledger-row__delta {
+  flex: none;
+  font-family: var(--teacher-font-display);
+  font-size: 38rpx;
+  font-weight: 700;
+}
+
+.ledger-row__delta--negative {
+  color: var(--teacher-danger);
+}
+
+.ledger-row__delta--positive {
+  color: var(--teacher-success);
+}
+
+.ledger-row__delta--neutral {
+  color: var(--teacher-muted);
+}
+
+.ledger-row__time {
+  display: block;
+}
+
+.page-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 380rpx;
+  margin-top: 28rpx;
+  padding: 32rpx;
+  box-sizing: border-box;
+  border-radius: var(--teacher-card-radius);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.page-state__title {
+  font-family: var(--teacher-font-display);
+  font-size: 40rpx;
+  font-weight: 700;
+}
+
+.page-state__message {
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  color: var(--teacher-muted);
+}
+
+.page-command {
+  min-width: 190rpx;
+  min-height: var(--teacher-touch-min);
+  margin: 24rpx 0 0;
+  padding: 0 28rpx;
+  border: 0;
+  border-radius: 16rpx;
+  background: var(--teacher-orange);
+  font-size: 24rpx;
+  color: #ffffff;
+}
+
+.load-more {
+  align-self: center;
+}
+
+button::after {
+  border: 0;
+}

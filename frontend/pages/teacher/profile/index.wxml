@@ -1,0 +1,70 @@
+<teacher-page-shell
+  markTitle="我的"
+  markIcon="/pages/teacher/assets/icon-students.png"
+  tone="white"
+  showBack="{{true}}"
+  plainMark="{{true}}"
+>
+  <view class="profile">
+    <view wx:if="{{viewState === 'loading'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">正在加载教师资料</text>
+    </view>
+
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+    </view>
+
+    <view wx:elif="{{viewState === 'error'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">资料加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-state__retry" bindtap="onRetry" hover-class="button--hover">重试</button>
+    </view>
+
+    <block wx:else>
+      <view class="profile__hero">
+        <view class="profile__identity-card" aria-label="教师身份信息">
+          <text class="profile__name">{{displayName}}</text>
+          <view class="profile__meta">
+            <view class="profile__subject-row">
+              <text class="profile__subject-label">授课</text>
+              <view class="profile__subject-list">
+                <text class="profile__subject" wx:for="{{subjectLines}}" wx:key="*this">{{item}}</text>
+              </view>
+            </view>
+            <text class="profile__student-count {{studentCountCompact ? 'profile__student-count--compact' : ''}}">负责 {{studentCount}} 名学员</text>
+          </view>
+        </view>
+        <image
+          class="profile__card-mascot"
+          src="/pages/teacher/assets/profile-card-mascot.png"
+          mode="widthFix"
+          aria-hidden="true"
+        />
+      </view>
+
+      <view class="profile__actions-stage">
+        <image
+          class="profile__footer-mascot"
+          src="/pages/teacher/assets/profile-footer-mascot.png"
+          mode="widthFix"
+          aria-hidden="true"
+        />
+        <view class="profile-actions">
+          <teacher-action-row
+            wx:for="{{actions}}"
+            wx:key="key"
+            actionKey="{{item.key}}"
+            label="{{item.label}}"
+            commandLabel="查看"
+            bullet="{{true}}"
+            bind:action="onAction"
+          />
+        </view>
+        <view class="profile-session">
+          <session-logout id="sessionLogout" />
+        </view>
+      </view>
+    </block>
+  </view>
+</teacher-page-shell>

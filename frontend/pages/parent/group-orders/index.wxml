@@ -1,0 +1,55 @@
+<parent-page-shell markTitle="我的拼团" markIcon="/pages/parent/assets/icon-mark-profile.png" bg="yellow" showBack="{{true}}">
+  <view class="orders">
+    <view class="orders__head">
+      <view class="orders__heading-copy">
+        <text class="orders__title">我的拼团</text>
+        <text class="orders__subtitle">查看待支付、进行中、已结算和已退款记录</text>
+      </view>
+      <picker range="{{statusOptions}}" range-key="label" value="{{statusIndex}}" bindchange="onStatusChange">
+        <view class="filter">{{statusOptions[statusIndex].label}}</view>
+      </picker>
+    </view>
+
+    <view-state
+      wx:if="{{viewState !== 'ready'}}"
+      state="{{viewState}}"
+      emptyText="暂无拼团记录"
+      errorText="{{errorMessage}}"
+      bind:retry="onRetry"
+    />
+
+    <view wx:else class="orders__list">
+      <view
+        class="order-card"
+        wx:for="{{orders}}"
+        wx:key="id"
+        data-campaign="{{item.campaignId}}"
+        data-team="{{item.teamId}}"
+        bindtap="onOpen"
+      >
+        <view class="order-card__head">
+          <text class="order-card__title">{{item.campaignTitle}}</text>
+          <text class="status status--{{item.statusTone}}">{{item.statusLabel}}</text>
+        </view>
+        <text class="order-card__meta">{{item.studentName}} · {{item.campusName}}</text>
+
+        <view class="order-card__summary">
+          <view class="order-card__metric">
+            <text class="order-card__metric-label">团内已支付</text>
+            <text class="order-card__metric-value">{{item.paidMemberCount}} 人</text>
+          </view>
+          <view class="order-card__metric order-card__metric--price">
+            <text class="order-card__metric-label">拼团价</text>
+            <text class="order-card__price">¥{{item.priceLabel}}</text>
+          </view>
+        </view>
+
+        <view class="order-card__row order-card__row--sub">
+          <text>已获权益 {{item.grantedLabel}}</text>
+          <text>{{item.createdAtLabel}}</text>
+        </view>
+        <view wx:if="{{item.canPay}}" class="order-card__pay">继续支付</view>
+      </view>
+    </view>
+  </view>
+</parent-page-shell>

@@ -1,0 +1,77 @@
+<parent-page-shell markTitle="拼团报名" markIcon="/pages/parent/assets/icon-mark-hours.png" bg="yellow" showBack="{{true}}">
+  <view class="group-list">
+    <view class="group-list__head">
+      <view class="group-list__intro">
+        <text class="group-list__eyebrow">限时活动</text>
+        <text class="group-list__title">线下课程拼团</text>
+        <text class="group-list__subtitle">好友同行，拼成后按人数发放课时</text>
+      </view>
+      <button class="orders-button" bindtap="onOrders">
+        <text>我的拼团</text>
+        <text class="orders-button__arrow">›</text>
+      </button>
+    </view>
+
+    <view-state
+      wx:if="{{viewState !== 'ready'}}"
+      state="{{viewState}}"
+      emptyText="当前校区暂无可参与活动"
+      errorText="{{errorMessage}}"
+      bind:retry="onRetry"
+    />
+
+    <view wx:else class="campaigns">
+      <view
+        class="campaign-card"
+        wx:for="{{campaigns}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="onOpen"
+        hover-class="campaign-card--pressed"
+      >
+        <view class="campaign-card__visual">
+          <image
+            wx:if="{{item.posterImages.length}}"
+            class="campaign-card__cover"
+            src="{{item.posterImages[0].accessUrl}}"
+            mode="widthFix"
+          />
+          <view wx:else class="campaign-card__cover-fallback">
+            <text class="campaign-card__fallback-course">{{item.courseName}}</text>
+            <text class="campaign-card__fallback-title">好友拼团</text>
+          </view>
+          <view class="campaign-card__status">
+            <view class="campaign-card__status-dot"></view>
+            <text>{{item.canParticipate ? '活动进行中' : item.actionLabel}}</text>
+          </view>
+        </view>
+
+        <view class="campaign-card__body">
+          <view class="campaign-card__top">
+            <text class="campaign-card__course">{{item.courseName}}</text>
+            <text class="campaign-card__team">{{item.teamCountLabel}}</text>
+          </view>
+          <text class="campaign-card__title">{{item.title}}</text>
+          <text class="campaign-card__desc">{{item.description}}</text>
+          <view class="campaign-card__footer">
+            <view class="campaign-card__price">
+              <text class="price__caption">拼团价</text>
+              <view>
+                <text class="price__mark">¥</text>
+                <text class="price__value">{{item.priceLabel}}</text>
+              </view>
+            </view>
+            <view class="campaign-card__action">
+              <text>查看活动</text>
+              <text class="campaign-card__action-arrow">›</text>
+            </view>
+          </view>
+          <view class="campaign-card__time-row">
+            <view class="campaign-card__time-dot"></view>
+            <text class="campaign-card__time">截止 {{item.endsAtLabel}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</parent-page-shell>

@@ -1,0 +1,358 @@
+# Referenced by openapi.yaml. All endpoints require a single FINANCE role with null campus scope.
+campuses:
+  get:
+    operationId: listFinanceCampuses
+    summary: List finance campus choices
+    description: Paginated minimal headquarters campus directory, FINANCE_RECEIPT_READ only.
+    tags: [Finance]
+    parameters:
+      - $ref: '#/parameters/Page'
+      - $ref: '#/parameters/PageSize'
+      - $ref: '#/parameters/Query'
+    responses:
+      '200':
+        description: Campus choices, no sensitive contact fields.
+        content:
+          application/json:
+            schema:
+              $ref: '#/schemas/ChoicesEnvelope'
+      '403':
+        $ref: './openapi.yaml#/components/responses/Forbidden'
+students:
+  get:
+    operationId: listFinanceStudents
+    summary: List finance student choices
+    description: Active students in the selected campus; does not return parent details or teaching feedback.
+    tags: [Finance]
+    parameters:
+      - $ref: '#/parameters/Page'
+      - $ref: '#/parameters/PageSize'
+      - $ref: '#/parameters/Query'
+      - name: campusId
+        in: query
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      '200':
+        description: Paginated student choices.
+        content:
+          application/json:
+            schema:
+              $ref: '#/schemas/ChoicesEnvelope'
+      '403':
+        $ref: './openapi.yaml#/components/responses/Forbidden'
+proofUpload:
+  post:
+    operationId: uploadFinanceReceiptProof
+    summary: Upload a private receipt proof
+    description: FINANCE_RECEIPT_WRITE only. PNG or JPEG, maximum 3 MiB, signature checked. Unlinked uploads cannot be downloaded; only the uploader may associate a proof once.
+    tags: [Finance]
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required: [file]
+            properties:
+              file: { type: string, format: binary }
+    responses:
+      '201':
+        description: Uploaded proof metadata, no public URL or storage key.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: object
+                  required: [id, mimeType, sizeBytes]
+                  properties:
+                    id: { type: string, format: uuid }
+                    mimeType: { type: string, enum: [image/png, image/jpeg] }
+                    sizeBytes: { type: integer }
+      '400':
+        $ref: './openapi.yaml#/components/responses/BadRequest'
+      '403':
+        $ref: './openapi.yaml#/components/responses/Forbidden'
+receipts:
+  get:
+    operationId: listFinanceReceipts
+    summary: List receipts and filtered totals
+    description: FINANCE_RECEIPT_READ only. Inclusive actual receipt dates in Asia/Shanghai; summary covers all filtered rows, not just the page. No editing or deleting effective receipts.
+    tags: [Finance]
+    parameters:
+      - $ref: '#/parameters/Page'
+      - $ref: '#/parameters/PageSize'
+      - $ref: '#/parameters/Query'
+      - name: campusId
+        in: query
+        schema: { type: string, format: uuid }
+      - name: from
+        in: query
+        schema: { type: string, format: date }
+      - name: to
+        in: query
+        schema: { type: string, format: date }
+      - name: status
+        in: query
+        schema: { type: string, enum: [UNLINKED, LINKED] }
+    responses:
+      '200':
+        description: Receipt page and aggregate amount in integer fen.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  required: [items, total, page, pageSize, summary]
+                  properties:
+                    items: { type: array, items: { $ref: '#/schemas/Receipt' } }
+                    total: { type: integer }
+                    page: { type: integer }
+                    pageSize: { type: integer }
+                    summary:
+                      type: object
+                      required: [amountFen, correctionEffectFen, netAmountFen, unlinkedCount]
+                      properties:
+                        amountFen: { type: integer, format: int64, description: Original offline cash receipts only; correction-generated replacement records are excluded. }
+                        correctionEffectFen: { type: integer, format: int64, description: 'Applied VOID reversals plus REPLACE reversal/replacement effects, kept separate from cash refunds.' }
+                        netAmountFen: { type: integer, format: int64, description: amountFen plus correctionEffectFen. }
+                        unlinkedCount: { type: integer }
+      '403':
+        $ref: './openapi.yaml#/components/responses/Forbidden'
+  post:
+    operationId: createFinanceReceipt
+    summary: Register an effective offline receipt
+    description: FINANCE_RECEIPT_WRITE only, no total-admin approval. Idempotent transaction validates active student campus and uploader-owned unused proof. Receipt is immutable; no real payment is initiated.
+    tags: [Finance]
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/IdempotencyKey'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/schemas/CreateReceipt'
+    responses:
+      '201':
+        description: Registered receipt, or same-key replay.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/ReceiptEnvelope' }
+      '400':
+        $ref: './openapi.yaml#/components/responses/BadRequest'
+      '403':
+        $ref: './openapi.yaml#/components/responses/Forbidden'
+      '409':
+        $ref: './openapi.yaml#/components/responses/Conflict'
+receiptExport:
+  get:
+    operationId: exportFinanceReceipts
+    summary: Download audited receipt details
+    description: FINANCE_RECEIPT_EXPORT and a single headquarters FINANCE identity required. Uses the same campus, student-name, inclusive actual receipt date, and package-link status filters as the receipt list. A RepeatableRead snapshot includes all matching rows, up to 5000; larger results return 400. The workbook excludes phone numbers, proof metadata and account details.
+    tags: [Finance]
+    parameters:
+      - $ref: '#/parameters/Query'
+      - name: campusId
+        in: query
+        schema: { type: string, format: uuid }
+      - name: from
+        in: query
+        schema: { type: string, format: date }
+      - name: to
+        in: query
+        schema: { type: string, format: date }
+      - name: status
+        in: query
+        schema: { type: string, enum: [UNLINKED, LINKED] }
+    responses:
+      '200':
+        description: Private Excel workbook containing the filtered receipt details.
+        content:
+          application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+            schema: { type: string, format: binary }
+      '400':
+        $ref: './openapi.yaml#/components/responses/BadRequest'
+      '401':
+        $ref: './openapi.yaml#/components/responses/Unauthorized'
+      '403':
+        $ref: './openapi.yaml#/components/responses/Forbidden'
+receipt:
+  parameters:
+    - $ref: '#/parameters/ReceiptId'
+  get:
+    operationId: getFinanceReceipt
+    summary: Get immutable receipt and issuance snapshot
+    description: FINANCE_RECEIPT_READ only. Original ratio is never derived from remaining balance.
+    tags: [Finance]
+    responses:
+      '200':
+        description: Receipt and optional issuance snapshot.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/ReceiptEnvelope' }
+      '403':
+        $ref: './openapi.yaml#/components/responses/Forbidden'
+      '404':
+        $ref: './openapi.yaml#/components/responses/ResourceNotFound'
+proof:
+  parameters:
+    - $ref: '#/parameters/ReceiptId'
+  get:
+    operationId: downloadFinanceReceiptProof
+    summary: Read receipt proof with authentication
+    description: FINANCE_RECEIPT_READ only. Private no-store binary response, no public signed bearer URL.
+    tags: [Finance]
+    responses:
+      '200':
+        description: Original receipt image bytes.
+        content:
+          image/png: { schema: { type: string, format: binary } }
+          image/jpeg: { schema: { type: string, format: binary } }
+      '403':
+        $ref: './openapi.yaml#/components/responses/Forbidden'
+      '404':
+        $ref: './openapi.yaml#/components/responses/ResourceNotFound'
+issue:
+  parameters:
+    - $ref: '#/parameters/ReceiptId'
+  post:
+    operationId: issueFinanceReceiptPackage
+    summary: Issue one existing-system package for one receipt
+    description: FINANCE_PACKAGE_ISSUE only. Same transaction locks receipt, creates package, immutable original snapshot, MAIN and optional GIFT GRANT ledger, audit and idempotency result. Different-key duplicate issuance returns 409. Units are integers, 100 units per lesson; gift units do not enter unit price.
+    tags: [Finance]
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/IdempotencyKey'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/IssuePackage' }
+    responses:
+      '201':
+        description: Immutable issuance; unitPriceFen is rounded half-up for display only.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data: { $ref: '#/schemas/Issuance' }
+      '400':
+        $ref: './openapi.yaml#/components/responses/BadRequest'
+      '403':
+        $ref: './openapi.yaml#/components/responses/Forbidden'
+      '409':
+        $ref: './openapi.yaml#/components/responses/Conflict'
+parameters:
+  Page:
+    name: page
+    in: query
+    schema: { type: integer, minimum: 1, maximum: 1000000, default: 1 }
+  PageSize:
+    name: pageSize
+    in: query
+    schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+  Query:
+    name: query
+    in: query
+    schema: { type: string, maxLength: 100 }
+  ReceiptId:
+    name: receiptId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+schemas:
+  ChoicesEnvelope:
+    type: object
+    properties:
+      data:
+        type: object
+        required: [items, total, page, pageSize]
+        properties:
+          items:
+            type: array
+            items:
+              type: object
+              required: [id, name]
+              properties:
+                id: { type: string, format: uuid }
+                name: { type: string }
+          total: { type: integer }
+          page: { type: integer }
+          pageSize: { type: integer }
+  CreateReceipt:
+    type: object
+    additionalProperties: false
+    required: [campusId, studentId, amountFen, receivedOn, channel, proofFileId]
+    properties:
+      campusId: { type: string, format: uuid }
+      studentId: { type: string, format: uuid }
+      amountFen: { type: integer, minimum: 1, maximum: 2147483647 }
+      receivedOn: { type: string, format: date, description: 'Valid calendar date, no later than today in Asia/Shanghai.' }
+      channel: { type: string, enum: [WECHAT, ALIPAY, BANK, CASH, OTHER] }
+      proofFileId: { type: string, format: uuid }
+      note: { type: string, maxLength: 500, default: '' }
+  IssuePackage:
+    type: object
+    additionalProperties: false
+    required: [name, mainUnits, giftUnits, validFrom, expiresAt]
+    properties:
+      name: { type: string, minLength: 1, maxLength: 200 }
+      mainUnits: { type: integer, minimum: 1, maximum: 100000000 }
+      giftUnits: { type: integer, minimum: 0, maximum: 100000000 }
+      validFrom: { type: string, format: date-time }
+      expiresAt: { type: [string, 'null'], format: date-time, description: Must be strictly after validFrom when supplied. }
+  Issuance:
+    type: object
+    required: [id, coursePackageId, originalAmountFen, initialMainUnits, initialGiftUnits, name, validFrom, expiresAt, createdAt, unitPriceFen]
+    properties:
+      id: { type: string, format: uuid }
+      coursePackageId: { type: string, format: uuid }
+      originalAmountFen: { type: integer }
+      initialMainUnits: { type: integer }
+      initialGiftUnits: { type: integer }
+      name: { type: string }
+      validFrom: { type: string, format: date-time }
+      expiresAt: { type: [string, 'null'], format: date-time }
+      createdAt: { type: string, format: date-time }
+      unitPriceFen: { type: integer, format: int64, description: 'Display-only fen per 100 units, original exact ratio is originalAmountFen / initialMainUnits.' }
+  Receipt:
+    type: object
+    required: [id, campusId, campusName, studentId, studentName, amountFen, receivedOn, channel, note, createdAt, status, issuance, recordKind, correction, replacementOfCorrectionId, correctionEffectFen]
+    properties:
+      id: { type: string, format: uuid }
+      campusId: { type: string, format: uuid }
+      campusName: { type: string }
+      studentId: { type: string, format: uuid }
+      studentName: { type: string }
+      amountFen: { type: integer }
+      receivedOn: { type: string, format: date }
+      channel: { type: string, enum: [WECHAT, ALIPAY, BANK, CASH, OTHER] }
+      note: { type: string }
+      createdAt: { type: string, format: date-time }
+      status: { type: string, enum: [UNLINKED, LINKED] }
+      recordKind: { type: string, enum: [ORIGINAL, REPLACEMENT] }
+      replacementOfCorrectionId: { type: [string, 'null'], format: uuid }
+      correctionEffectFen: { type: integer, format: int64, description: Zero until applied; negative on the corrected original and positive on a replacement record. }
+      correction:
+        oneOf:
+          - type: 'null'
+          - type: object
+            required: [id, type, status, replacementReceiptId]
+            properties:
+              id: { type: string, format: uuid }
+              type: { type: string, enum: [VOID, REPLACE] }
+              status: { type: string, enum: [SUBMITTED, APPROVED, REJECTED, WITHDRAWN, APPLIED] }
+              replacementReceiptId: { type: [string, 'null'], format: uuid }
+      issuance:
+        oneOf:
+          - $ref: '#/schemas/Issuance'
+          - type: 'null'
+  ReceiptEnvelope:
+    type: object
+    properties:
+      data: { $ref: '#/schemas/Receipt' }

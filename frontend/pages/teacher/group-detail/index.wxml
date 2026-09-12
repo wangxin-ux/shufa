@@ -1,0 +1,106 @@
+<teacher-page-shell
+  markTitle="活动详情"
+  markIcon="/pages/teacher/assets/icon-schedule.png"
+  tone="yellow"
+  showBack="{{true}}"
+  fixedHeader="{{true}}"
+>
+  <view class="detail-page">
+    <view wx:if="{{viewState === 'loading'}}" class="page-state">
+      <text class="page-state__title">正在加载活动详情</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state">
+      <text class="page-state__title">活动详情加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="state-button" bindtap="onRetry">重试</button>
+    </view>
+
+    <view wx:elif="{{viewState === 'ready'}}" class="detail-content">
+      <view class="detail-summary">
+        <view class="detail-summary__top">
+          <text class="detail-summary__course">{{campaign.courseName}}</text>
+          <text class="detail-summary__status">推广中</text>
+        </view>
+        <text class="detail-summary__title">{{campaign.title}}</text>
+        <text class="detail-summary__description">{{campaign.description}}</text>
+        <view class="detail-summary__facts">
+          <text class="detail-summary__price">{{campaign.priceLabel}}</text>
+          <text class="detail-summary__deadline">{{campaign.deadlineLabel}}</text>
+        </view>
+      </view>
+
+      <view wx:if="{{campaign.posterImages.length}}" class="poster-stream">
+        <image
+          class="poster-stream__image"
+          wx:for="{{campaign.posterImages}}"
+          wx:key="id"
+          src="{{item.accessUrl}}"
+          mode="widthFix"
+          data-url="{{item.accessUrl}}"
+          bindtap="onPreviewPoster"
+        />
+      </view>
+      <view wx:else class="poster-empty">
+        <text class="poster-empty__title">活动暂未配置海报</text>
+        <text class="poster-empty__message">仍可复制活动文案或发送给好友</text>
+      </view>
+
+      <view class="contact-card">
+        <text class="contact-card__title">校区咨询</text>
+        <text class="contact-card__line">{{campaign.customerService.name}}</text>
+        <text class="contact-card__line">{{campaign.customerService.phone || '联系电话暂未配置'}}</text>
+      </view>
+
+      <view class="share-copy">
+        <text class="share-copy__title">推广文案</text>
+        <text class="share-copy__content">{{shareCopy}}</text>
+      </view>
+
+      <view class="action-space"></view>
+      <view class="action-bar">
+        <button
+          class="action-button action-button--secondary action-button--poster"
+          loading="{{posterGenerating}}"
+          disabled="{{posterGenerating}}"
+          bindtap="onOpenPoster"
+        >生成邀请海报</button>
+        <button class="action-button action-button--secondary" bindtap="onCopyText">复制文案</button>
+        <button class="action-button action-button--primary" open-type="share">发送给好友</button>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{showPoster}}" class="poster-overlay" bindtap="onClosePoster" catchtouchmove="noop">
+    <view class="poster-modal" catchtap="noop">
+      <view class="poster-modal__grabber"></view>
+      <view class="poster-modal__head">
+        <view>
+          <text class="poster-modal__title">教师邀请海报</text>
+          <text class="poster-modal__subtitle">{{campaign.title}}</text>
+        </view>
+        <button class="poster-modal__close" aria-label="关闭邀请海报" bindtap="onClosePoster">×</button>
+      </view>
+      <canvas class="poster-canvas" canvas-id="teacherGroupPoster"></canvas>
+      <view class="poster-stage">
+        <image wx:if="{{posterPath}}" class="poster-preview" src="{{posterPath}}" mode="aspectFit" />
+        <view wx:if="{{posterGenerating}}" class="poster-loading">
+          <view class="poster-loading__dot"></view>
+          <text>正在生成专属海报</text>
+        </view>
+      </view>
+      <view class="poster-note">
+        <text class="poster-note__title">扫码进入家长活动详情</text>
+        <text class="poster-note__copy">本地演示码仅用于版式预览，正式小程序码将在配置正式 AppID 后接入。</text>
+      </view>
+      <view class="poster-actions">
+        <button class="poster-action poster-action--primary" open-type="share">发送给好友</button>
+        <button class="poster-action poster-action--secondary" bindtap="onSavePoster">保存海报</button>
+        <button class="poster-action poster-action--secondary" bindtap="onCopyText">复制文案</button>
+      </view>
+    </view>
+  </view>
+</teacher-page-shell>

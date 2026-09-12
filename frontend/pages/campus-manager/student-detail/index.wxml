@@ -1,0 +1,68 @@
+<campus-manager-page-shell
+  markTitle="学员"
+  markIcon="/pages/campus-manager/assets/icon-student-create.png"
+  showBack="{{true}}"
+>
+  <view class="student-detail-page">
+    <view wx:if="{{viewState === 'loading'}}" class="detail-state" aria-live="polite">
+      <text class="detail-state__title">正在加载学员详情</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="detail-state" aria-live="polite">
+      <text class="detail-state__title">无访问权限</text>
+      <text class="detail-state__message">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="detail-state" aria-live="polite">
+      <text class="detail-state__title">学员详情加载失败</text>
+      <text class="detail-state__message">{{errorMessage}}</text>
+      <button class="detail-command" bindtap="onRetry" hover-class="detail-control--hover">重试</button>
+    </view>
+
+    <block wx:elif="{{viewState === 'ready'}}">
+      <view class="detail-hero">
+        <view class="detail-hero__head">
+          <text class="detail-hero__name">{{detail.displayName}}</text>
+          <text class="detail-hero__status">{{detail.statusLabel}}</text>
+        </view>
+        <text class="detail-hero__class">{{detail.classLabel}}</text>
+        <text wx:if="{{detail.reservationLabel}}" class="detail-hero__class">{{detail.reservationLabel}}</text>
+        <text class="detail-hero__birth">{{detail.birthDateLabel}}</text>
+      </view>
+
+      <view class="detail-section-head">
+        <text class="detail-section-head__title">课时账户</text>
+        <text class="detail-section-head__meta">后端实时汇总</text>
+      </view>
+      <view class="detail-metrics">
+        <view class="detail-metric">
+          <text class="detail-metric__value">{{detail.mainBalanceLabel}}</text>
+          <text class="detail-metric__label">主课时</text>
+        </view>
+        <view class="detail-metric">
+          <text class="detail-metric__value">{{detail.giftBalanceLabel}}</text>
+          <text class="detail-metric__label">赠送课时</text>
+        </view>
+        <view class="detail-metric detail-metric--total">
+          <text class="detail-metric__value">{{detail.totalBalanceLabel}}</text>
+          <text class="detail-metric__label">剩余合计</text>
+        </view>
+      </view>
+
+      <view class="detail-facts">
+        <view class="detail-fact">
+          <view class="detail-fact__copy">
+            <text class="detail-fact__title">累计出勤记录</text>
+            <text class="detail-fact__meta">已完成课次中的出勤事实</text>
+          </view>
+          <text class="detail-fact__value">{{detail.attendanceCountLabel}}次</text>
+        </view>
+        <view class="detail-fact">
+          <view class="detail-fact__copy">
+            <text class="detail-fact__title">累计课耗</text>
+            <text class="detail-fact__meta">不可变课时流水中的扣课合计</text>
+          </view>
+          <text class="detail-fact__value">{{detail.consumedUnitsLabel}}节</text>
+        </view>
+      </view>
+    </block>
+  </view>
+</campus-manager-page-shell>

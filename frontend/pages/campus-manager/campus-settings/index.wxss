@@ -1,0 +1,147 @@
+.settings-page {
+  min-height: calc(100vh - 150rpx);
+  padding-top: 20rpx;
+  box-sizing: border-box;
+}
+
+.settings-title {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-family: var(--campus-manager-font-display);
+  font-size: 52rpx;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.settings-form,
+.page-state {
+  width: 100%;
+  max-width: 100%;
+  margin-top: 24rpx;
+  padding: 26rpx;
+  box-sizing: border-box;
+  border: 3rpx solid rgba(255, 116, 71, 0.78);
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--campus-manager-shadow);
+}
+
+.settings-readonly {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-bottom: 22rpx;
+}
+
+.settings-readonly__item {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 18rpx;
+  border-radius: 8rpx;
+  background: rgba(241, 199, 85, 0.4);
+}
+
+.settings-readonly__label,
+.form-field__label {
+  font-size: 22rpx;
+  color: var(--campus-manager-muted);
+}
+
+.settings-readonly__value {
+  margin-top: 8rpx;
+  overflow: hidden;
+  font-size: 23rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.form-field {
+  display: block;
+  margin-top: 20rpx;
+}
+
+.form-field__label {
+  display: block;
+  margin-bottom: 10rpx;
+  font-weight: 700;
+  color: var(--campus-manager-ink);
+}
+
+.form-field__input,
+.form-field__textarea {
+  width: 100%;
+  max-width: 100%;
+  padding: 18rpx 20rpx;
+  box-sizing: border-box;
+  border: 2rpx solid rgba(32, 29, 23, 0.14);
+  border-radius: 8rpx;
+  background: rgba(241, 199, 85, 0.18);
+  font-size: 26rpx;
+}
+
+.form-field__input {
+  min-height: var(--campus-manager-touch-min);
+}
+
+.form-field__textarea {
+  min-height: 116rpx;
+  line-height: 1.5;
+}
+
+.settings-form__error {
+  display: block;
+  margin-top: 18rpx;
+  font-size: 23rpx;
+  color: #a5261f;
+}
+
+.settings-submit,
+.page-state__retry {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--campus-manager-touch-min);
+  margin: 28rpx 0 0;
+  border: 0;
+  border-radius: 8rpx;
+  background: var(--campus-manager-orange);
+  font-size: 27rpx;
+  color: #ffffff;
+}
+
+.settings-submit {
+  width: 100%;
+}
+
+.settings-submit::after,
+.page-state__retry::after {
+  border: 0;
+}
+
+.page-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 420rpx;
+}
+
+.page-state__title {
+  font-family: var(--campus-manager-font-display);
+  font-size: 42rpx;
+  font-weight: 700;
+}
+
+.page-state__message {
+  max-width: 100%;
+  margin-top: 14rpx;
+  overflow-wrap: anywhere;
+  font-size: 24rpx;
+  color: var(--campus-manager-muted);
+}
+
+.button--hover {
+  opacity: 0.72;
+}

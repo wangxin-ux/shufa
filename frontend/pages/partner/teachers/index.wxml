@@ -1,0 +1,28 @@
+<partner-page-shell
+  markTitle="教师"
+  markIcon="/pages/partner/assets/icon-teachers.png"
+  showBack="{{true}}"
+>
+  <view class="partner-workspace teachers-page">
+    <view class="partner-heading"><text class="partner-heading__title">教师信息</text><text class="partner-heading__count">{{total}}人</text></view>
+    <view class="partner-search"><image class="partner-search__icon" src="/pages/partner/assets/icon-teachers.png" mode="aspectFit" /><input class="partner-search__input" value="{{query}}" placeholder="搜索教师姓名" maxlength="100" confirm-type="search" bindinput="onSearchInput" /></view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="partner-state"><text class="partner-state__title">正在加载教师信息</text></view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="partner-state"><text class="partner-state__title">无访问权限</text><text class="partner-state__message">{{errorMessage}}</text></view>
+    <view wx:elif="{{viewState === 'error'}}" class="partner-state"><text class="partner-state__title">教师信息加载失败</text><text class="partner-state__message">{{errorMessage}}</text><button class="partner-command" bindtap="onRetry">重试</button></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="partner-state"><text class="partner-state__title">暂无匹配教师</text><text class="partner-state__message">可清空或调整姓名关键词</text></view>
+
+    <view wx:else class="partner-list">
+      <view wx:for="{{items}}" wx:key="id" class="partner-card teacher-card">
+        <view class="partner-card__head"><view class="partner-card__identity"><text class="partner-card__title">{{item.displayName}}</text><text class="partner-card__subtitle">{{item.employeeCodeLabel}}</text></view><text class="partner-card__status">在职</text></view>
+        <text class="partner-card__line">擅长课程：{{item.specialtyLabel}}</text>
+        <text class="partner-card__line">所带班级：{{item.classLabel}}</text>
+        <view class="teacher-card__metrics">
+          <view class="teacher-card__metric"><text class="teacher-card__value">{{item.activeStudentCountLabel}}</text><text class="teacher-card__label">在读学员</text></view>
+          <view class="teacher-card__metric"><text class="teacher-card__value">{{item.monthCompletedLessonCountLabel}}</text><text class="teacher-card__label">本月完成课次</text></view>
+        </view>
+      </view>
+      <button wx:if="{{hasMore}}" class="partner-command partner-command--load-more" loading="{{loadingMore}}" disabled="{{loadingMore}}" bindtap="onLoadMore">{{loadingMore ? '加载中' : '加载更多'}}</button>
+    </view>
+  </view>
+</partner-page-shell>

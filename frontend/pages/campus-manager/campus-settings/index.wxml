@@ -1,0 +1,60 @@
+<campus-manager-page-shell
+  markTitle="设置"
+  markIcon="/pages/campus-manager/assets/icon-schedule.png"
+  showBack="{{true}}"
+>
+  <view class="settings-page">
+    <text class="settings-title">校区设置</text>
+
+    <view wx:if="{{viewState === 'loading'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">正在加载校区设置</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">校区设置加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-state__retry" bindtap="onRetry" hover-class="button--hover">重试</button>
+    </view>
+
+    <view wx:else class="settings-form">
+      <view class="settings-readonly">
+        <view class="settings-readonly__item">
+          <text class="settings-readonly__label">校区编码</text>
+          <text class="settings-readonly__value">{{code}}</text>
+        </view>
+        <view class="settings-readonly__item">
+          <text class="settings-readonly__label">校区时区</text>
+          <text class="settings-readonly__value">{{timezone}}</text>
+        </view>
+      </view>
+
+      <label class="form-field">
+        <text class="form-field__label">校区名称</text>
+        <input class="form-field__input" value="{{name}}" maxlength="200" bindinput="onNameInput" />
+      </label>
+      <label class="form-field">
+        <text class="form-field__label">联系电话</text>
+        <input class="form-field__input" value="{{contactPhone}}" maxlength="30" bindinput="onPhoneInput" placeholder="手机号或固定电话" />
+      </label>
+      <label class="form-field">
+        <text class="form-field__label">校区地址</text>
+        <textarea class="form-field__textarea" value="{{address}}" maxlength="300" auto-height bindinput="onAddressInput" placeholder="可不填写" />
+      </label>
+      <label class="form-field">
+        <text class="form-field__label">预警阈值（课时）</text>
+        <input class="form-field__input" value="{{lessonWarningThresholdHours}}" maxlength="12" bindinput="onThresholdInput" type="digit" />
+      </label>
+      <text wx:if="{{errorMessage}}" class="settings-form__error">{{errorMessage}}</text>
+      <button
+        class="settings-submit"
+        loading="{{viewState === 'submitting'}}"
+        disabled="{{viewState === 'submitting'}}"
+        bindtap="onSubmit"
+        hover-class="button--hover"
+      >{{viewState === 'submitting' ? '保存中' : '保存设置'}}</button>
+    </view>
+  </view>
+</campus-manager-page-shell>

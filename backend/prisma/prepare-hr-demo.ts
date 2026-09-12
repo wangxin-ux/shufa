@@ -1,0 +1,99 @@
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '@prisma/client';
+
+const HR_DISPLAY_NAME = '何主管';
+
+export async function prepareHrDemo(prisma: PrismaClient) {
+  return prisma.$transaction(async (tx) => {
+    const subject = 'mock-demo-hr';
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${subject}))`;
+    const existing = await tx.authIdentity.findUnique({
+      where: { provider_subject: { provider: 'MOCK', subject } },
+      include: { user: { include: { roles: true } } },
+    });
+    if (existing) {
+      if (
+        existing.user.status !== 'ACTIVE' ||
+        existing.user.roles.length !== 1 ||
+        existing.user.roles[0].roleCode !== 'HR' ||
+        existing.user.roles[0].campusId !== null
+      ) {
+        throw new Error(
+          'Existing HR demo identity differs; no account was modified',
+        );
+      }
+      if (existing.user.displayName !== HR_DISPLAY_NAME) {
+        await tx.user.update({
+          where: { id: existing.userId },
+          data: { displayName: HR_DISPLAY_NAME },
+        });
+        await tx.auditLog.create({
+          data: {
+            actorUserId: existing.userId,
+            action: 'LOCAL_HR_DEMO_ACCOUNT_RENAME',
+            resourceType: 'User',
+            resourceId: existing.userId,
+            outcome: 'SUCCESS',
+            details: {
+              localDemoOnly: true,
+              previousDisplayName: existing.user.displayName,
+              displayName: HR_DISPLAY_NAME,
+            },
+          },
+        });
+      }
+      return existing.userId;
+    }
+    const user = await tx.user.create({
+      data: {
+        displayName: HR_DISPLAY_NAME,
+        roles: { create: { roleCode: 'HR', campusId: null } },
+        authIdentities: { create: { provider: 'MOCK', subject } },
+      },
+    });
+    await tx.auditLog.create({
+      data: {
+        actorUserId: user.id,
+        action: 'LOCAL_HR_DEMO_ACCOUNT_CREATE',
+        resourceType: 'User',
+        resourceId: user.id,
+        outcome: 'SUCCESS',
+        details: { localDemoOnly: true },
+      },
+    });
+    return user.id;
+  });
+}
+async function main() {
+  const connectionString = process.env.DATABASE_URL ?? '';
+  const target = new URL(connectionString);
+  if (
+    process.env.NODE_ENV !== 'development' ||
+    process.env.AUTH_DRIVER !== 'mock' ||
+    !['localhost', '127.0.0.1', 'postgres'].includes(target.hostname) ||
+    target.pathname !== '/education_app'
+  ) {
+    throw new Error(
+      'HR demo preparation requires the local mock-auth development database',
+    );
+  }
+  const prisma = new PrismaClient({
+    adapter: new PrismaPg({ connectionString }),
+  });
+  try {
+    await prepareHrDemo(prisma);
+    console.log(
+      'HR demo account ready; its display name is current and teaching records were not changed.',
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+if (require.main === module) {
+  main().catch((error: unknown) => {
+    console.error(
+      error instanceof Error ? error.message : 'HR demo preparation failed',
+    );
+    process.exitCode = 1;
+  });
+}

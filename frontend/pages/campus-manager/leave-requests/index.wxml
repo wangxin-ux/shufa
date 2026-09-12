@@ -1,0 +1,165 @@
+<campus-manager-page-shell
+  markTitle="教务"
+  markIcon="/pages/campus-manager/assets/leave-mark-glyph.png"
+  markIconSize="40"
+  showBack="{{true}}"
+  surfacePage="{{true}}"
+>
+  <view class="leave-page" aria-label="请假审批">
+    <view wx:if="{{viewState === 'loading'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">正在加载请假申请</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">无审批权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">审批列表加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="leave-control page-state__retry" bindtap="onRetry" hover-class="control--hover">重试</button>
+    </view>
+
+    <block wx:else>
+      <view wx:if="{{activeTab === 'pending' && selectedItem}}" class="approval-card">
+        <text class="approval-card__title">请假申请</text>
+        <text class="approval-card__rule">须提前2小时提交</text>
+
+        <view class="approval-card__fields">
+          <view class="approval-field">
+            <text class="approval-field__label">学生</text>
+            <view class="approval-field__control">
+              <text class="approval-field__value">{{selectedItem.studentName}}</text>
+              <text class="approval-field__chevron" aria-hidden="true">⌄</text>
+            </view>
+          </view>
+          <view class="approval-field">
+            <text class="approval-field__label">请假课程</text>
+            <view class="approval-field__control">
+              <text class="approval-field__value approval-field__value--lesson">{{selectedItem.lessonLabel}}</text>
+            </view>
+          </view>
+          <view class="approval-field">
+            <text class="approval-field__label">请假原因</text>
+            <view class="approval-field__control approval-field__control--reason">
+              <text class="approval-field__value approval-field__value--reason">{{selectedItem.reason}}</text>
+            </view>
+          </view>
+        </view>
+
+        <image
+          class="approval-card__character"
+          src="/pages/campus-manager/assets/leave-character.png"
+          mode="widthFix"
+          aria-hidden="true"
+        />
+
+        <view class="approval-card__actions">
+          <button
+            class="leave-control approval-card__approve"
+            data-id="{{selectedItem.id}}"
+            disabled="{{submitting}}"
+            bindtap="onApproveTap"
+            hover-class="control--hover"
+          >{{submittingId === selectedItem.id ? '处理中' : '批准请假申请'}}</button>
+          <button
+            class="leave-control approval-card__reject"
+            data-id="{{selectedItem.id}}"
+            disabled="{{submitting}}"
+            bindtap="onRejectTap"
+            hover-class="control--hover"
+          >驳回</button>
+        </view>
+      </view>
+
+      <view wx:if="{{rejectVisible}}" class="reject-panel" aria-live="polite">
+        <view class="reject-panel__head">
+          <view class="reject-panel__copy">
+            <text class="reject-panel__title">驳回 {{rejectStudentName}} 的申请</text>
+            <text class="reject-panel__hint">驳回原因会同步给家长</text>
+          </view>
+          <button
+            class="leave-control reject-panel__close"
+            aria-label="关闭驳回表单"
+            disabled="{{submitting}}"
+            bindtap="onRejectCancel"
+            hover-class="control--hover"
+          >×</button>
+        </view>
+        <textarea
+          class="reject-panel__input"
+          value="{{rejectReason}}"
+          maxlength="500"
+          placeholder="请填写驳回原因"
+          disabled="{{submitting}}"
+          bindinput="onRejectReasonInput"
+        />
+        <text wx:if="{{rejectError}}" class="reject-panel__error">{{rejectError}}</text>
+        <button
+          class="leave-control reject-panel__submit"
+          disabled="{{submitting}}"
+          bindtap="onRejectSubmit"
+          hover-class="control--hover"
+        >{{submitting ? '正在提交' : '确认驳回'}}</button>
+      </view>
+
+      <view class="leave-records">
+        <view class="leave-records__head">
+          <view class="leave-records__heading-copy">
+            <text class="leave-records__title">请假记录</text>
+            <text class="leave-records__summary">当前列表共 {{total}} 条申请</text>
+          </view>
+        </view>
+
+        <view class="leave-tabs" role="tablist">
+          <button
+            wx:for="{{tabs}}"
+            wx:key="key"
+            class="leave-control leave-tab {{activeTab === item.key ? 'leave-tab--active' : ''}}"
+            data-key="{{item.key}}"
+            bindtap="onTabTap"
+            hover-class="control--hover"
+          >{{item.label}}</button>
+        </view>
+
+        <view wx:if="{{viewState === 'empty'}}" class="page-state page-state--records" aria-live="polite">
+          <text class="page-state__title">{{activeTab === 'pending' ? '暂无待审批申请' : '暂无审批记录'}}</text>
+          <text class="page-state__message">{{activeTab === 'pending' ? '新的家长请假申请会显示在这里' : '已处理的申请会保留完整记录'}}</text>
+        </view>
+
+        <view wx:elif="{{viewState === 'ready'}}" class="leave-list">
+          <button
+            id="leave-record-{{item.id}}"
+            class="leave-record {{selectedItem && selectedItem.id === item.id ? 'leave-record--selected' : ''}}"
+            wx:for="{{items}}"
+            wx:key="id"
+            data-id="{{item.id}}"
+            bindtap="onRequestSelectTap"
+            hover-class="leave-record--hover"
+          >
+            <view class="leave-record__main">
+              <text class="leave-record__student">{{item.studentName}}</text>
+              <text class="leave-record__lesson">{{item.lessonLabel}}</text>
+              <text class="leave-record__reason">{{item.reason}}</text>
+              <view wx:if="{{!item.canReview}}" class="leave-record__review">
+                <text>{{item.reviewerLabel}}</text>
+                <text wx:if="{{item.reviewReasonLabel}}">{{item.reviewReasonLabel}}</text>
+              </view>
+            </view>
+            <view class="leave-record__aside">
+              <text class="leave-record__status leave-record__status--{{item.status}}">{{item.statusLabel}}</text>
+              <text wx:if="{{item.canReview}}" class="leave-record__command">{{selectedItem && selectedItem.id === item.id ? '当前申请' : '点按切换'}}</text>
+            </view>
+          </button>
+
+          <button
+            wx:if="{{hasMore}}"
+            class="leave-control load-more"
+            disabled="{{loadingMore}}"
+            bindtap="onLoadMore"
+            hover-class="control--hover"
+          >{{loadingMore ? '加载中' : '加载更多'}}</button>
+        </view>
+      </view>
+    </block>
+  </view>
+</campus-manager-page-shell>

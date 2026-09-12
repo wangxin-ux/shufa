@@ -1,0 +1,113 @@
+<teacher-page-shell
+  markTitle="反馈"
+  markIcon="/pages/teacher/assets/icon-student-record.png"
+  tone="yellow"
+  showBack="{{true}}"
+>
+  <view class="feedback-detail-page">
+    <view wx:if="{{viewState === 'loading'}}" class="page-state">
+      <text class="page-state__title">正在加载反馈详情</text>
+    </view>
+    <view wx:elif="{{viewState === 'empty'}}" class="page-state">
+      <text class="page-state__title">请选择需要填写反馈的课次</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state">
+      <text class="page-state__title">反馈详情加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-command" bindtap="onRetry" hover-class="control--hover">重试</button>
+    </view>
+
+    <block wx:else>
+      <teacher-workspace-banner
+        class="feedback-detail-page__overview"
+        eyebrow="{{statusLabel}}"
+        title="{{courseName}}"
+        detail="{{detailLabel}}"
+        compact="{{true}}"
+      />
+
+      <view class="feedback-summary">
+        <text class="feedback-summary__title">逐学员课堂反馈</text>
+        <text class="feedback-summary__progress">{{progressLabel}}</text>
+      </view>
+
+      <view wx:if="{{mutationMessage}}" class="mutation-state">
+        <text>{{mutationMessage}}</text>
+      </view>
+
+      <view class="feedback-students">
+        <view class="feedback-card" wx:for="{{students}}" wx:key="id">
+          <view class="feedback-card__head">
+            <text class="feedback-card__name">{{item.displayName}}</text>
+            <text class="feedback-card__attendance">{{item.attendanceLabel}}</text>
+          </view>
+
+          <block wx:if="{{!item.readOnly}}">
+            <textarea
+              class="feedback-card__input"
+              value="{{item.feedbackDraft}}"
+              maxlength="1000"
+              data-id="{{item.id}}"
+              placeholder="填写本节课的学习表现与建议"
+              bindinput="onFeedbackInput"
+            />
+            <view wx:if="{{item.feedbackImages.length}}" class="feedback-card__images">
+              <view class="feedback-image" wx:for="{{item.feedbackImages}}" wx:for-item="image" wx:key="id">
+                <image
+                  class="feedback-image__thumb"
+                  src="{{image.accessUrl}}"
+                  mode="aspectFill"
+                  data-id="{{item.id}}"
+                  data-url="{{image.accessUrl}}"
+                  bindtap="onPreviewImages"
+                />
+                <button
+                  class="feedback-image__remove"
+                  data-id="{{item.id}}"
+                  data-image-id="{{image.id}}"
+                  bindtap="onRemoveImage"
+                  aria-label="移除图片"
+                >×</button>
+              </view>
+            </view>
+            <button
+              wx:if="{{item.feedbackImages.length < 3}}"
+              class="feedback-card__add-image"
+              data-id="{{item.id}}"
+              disabled="{{feedbackSubmittingId || feedbackUploadingId}}"
+              bindtap="onChooseImages"
+              hover-class="control--hover"
+            >{{feedbackUploadingId === item.id ? '上传中' : '+ 添加图片'}}（{{item.feedbackImages.length}}/3）</button>
+            <button
+              class="feedback-card__save"
+              data-id="{{item.id}}"
+              disabled="{{feedbackSubmittingId || feedbackUploadingId}}"
+              bindtap="onSaveFeedback"
+              hover-class="control--hover"
+            >{{feedbackSubmittingId === item.id ? '保存中' : item.hasFeedback ? '更新反馈' : '保存反馈'}}</button>
+          </block>
+          <view wx:else class="feedback-card__readonly">
+            <text>{{item.feedback || '暂无反馈'}}</text>
+            <view wx:if="{{item.feedbackImages.length}}" class="feedback-card__images feedback-card__images--readonly">
+              <image
+                wx:for="{{item.feedbackImages}}"
+                wx:for-item="image"
+                wx:key="id"
+                class="feedback-image__thumb"
+                src="{{image.accessUrl}}"
+                mode="aspectFill"
+                data-id="{{item.id}}"
+                data-url="{{image.accessUrl}}"
+                bindtap="onPreviewImages"
+              />
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+</teacher-page-shell>

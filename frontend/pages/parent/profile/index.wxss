@@ -1,0 +1,174 @@
+.profile {
+  position: relative;
+  padding: 24rpx 0 100rpx;
+}
+
+/* 原稿下半页的绿衣背包狗背景装饰 */
+.profile__backdrop {
+  position: absolute;
+  top: 370rpx;
+  left: 50%;
+  z-index: 0;
+  width: 1050rpx;
+  transform: translateX(-61%);
+  pointer-events: none;
+}
+
+.tap-hover {
+  opacity: 0.72;
+}
+
+.profile__hero {
+  position: relative;
+  z-index: 1;
+  height: 507rpx;
+}
+
+.profile__mascot {
+  position: absolute;
+  top: -68rpx;
+  left: 50%;
+  z-index: 1;
+  width: 496rpx;
+  transform: translateX(-31%);
+  pointer-events: none;
+}
+
+.profile__student-card-bg,
+.profile__student-card {
+  position: absolute;
+  left: 14rpx;
+  bottom: 0;
+  width: 653rpx;
+  min-height: 265rpx;
+  box-sizing: border-box;
+  border-radius: 40rpx;
+}
+
+.profile__student-card-bg {
+  z-index: 0;
+  background: #fe8419;
+  box-shadow: 0 13rpx 24rpx rgba(24, 18, 14, 0.19);
+}
+
+.profile__student-card {
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  padding: 136rpx 34rpx 24rpx;
+  color: var(--parent-on-color);
+}
+
+/* 入口卡压在背景装饰之上 */
+.profile parent-action-card {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 653rpx;
+  margin-top: 54rpx;
+  margin-left: 14rpx;
+  box-sizing: border-box;
+  --parent-yellow-card: rgba(255, 215, 94, 0.84);
+  --parent-action-card-shadow: 0 13rpx 24rpx rgba(24, 18, 14, 0.19);
+}
+
+.profile__student-name {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 480rpx;
+  font-size: 100rpx;
+  font-family: var(--parent-font-display);
+  line-height: 1.1;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile__student-age {
+  flex: none;
+  margin-left: 18rpx;
+  font-size: 50rpx;
+  font-family: var(--parent-font-display);
+  font-weight: 700;
+}
+
+.profile__empty {
+  font-size: 44rpx;
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+}
+
+.actions__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 74rpx;
+  gap: 24rpx;
+  border-bottom: 4rpx solid #ffffff;
+}
+
+.actions__row:last-child {
+  border-bottom: none;
+}
+
+.actions__label-wrap {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.actions__dot {
+  flex: none;
+  width: 18rpx;
+  height: 18rpx;
+  margin-right: 40rpx;
+  border-radius: 50%;
+  background: var(--parent-success);
+}
+
+.actions__label {
+  font-size: 36rpx;
+  font-family: var(--parent-font-display);
+  font-weight: 700;
+  color: var(--parent-ink);
+}
+
+.actions__badge {
+  flex: none;
+  min-width: 40rpx;
+  height: 40rpx;
+  margin-left: 14rpx;
+  padding: 0 10rpx;
+  box-sizing: border-box;
+  border-radius: 999rpx;
+  line-height: 40rpx;
+  text-align: center;
+  font-size: 22rpx;
+  background: var(--parent-danger);
+  color: #ffffff;
+}
+
+.actions__button {
+  flex: none;
+  min-width: 108rpx;
+  min-height: 55rpx;
+  padding: 0 18rpx;
+  box-sizing: border-box;
+  border-radius: 20rpx;
+  line-height: 55rpx;
+  text-align: center;
+  font-size: 24rpx;
+  background: #fe8419;
+  color: var(--parent-on-color);
+}
+
+@media (max-width: 350px) {
+  .actions__label {
+    font-size: 30rpx;
+  }
+}

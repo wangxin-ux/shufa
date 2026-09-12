@@ -1,0 +1,119 @@
+.records-page,
+.ledger-page {
+  padding-top: 28rpx;
+  padding-bottom: 70rpx;
+}
+
+.records-page__overview {
+  display: block;
+}
+
+.record-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+  margin-top: 28rpx;
+}
+
+.record-row {
+  padding: 25rpx 27rpx;
+  border: 0;
+  border-left: 8rpx solid var(--teacher-orange);
+  border-radius: 16rpx;
+  background: var(--teacher-surface);
+  box-shadow: var(--teacher-shadow);
+}
+
+.record-row__head,
+.record-row__meta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.record-row__course {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--teacher-font-display);
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.record-row__status {
+  flex: none;
+  padding: 7rpx 14rpx;
+  border-radius: 14rpx;
+  font-size: 20rpx;
+}
+
+.record-row__status--success {
+  background: rgba(35, 135, 96, 0.12);
+  color: var(--teacher-success);
+}
+
+.record-row__status--danger {
+  background: rgba(201, 63, 72, 0.12);
+  color: var(--teacher-danger);
+}
+
+.record-row__class {
+  display: block;
+  margin-top: 9rpx;
+  overflow-wrap: anywhere;
+  font-size: 24rpx;
+}
+
+.record-row__meta {
+  margin-top: 20rpx;
+  padding-top: 18rpx;
+  border-top: 2rpx solid var(--teacher-line);
+  font-size: 22rpx;
+  color: var(--teacher-muted);
+}
+
+.page-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 380rpx;
+  margin-top: 28rpx;
+  padding: 32rpx;
+  box-sizing: border-box;
+  border-radius: var(--teacher-card-radius);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.page-state__title {
+  font-family: var(--teacher-font-display);
+  font-size: 40rpx;
+  font-weight: 700;
+}
+
+.page-state__message {
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  color: var(--teacher-muted);
+}
+
+.page-command {
+  min-width: 190rpx;
+  min-height: var(--teacher-touch-min);
+  margin: 24rpx 0 0;
+  padding: 0 28rpx;
+  border: 0;
+  border-radius: 16rpx;
+  background: var(--teacher-orange);
+  font-size: 24rpx;
+  color: #ffffff;
+}
+
+.load-more {
+  align-self: center;
+}
+
+button::after {
+  border: 0;
+}

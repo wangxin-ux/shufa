@@ -1,0 +1,224 @@
+.lesson-page {
+  padding-top: 28rpx;
+  padding-bottom: 80rpx;
+}
+
+.lesson-page__overview {
+  display: block;
+}
+
+.section-head,
+.lesson-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.section-head__meta {
+  font-size: 23rpx;
+  color: var(--teacher-muted);
+}
+
+.section-head {
+  margin-top: 36rpx;
+}
+
+.section-head__title,
+.reverse-panel__title {
+  font-family: var(--teacher-font-display);
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.roster {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+  margin-top: 20rpx;
+}
+
+.student-attendance {
+  padding: 25rpx 26rpx;
+  border: 0;
+  border-left: 8rpx solid var(--teacher-orange);
+  border-radius: 16rpx;
+  background: var(--teacher-surface);
+  box-shadow: var(--teacher-shadow);
+}
+
+.student-attendance__name {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.attendance-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-top: 18rpx;
+}
+
+.attendance-option,
+.secondary-command,
+.primary-command,
+.danger-command,
+.feedback-command {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--teacher-touch-min);
+  margin: 0;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 16rpx;
+  font-size: 24rpx;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.attendance-option {
+  padding: 0 8rpx;
+  background: rgba(36, 59, 54, 0.07);
+  color: var(--teacher-muted);
+}
+
+.attendance-option--active {
+  background: var(--teacher-yellow);
+  font-weight: 700;
+  color: var(--teacher-ink);
+}
+
+.lesson-actions {
+  align-items: stretch;
+  margin-top: 28rpx;
+}
+
+.lesson-actions button {
+  flex: 1;
+}
+
+.secondary-command {
+  padding: 0 28rpx;
+  background: rgba(36, 59, 54, 0.08);
+  color: var(--teacher-ink);
+}
+
+.primary-command {
+  padding: 0 28rpx;
+  background: var(--teacher-orange);
+  color: #ffffff;
+}
+
+.danger-command {
+  margin-top: 18rpx;
+  padding: 0 30rpx;
+  background: var(--teacher-danger);
+  color: #ffffff;
+}
+
+.mutation-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 22rpx;
+  padding: 22rpx 24rpx;
+  border-left: 6rpx solid var(--teacher-danger);
+  background: rgba(201, 63, 72, 0.08);
+}
+
+.mutation-state__message {
+  overflow-wrap: anywhere;
+  font-size: 25rpx;
+  color: var(--teacher-danger);
+}
+
+.mutation-state__student {
+  margin-top: 8rpx;
+  font-size: 23rpx;
+}
+
+.mutation-state .secondary-command {
+  margin-top: 16rpx;
+}
+
+.reverse-panel__input {
+  width: 100%;
+  min-height: 150rpx;
+  padding: 18rpx;
+  box-sizing: border-box;
+  border: 2rpx solid var(--teacher-line);
+  border-radius: 16rpx;
+  background: rgba(36, 59, 54, 0.03);
+  font-size: 25rpx;
+}
+
+.feedback-command {
+  width: 100%;
+  margin-top: 22rpx;
+  padding: 0 26rpx;
+  background: var(--teacher-orange);
+  color: #ffffff;
+}
+
+.reverse-panel {
+  margin-top: 36rpx;
+  padding: 28rpx;
+  border-radius: var(--teacher-card-radius);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.reverse-panel__input {
+  margin-top: 18rpx;
+}
+
+.page-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 380rpx;
+  margin-top: 28rpx;
+  padding: 32rpx;
+  box-sizing: border-box;
+  border-radius: var(--teacher-card-radius);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.page-state__title {
+  font-family: var(--teacher-font-display);
+  font-size: 42rpx;
+  font-weight: 700;
+}
+
+.page-state__message {
+  margin-top: 14rpx;
+  font-size: 25rpx;
+  color: var(--teacher-muted);
+}
+
+.page-state .secondary-command {
+  margin-top: 24rpx;
+}
+
+button::after {
+  border: 0;
+}
+
+button[disabled] {
+  opacity: 0.45;
+}
+
+button.attendance-option--active[disabled] {
+  background: var(--teacher-yellow);
+  color: var(--teacher-ink);
+  opacity: 1;
+}
+
+@media (max-width: 380px) {
+  .lesson-actions {
+    flex-direction: column;
+  }
+}

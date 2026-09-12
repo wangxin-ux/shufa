@@ -1,0 +1,230 @@
+@import "../../../styles/partner-workspace.wxss";
+
+.student-detail-page {
+  padding-top: 10rpx;
+  padding-bottom: 80rpx;
+}
+
+.detail-hero {
+  min-height: 228rpx;
+  padding: 30rpx;
+  box-sizing: border-box;
+  border-radius: 8rpx;
+  background: #fe8419;
+  box-shadow: var(--partner-shadow);
+  color: #ffffff;
+}
+
+.detail-hero__head,
+.detail-section-head,
+.detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.detail-hero__name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--partner-font-display);
+  font-size: 52rpx;
+  font-weight: 700;
+}
+
+.detail-hero__badge {
+  flex: none;
+  padding: 8rpx 18rpx;
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 21rpx;
+  color: #216a4e;
+}
+
+.detail-hero__class,
+.detail-hero__birth {
+  display: block;
+  max-width: 100%;
+  margin-top: 18rpx;
+  overflow-wrap: anywhere;
+  font-size: 24rpx;
+  line-height: 1.4;
+}
+
+.detail-hero__birth {
+  margin-top: 7rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.detail-section-head {
+  margin: 30rpx 0 14rpx;
+}
+
+.detail-section-head__title {
+  font-family: var(--partner-font-display);
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--partner-ink);
+}
+
+.detail-section-head__meta {
+  flex: none;
+  font-size: 20rpx;
+  color: var(--partner-muted);
+}
+
+.detail-metrics,
+.detail-attendance {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.detail-metric,
+.detail-attendance > view {
+  display: flex;
+  min-width: 0;
+  min-height: 132rpx;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14rpx 6rpx;
+  box-sizing: border-box;
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 8rpx 18rpx rgba(63, 46, 15, 0.13);
+}
+
+.detail-metric--total {
+  background: rgba(255, 215, 94, 0.88);
+}
+
+.detail-metric__value,
+.detail-attendance__value {
+  max-width: 100%;
+  overflow: hidden;
+  font-family: var(--partner-font-display);
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #111111;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail-metric__label,
+.detail-attendance__label {
+  margin-top: 7rpx;
+  font-size: 19rpx;
+  color: var(--partner-muted);
+}
+
+.detail-attendance {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.detail-attendance > view {
+  min-height: 112rpx;
+}
+
+.detail-list {
+  overflow: hidden;
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 8rpx 18rpx rgba(63, 46, 15, 0.12);
+}
+
+.detail-row {
+  min-height: 112rpx;
+  padding: 20rpx 22rpx;
+  box-sizing: border-box;
+  border-bottom: 2rpx solid rgba(246, 212, 104, 0.78);
+}
+
+.detail-row:last-child {
+  border-bottom: 0;
+}
+
+.detail-row > view {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-row__title,
+.detail-row__meta {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.detail-row__title {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: var(--partner-ink);
+}
+
+.detail-row__meta {
+  margin-top: 6rpx;
+  font-size: 20rpx;
+  line-height: 1.4;
+  color: var(--partner-muted);
+}
+
+.detail-row__aside,
+.detail-row__status,
+.detail-row__delta {
+  flex: none;
+  max-width: 32%;
+  overflow-wrap: anywhere;
+  font-size: 22rpx;
+  text-align: right;
+  color: var(--partner-orange);
+}
+
+.detail-row__status {
+  padding: 7rpx 13rpx;
+  border-radius: 8rpx;
+  background: rgba(35, 135, 96, 0.14);
+  color: #216a4e;
+}
+
+.detail-row__status--warning {
+  background: rgba(229, 160, 36, 0.16);
+  color: #845b0f;
+}
+
+.detail-row__status--danger,
+.detail-row__delta--negative {
+  color: #8b201b;
+}
+
+.detail-row__delta {
+  font-family: var(--partner-font-display);
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.detail-row__delta--positive {
+  color: #216a4e;
+}
+
+.detail-empty-line {
+  display: flex;
+  align-items: center;
+  min-height: 104rpx;
+  padding: 0 22rpx;
+  box-sizing: border-box;
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.72);
+  font-size: 22rpx;
+  color: var(--partner-muted);
+}
+
+@media (max-width: 380px) {
+  .detail-metrics {
+    gap: 8rpx;
+  }
+
+  .detail-attendance {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -1,0 +1,21 @@
+@import "../../../styles/super-admin-workspace.wxss";
+
+.finance-report { min-height: 100vh; position: relative; overflow-x: hidden; background: var(--super-admin-gradient); color: var(--super-admin-ink); font-family: var(--super-admin-font-body); letter-spacing: 0; }
+.finance-report__wave { position: absolute; left: -12%; top: -292rpx; width: 124%; height: 480rpx; border-radius: 0 0 52% 46%; background: #fff; box-shadow: 0 7rpx 16rpx rgba(84,59,13,.16); pointer-events: none; }
+.finance-report__header { position: relative; display: flex; align-items: flex-start; gap: 12rpx; padding-left: 24rpx; min-height: 150rpx; box-sizing: content-box; }
+.finance-report__back { display: flex; align-items: center; justify-content: center; flex: none; width: var(--role-back-size); height: var(--role-back-size); padding: 0; margin: 2rpx 0 0; border-radius: 50%; background: var(--role-back-background); box-shadow: var(--role-back-shadow); font-size: var(--role-back-icon-size); line-height: 1; color: #343a32; }
+.finance-report button::after { border: 0; }
+.finance-report__mark { display: flex; flex-direction: column; align-items: center; justify-content: center; width: var(--role-page-mark-size); height: var(--role-page-mark-size); flex: none; border-radius: 50%; background: var(--role-page-mark-background); box-shadow: var(--role-page-mark-shadow); }
+.finance-report__mark-icon { font-size: var(--role-page-mark-icon-size); font-weight: 700; line-height: 1; }
+.finance-report__mark-title { margin-top: var(--role-page-mark-title-gap); font-size: var(--role-page-mark-title-font-size); color: var(--role-page-mark-ink); font-weight: 700; }
+.finance-report__body { position: relative; padding: 0 var(--super-admin-page-gap) 42rpx; }
+.finance-report__tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.finance-report__filters { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+.finance-report__filters picker { min-width: 0; }
+.finance-report__dates { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 12rpx; }
+.finance-report__date-separator { color: var(--super-admin-muted); font-size: 22rpx; }
+.finance-report__metrics .metric__value { white-space: normal; overflow-wrap: anywhere; }
+.finance-report__row-head { display: flex; align-items: center; gap: 12rpx; flex-wrap: wrap; }
+.finance-report .row__main { min-width: 0; }
+.finance-report .row__title, .finance-report .row__meta, .finance-report .row__value { white-space: normal; overflow-wrap: anywhere; }
+.finance-report__end { padding: 14rpx; text-align: center; }

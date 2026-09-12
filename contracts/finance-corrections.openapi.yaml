@@ -1,0 +1,275 @@
+# Headquarters receipt correction contract. It records bookkeeping corrections and never performs a cash refund.
+submit:
+  post:
+    operationId: submitFinanceReceiptCorrection
+    summary: Submit a VOID or REPLACE correction for an untouched issued receipt
+    description: FINANCE_CORRECTION_WRITE. Submission records an immutable proposal only; it does not change balances or original facts.
+    tags: [Finance]
+    parameters:
+      - { name: receiptId, in: path, required: true, schema: { type: string, format: uuid } }
+      - $ref: './openapi.yaml#/components/parameters/IdempotencyKey'
+    requestBody:
+      required: true
+      content:
+        application/json: { schema: { $ref: '#/schemas/CreateCorrection' } }
+    responses:
+      '201': { description: Submitted or same-key replay, content: { application/json: { schema: { $ref: '#/schemas/Envelope' } } } }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+list:
+  get:
+    operationId: listFinanceReceiptCorrections
+    summary: List receipt correction facts
+    description: FINANCE_CORRECTION_READ. Corrections remain separate from cash refunds.
+    tags: [Finance]
+    parameters:
+      - $ref: '#/parameters/Page'
+      - $ref: '#/parameters/PageSize'
+      - $ref: '#/parameters/CampusId'
+      - $ref: '#/parameters/ReceiptId'
+      - $ref: '#/parameters/Status'
+    responses:
+      '200': { description: Paginated corrections, content: { application/json: { schema: { $ref: '#/schemas/PageEnvelope' } } } }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+reviewList:
+  get:
+    operationId: listManagementFinanceReceiptCorrections
+    summary: List receipt corrections for headquarters review
+    description: FINANCE_CORRECTION_REVIEW only.
+    tags: [Management]
+    parameters:
+      - $ref: '#/parameters/Page'
+      - $ref: '#/parameters/PageSize'
+      - $ref: '#/parameters/CampusId'
+      - $ref: '#/parameters/ReceiptId'
+      - $ref: '#/parameters/Status'
+    responses:
+      '200': { description: Paginated corrections, content: { application/json: { schema: { $ref: '#/schemas/PageEnvelope' } } } }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+detail:
+  get:
+    operationId: getFinanceReceiptCorrection
+    summary: Read an immutable correction proposal and history
+    tags: [Finance]
+    parameters: [{ $ref: '#/parameters/Id' }]
+    responses:
+      '200': { description: FINANCE_CORRECTION_READ detail, content: { application/json: { schema: { $ref: '#/schemas/Envelope' } } } }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+reviewDetail:
+  get:
+    operationId: getManagementFinanceReceiptCorrection
+    summary: Read a correction for headquarters review
+    tags: [Management]
+    parameters: [{ $ref: '#/parameters/Id' }]
+    responses:
+      '200': { description: FINANCE_CORRECTION_REVIEW detail, content: { application/json: { schema: { $ref: '#/schemas/Envelope' } } } }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+actions:
+  post:
+    operationId: changeFinanceReceiptCorrection
+    summary: Withdraw or apply an approved correction
+    description: FINANCE may WITHDRAW a submitted request or APPLY an approved request. APPLY revalidates the untouched package under locks and atomically appends CORRECTION ledger entries. It never records a cash refund.
+    tags: [Finance]
+    parameters: [{ $ref: '#/parameters/Id' }, { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }]
+    requestBody: { $ref: '#/requestBodies/Action' }
+    responses:
+      '200': { $ref: '#/responses/Changed' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+reviewActions:
+  post:
+    operationId: reviewManagementFinanceReceiptCorrection
+    summary: Approve or reject a submitted correction
+    description: FINANCE_CORRECTION_REVIEW. Review never changes balances; the requester cannot review their own request.
+    tags: [Management]
+    parameters: [{ $ref: '#/parameters/Id' }, { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }]
+    requestBody: { $ref: '#/requestBodies/Action' }
+    responses:
+      '200': { $ref: '#/responses/Changed' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+originalProof:
+  get:
+    operationId: readFinanceCorrectionOriginalProof
+    summary: Read the original receipt proof through correction authorization
+    tags: [Finance]
+    parameters: [{ $ref: '#/parameters/Id' }]
+    responses:
+      '200': { $ref: '#/responses/Image' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+reviewOriginalProof:
+  get:
+    operationId: readManagementFinanceCorrectionOriginalProof
+    summary: Read the original receipt proof for review
+    tags: [Management]
+    parameters: [{ $ref: '#/parameters/Id' }]
+    responses:
+      '200': { $ref: '#/responses/Image' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+replacementProof:
+  get:
+    operationId: readFinanceCorrectionReplacementProof
+    summary: Read the proposed replacement proof
+    tags: [Finance]
+    parameters: [{ $ref: '#/parameters/Id' }]
+    responses:
+      '200': { $ref: '#/responses/Image' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+reviewReplacementProof:
+  get:
+    operationId: readManagementFinanceCorrectionReplacementProof
+    summary: Read the proposed replacement proof for review
+    tags: [Management]
+    parameters: [{ $ref: '#/parameters/Id' }]
+    responses:
+      '200': { $ref: '#/responses/Image' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+parameters:
+  Id: { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+  Page: { name: page, in: query, schema: { type: integer, minimum: 1, maximum: 1000000, default: 1 } }
+  PageSize: { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 50, default: 20 } }
+  CampusId: { name: campusId, in: query, schema: { type: string, format: uuid } }
+  ReceiptId: { name: receiptId, in: query, schema: { type: string, format: uuid } }
+  Status: { name: status, in: query, schema: { $ref: '#/schemas/CorrectionStatus' } }
+requestBodies:
+  Action:
+    required: true
+    content: { application/json: { schema: { $ref: '#/schemas/CorrectionAction' } } }
+responses:
+  Changed:
+    description: Atomic transition or same-key replay; prior facts remain immutable.
+    content: { application/json: { schema: { $ref: '#/schemas/Envelope' } } }
+  Image:
+    description: Original authenticated image bytes, private and no-store.
+    content:
+      image/png: { schema: { type: string, format: binary } }
+      image/jpeg: { schema: { type: string, format: binary } }
+schemas:
+  CorrectionStatus:
+    type: string
+    enum: [SUBMITTED, APPROVED, REJECTED, WITHDRAWN, APPLIED]
+  CorrectionType:
+    type: string
+    enum: [VOID, REPLACE]
+  PackageSnapshot:
+    type: object
+    additionalProperties: false
+    required: [name, mainUnits, giftUnits, validFrom, expiresAt]
+    properties:
+      name: { type: string, minLength: 1, maxLength: 200 }
+      mainUnits: { type: integer, minimum: 1, maximum: 100000000 }
+      giftUnits: { type: integer, minimum: 0, maximum: 100000000 }
+      validFrom: { type: string, format: date-time }
+      expiresAt: { type: [string, 'null'], format: date-time }
+  ReplacementInput:
+    type: object
+    additionalProperties: false
+    required: [campusId, studentId, amountFen, receivedOn, channel, proofFileId, package]
+    properties:
+      campusId: { type: string, format: uuid }
+      studentId: { type: string, format: uuid }
+      amountFen: { type: integer, minimum: 1, maximum: 2147483647 }
+      receivedOn: { type: string, format: date }
+      channel: { type: string, enum: [WECHAT, ALIPAY, BANK, CASH, OTHER] }
+      proofFileId: { type: string, format: uuid }
+      note: { type: string, maxLength: 500, default: '' }
+      package: { $ref: '#/schemas/PackageSnapshot' }
+  VoidCorrection:
+    type: object
+    additionalProperties: false
+    required: [type, reason]
+    properties:
+      type: { type: string, const: VOID }
+      reason: { type: string, minLength: 1, maxLength: 500 }
+  ReplaceCorrection:
+    type: object
+    additionalProperties: false
+    required: [type, reason, replacement]
+    properties:
+      type: { type: string, const: REPLACE }
+      reason: { type: string, minLength: 1, maxLength: 500 }
+      replacement: { $ref: '#/schemas/ReplacementInput' }
+  CreateCorrection:
+    oneOf:
+      - $ref: '#/schemas/VoidCorrection'
+      - $ref: '#/schemas/ReplaceCorrection'
+    discriminator: { propertyName: type }
+  CorrectionAction:
+    type: object
+    additionalProperties: false
+    required: [action, expectedVersion, reason]
+    properties:
+      action: { type: string, enum: [APPROVE, REJECT, WITHDRAW, APPLY] }
+      expectedVersion: { type: integer, minimum: 1 }
+      reason: { type: string, minLength: 1, maxLength: 500 }
+  ReceiptPackageSnapshot:
+    type: object
+    required: [campusId, campusName, studentId, studentName, amountFen, receivedOn, channel, note, package]
+    properties:
+      campusId: { type: string, format: uuid }
+      campusName: { type: string }
+      studentId: { type: string, format: uuid }
+      studentName: { type: string }
+      amountFen: { type: integer }
+      receivedOn: { type: string, format: date }
+      channel: { type: string }
+      note: { type: string }
+      proofAvailable: { type: boolean }
+      package:
+        allOf:
+          - $ref: '#/schemas/PackageSnapshot'
+  Event:
+    type: object
+    required: [id, action, toStatus, version, reason, actorName, createdAt]
+    properties:
+      id: { type: string, format: uuid }
+      action: { type: string }
+      fromStatus: { type: [string, 'null'] }
+      toStatus: { $ref: '#/schemas/CorrectionStatus' }
+      version: { type: integer }
+      reason: { type: string }
+      actorName: { type: string }
+      createdAt: { type: string, format: date-time }
+  Correction:
+    type: object
+    required: [id, originalReceiptId, originalCoursePackageId, type, status, version, reason, requestedByUserId, createdAt, original, proposedReplacement, replacementReceiptId, correctionEffectFen, events]
+    properties:
+      id: { type: string, format: uuid }
+      originalReceiptId: { type: string, format: uuid }
+      originalCoursePackageId: { type: string, format: uuid }
+      type: { $ref: '#/schemas/CorrectionType' }
+      status: { $ref: '#/schemas/CorrectionStatus' }
+      version: { type: integer }
+      reason: { type: string }
+      requestedByUserId: { type: string, format: uuid }
+      createdAt: { type: string, format: date-time }
+      original: { $ref: '#/schemas/ReceiptPackageSnapshot' }
+      proposedReplacement:
+        oneOf:
+          - type: 'null'
+          - $ref: '#/schemas/ReceiptPackageSnapshot'
+      replacementReceiptId: { type: [string, 'null'], format: uuid }
+      correctionEffectFen: { type: integer, format: int64, description: VOID is negative original amount; REPLACE is replacement minus original. Only APPLIED affects receipt summaries. }
+      events: { type: array, items: { $ref: '#/schemas/Event' } }
+  Envelope:
+    type: object
+    properties: { data: { $ref: '#/schemas/Correction' } }
+  PageEnvelope:
+    type: object
+    properties:
+      data:
+        type: object
+        required: [items, total, page, pageSize]
+        properties:
+          items: { type: array, items: { $ref: '#/schemas/Correction' } }
+          total: { type: integer }
+          page: { type: integer }
+          pageSize: { type: integer }

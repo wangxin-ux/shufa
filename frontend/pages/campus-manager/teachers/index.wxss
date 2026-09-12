@@ -1,0 +1,280 @@
+.teachers-page {
+  padding: 24rpx 0 60rpx;
+}
+
+.teachers-page__heading {
+  min-height: 164rpx;
+  padding: 26rpx 28rpx;
+  box-sizing: border-box;
+  border-radius: 8rpx;
+  background: var(--campus-manager-orange);
+  box-shadow: var(--campus-manager-shadow);
+}
+
+.teachers-page__title,
+.teachers-page__summary {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.teachers-page__title {
+  font-family: var(--campus-manager-font-display);
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.teachers-page__summary {
+  margin-top: 10rpx;
+  font-size: 23rpx;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.roster-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-top: 20rpx;
+}
+
+.roster-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8rpx;
+  margin-top: 20rpx;
+  padding: 8rpx;
+  box-sizing: border-box;
+  border: 2rpx solid rgba(255, 116, 71, 0.2);
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 7rpx 16rpx rgba(63, 46, 15, 0.1);
+}
+
+.roster-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 68rpx;
+  margin: 0;
+  padding: 0 18rpx;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 6rpx;
+  background: transparent;
+  font-size: 24rpx;
+  line-height: 1.2;
+  color: var(--campus-manager-muted);
+}
+
+.roster-tab::after {
+  border: 0;
+}
+
+.roster-tab--active {
+  background: var(--campus-manager-orange);
+  box-shadow: 0 6rpx 14rpx rgba(158, 69, 21, 0.2);
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.roster-action,
+.quick-form__submit,
+.teacher-search__button,
+.page-state__retry,
+.load-more {
+  display: flex;
+  min-height: var(--campus-manager-touch-min);
+  margin: 0;
+  padding: 0 18rpx;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.88);
+  font-size: 23rpx;
+  line-height: 1.2;
+  color: var(--campus-manager-ink);
+  text-align: center;
+}
+
+.roster-action::after,
+.quick-form__submit::after,
+.teacher-search__button::after,
+.page-state__retry::after,
+.load-more::after {
+  border: 0;
+}
+
+.roster-action--primary,
+.quick-form__submit,
+.teacher-search__button,
+.page-state__retry,
+.load-more {
+  background: var(--campus-manager-orange);
+  color: #ffffff;
+}
+
+.quick-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx;
+  margin-top: 18rpx;
+  padding: 22rpx;
+  box-sizing: border-box;
+  border-left: 8rpx solid var(--campus-manager-orange);
+  border-radius: 8rpx;
+  background: var(--campus-manager-glass);
+  box-shadow: 0 7rpx 16rpx rgba(63, 46, 15, 0.13);
+}
+
+.quick-form__title,
+.quick-form__submit {
+  grid-column: 1 / -1;
+}
+
+.quick-form__title {
+  font-family: var(--campus-manager-font-display);
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.quick-form__field {
+  width: 100%;
+  min-height: var(--campus-manager-touch-min);
+  padding: 0 20rpx;
+  box-sizing: border-box;
+  border: 2rpx solid rgba(255, 116, 71, 0.26);
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.94);
+  font-size: 25rpx;
+}
+
+.teacher-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12rpx;
+  margin-top: 20rpx;
+  padding: 14rpx;
+  box-sizing: border-box;
+  border-left: 8rpx solid var(--campus-manager-orange);
+  border-radius: 8rpx;
+  background: var(--campus-manager-glass);
+  box-shadow: 0 7rpx 16rpx rgba(63, 46, 15, 0.13);
+}
+
+.teacher-search__input {
+  min-width: 0;
+  min-height: var(--campus-manager-touch-min);
+  padding: 0 20rpx;
+  box-sizing: border-box;
+  border: 2rpx solid rgba(255, 116, 71, 0.26);
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.94);
+  font-size: 25rpx;
+}
+
+.teacher-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 22rpx;
+}
+
+.teacher-row {
+  display: flex;
+  min-height: 132rpx;
+  padding: 22rpx 24rpx;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+  box-sizing: border-box;
+  border-left: 8rpx solid var(--campus-manager-orange);
+  border-radius: 8rpx;
+  background: var(--campus-manager-glass);
+  box-shadow: 0 8rpx 18rpx rgba(63, 46, 15, 0.14);
+}
+
+.teacher-row__identity {
+  min-width: 0;
+}
+
+.teacher-row__name,
+.teacher-row__phone {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.teacher-row__name {
+  font-family: var(--campus-manager-font-display);
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.teacher-row__phone {
+  margin-top: 8rpx;
+  font-size: 23rpx;
+  color: var(--campus-manager-muted);
+}
+
+.teacher-row__status {
+  flex: none;
+  padding: 8rpx 14rpx;
+  border-radius: 6rpx;
+  background: rgba(35, 135, 96, 0.14);
+  font-size: 21rpx;
+  color: #176a4b;
+}
+
+.teacher-row__status--disabled {
+  background: rgba(153, 10, 4, 0.12);
+  color: var(--campus-manager-red);
+}
+
+.page-state {
+  display: flex;
+  min-height: 390rpx;
+  margin-top: 22rpx;
+  padding: 32rpx;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border-radius: 8rpx;
+  background: var(--campus-manager-glass);
+  text-align: center;
+}
+
+.page-state__title {
+  font-family: var(--campus-manager-font-display);
+  font-size: 38rpx;
+  font-weight: 700;
+}
+
+.page-state__message {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: var(--campus-manager-muted);
+}
+
+.page-state__retry,
+.load-more {
+  margin-top: 22rpx;
+}
+
+.load-more {
+  width: 100%;
+}
+
+@media (max-width: 380px) {
+  .quick-form {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-form__title,
+  .quick-form__submit {
+    grid-column: 1;
+  }
+}

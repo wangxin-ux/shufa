@@ -1,0 +1,79 @@
+.metric-card {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  min-height: var(--role-home-glass-height);
+  overflow: hidden;
+  box-sizing: border-box;
+  background: var(--role-home-glass-background);
+  border-radius: var(--role-home-glass-radius);
+  box-shadow: var(--role-home-glass-shadow);
+  padding: 35rpx 0;
+}
+
+.metric-card__glass {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.metric-card__item {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.metric-card__divider {
+  position: absolute;
+  left: 0;
+  top: 26%;
+  height: 56%;
+  width: 5rpx;
+  background: #ffffff;
+}
+
+.metric-card__label {
+  font-size: 15rpx;
+  color: #fb6c3f;
+}
+
+.metric-card__value-row {
+  display: flex;
+  align-items: baseline;
+  margin-top: 8rpx;
+}
+
+.metric-card__value {
+  font-size: 49rpx;
+  font-family: var(--parent-font-display);
+  font-weight: 700;
+  color: #000000;
+}
+
+.metric-card__unit {
+  font-size: 15rpx;
+  color: #000000;
+  margin-left: 4rpx;
+}
+
+.metric-card__unit--percent {
+  margin-left: 0;
+  font-size: 49rpx;
+  font-family: var(--parent-font-display);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.metric-card__sub {
+  margin-top: 4rpx;
+  font-size: 15rpx;
+  color: #a0aaa8;
+}

@@ -1,0 +1,36 @@
+@import "../../../styles/partner-workspace.wxss";
+
+.teacher-card__metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx;
+  margin-top: 20rpx;
+  padding-top: 18rpx;
+  border-top: 2rpx solid rgba(32, 29, 23, 0.12);
+}
+
+.teacher-card__metric {
+  min-width: 0;
+}
+
+.teacher-card__value,
+.teacher-card__label {
+  display: block;
+  max-width: 100%;
+}
+
+.teacher-card__value {
+  overflow: hidden;
+  font-family: var(--partner-font-display);
+  font-size: 35rpx;
+  font-weight: 700;
+  color: var(--partner-red);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.teacher-card__label {
+  margin-top: 5rpx;
+  font-size: 20rpx;
+  color: var(--partner-muted);
+}

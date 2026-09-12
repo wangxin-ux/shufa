@@ -1,0 +1,140 @@
+lessonConsumption:
+  get:
+    operationId: listFinanceLessonConsumptionReport
+    summary: Read lesson consumption backed by the lesson ledger
+    tags: [Finance]
+    description: FINANCE_REPORT_READ and a single headquarters FINANCE identity required. Inclusive Asia/Shanghai dates filter lesson completion time. CONSUME rows and their REVERSAL rows are separate signed facts; REFUND and ADJUSTMENT are excluded. Main-unit amounts use the immutable receipt/issuance ratio and cumulative half-up allocation, while gift units are zero-value. Historical packages without a finance issuance return amountFen null and amountStatus PENDING_CHECK. Queries matching more than 5000 rows return 400 and require a narrower date or campus scope.
+    parameters:
+      - { $ref: '#/parameters/From' }
+      - { $ref: '#/parameters/To' }
+      - { $ref: '#/parameters/Campus' }
+      - { $ref: '#/parameters/Page' }
+      - { $ref: '#/parameters/PageSize' }
+    responses:
+      '200':
+        description: Stable descending lesson completion time and ledger ID pagination; summary covers all filtered rows.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  allOf:
+                    - { $ref: '#/schemas/PageResult' }
+                    - type: object
+                      required: [items, summary]
+                      properties:
+                        items: { type: array, items: { $ref: '#/schemas/Consumption' } }
+                        summary:
+                          type: object
+                          required: [mainUnits, giftUnits, knownAmountFen, pendingCheckCount]
+                          properties:
+                            mainUnits: { type: integer, description: Signed hundredths of a lesson. }
+                            giftUnits: { type: integer, description: Signed hundredths of a lesson. }
+                            knownAmountFen: { type: integer, description: Signed allocated amount for rows with reliable issuance snapshots. }
+                            pendingCheckCount: { type: integer, minimum: 0 }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+refunds:
+  get:
+    operationId: listFinancePaidRefundReport
+    summary: Read completed actual refund payments
+    tags: [Finance]
+    description: FINANCE_REPORT_READ and a single headquarters FINANCE identity required. Inclusive Asia/Shanghai dates filter the immutable actual paidAt timestamp, not request, review or recording time. Only PAID refunds with a payment fact are included; no proof metadata, account details or student phone fields are returned. Queries matching more than 5000 rows return 400 and require a narrower date or campus scope.
+    parameters:
+      - { $ref: '#/parameters/From' }
+      - { $ref: '#/parameters/To' }
+      - { $ref: '#/parameters/Campus' }
+      - { $ref: '#/parameters/Page' }
+      - { $ref: '#/parameters/PageSize' }
+    responses:
+      '200':
+        description: Stable descending actual paid time and refund ID pagination; summary covers all filtered rows.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  allOf:
+                    - { $ref: '#/schemas/PageResult' }
+                    - type: object
+                      required: [items, summary]
+                      properties:
+                        items: { type: array, items: { $ref: '#/schemas/PaidRefund' } }
+                        summary:
+                          type: object
+                          required: [actualRefundFen, mainUnits, giftUnits]
+                          properties:
+                            actualRefundFen: { type: integer, minimum: 0 }
+                            mainUnits: { type: integer, minimum: 0 }
+                            giftUnits: { type: integer, minimum: 0 }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+export:
+  get:
+    operationId: exportFinanceReport
+    summary: Download an audited finance report workbook
+    tags: [Finance]
+    description: FINANCE_REPORT_EXPORT and a single headquarters FINANCE identity required. Uses the corresponding report filters and semantics in one RepeatableRead snapshot, up to 5000 rows. Export excludes phone, proof metadata, account details and attachment bytes.
+    parameters:
+      - { name: kind, in: path, required: true, schema: { type: string, enum: [lesson-consumption, refunds] } }
+      - { $ref: '#/parameters/From' }
+      - { $ref: '#/parameters/To' }
+      - { $ref: '#/parameters/Campus' }
+    responses:
+      '200':
+        description: Excel workbook containing scope, summary and details.
+        content:
+          application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+            schema: { type: string, format: binary }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+parameters:
+  From: { name: from, in: query, schema: { type: string, format: date }, description: Inclusive Shanghai calendar date; must not exceed to. }
+  To: { name: to, in: query, schema: { type: string, format: date }, description: Inclusive Shanghai calendar date. }
+  Campus: { name: campusId, in: query, schema: { type: string, format: uuid } }
+  Page: { name: page, in: query, schema: { type: integer, minimum: 1, maximum: 1000000, default: 1 } }
+  PageSize: { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 50, default: 20 } }
+schemas:
+  PageResult:
+    type: object
+    required: [total, page, pageSize]
+    properties:
+      total: { type: integer, minimum: 0 }
+      page: { type: integer, minimum: 1 }
+      pageSize: { type: integer, minimum: 1, maximum: 50 }
+  Consumption:
+    type: object
+    required: [id, entryType, campusId, campusName, studentName, packageName, courseName, lessonCompletedAt, bucket, units, amountFen, amountStatus]
+    properties:
+      id: { type: string, format: uuid }
+      entryType: { type: string, enum: [CONSUME, REVERSAL] }
+      campusId: { type: string, format: uuid }
+      campusName: { type: string }
+      studentName: { type: string }
+      packageName: { type: string }
+      courseName: { type: string }
+      lessonCompletedAt: { type: string, format: date-time }
+      bucket: { type: string, enum: [MAIN, GIFT] }
+      units: { type: integer, description: Positive consumption or negative reversal in hundredths of a lesson. }
+      amountFen: { type: [integer, 'null'], description: Positive consumption or negative reversal; null when the original paid ratio is not reliable. }
+      amountStatus: { type: string, enum: [KNOWN, PENDING_CHECK] }
+  PaidRefund:
+    type: object
+    required: [id, campusId, campusName, studentName, packageName, paidAt, amountFen, mainUnits, giftUnits]
+    properties:
+      id: { type: string, format: uuid }
+      campusId: { type: string, format: uuid }
+      campusName: { type: string }
+      studentName: { type: string }
+      packageName: { type: string }
+      paidAt: { type: string, format: date-time }
+      amountFen: { type: integer, minimum: 1 }
+      mainUnits: { type: integer, minimum: 0 }
+      giftUnits: { type: integer, minimum: 0 }

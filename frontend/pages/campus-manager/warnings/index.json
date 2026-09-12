@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "campus-manager-page-shell": "/components/campus-manager-page-shell/campus-manager-page-shell"
+  },
+  "enablePullDownRefresh": true
+}

@@ -1,0 +1,330 @@
+# Headquarters refund contract; funds are recorded offline, never transferred by these APIs.
+quote:
+  get:
+    operationId: quoteFinanceRefund
+    summary: Calculate refund reference from original issuance
+    description: FINANCE_REFUND_READ. No reservation is created. Suggested amount is the smaller of the half-up reference and remaining cash allowance; submit revalidates under locks.
+    tags: [Finance]
+    parameters:
+      - { name: receiptId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: mainUnits, in: query, required: true, schema: { type: integer, minimum: 1, maximum: 100000000 } }
+      - { name: giftUnits, in: query, required: true, schema: { type: integer, minimum: 0, maximum: 100000000 } }
+    responses:
+      '200':
+        description: Current server-calculated quote.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    receiptId: { type: string, format: uuid }
+                    mainUnits: { type: integer }
+                    giftUnits: { type: integer }
+                    availableMainUnits: { type: integer }
+                    availableGiftUnits: { type: integer }
+                    referenceAmountFen: { type: integer }
+                    suggestedAmountFen: { type: integer }
+                    maxAmountFen: { type: integer }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+submit:
+  post:
+    operationId: submitFinanceRefund
+    summary: Reserve lessons and cash allowance for a refund
+    tags: [Finance]
+    parameters:
+      - name: receiptId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      - $ref: './openapi.yaml#/components/parameters/IdempotencyKey'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/CreateRefund' }
+    responses:
+      '201':
+        description: Submitted or same-key replay. FINANCE_REFUND_WRITE only.
+        content:
+          application/json: { schema: { $ref: '#/schemas/Envelope' } }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+list:
+  get:
+    operationId: listFinanceRefunds
+    summary: List headquarters finance refunds
+    tags: [Finance]
+    description: FINANCE_REFUND_READ; chronological submission dates use Asia/Shanghai for display. Pagination includes all statuses by default.
+    parameters:
+      - { name: page, in: query, schema: { type: integer, minimum: 1, maximum: 1000000, default: 1 } }
+      - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 50, default: 20 } }
+      - { name: campusId, in: query, schema: { type: string, format: uuid } }
+      - { name: receiptId, in: query, schema: { type: string, format: uuid } }
+      - { name: status, in: query, schema: { $ref: '#/schemas/RefundStatus' } }
+    responses:
+      '200':
+        description: Paginated refund facts.
+        content:
+          application/json: { schema: { $ref: '#/schemas/PageEnvelope' } }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+reviewList:
+  get:
+    operationId: listManagementFinanceRefunds
+    summary: List refunds for headquarters review
+    tags: [Management]
+    description: FINANCE_REFUND_REVIEW only; separate from existing earning review.
+    parameters:
+      - { name: page, in: query, schema: { type: integer, minimum: 1, maximum: 1000000, default: 1 } }
+      - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 50, default: 20 } }
+      - { name: campusId, in: query, schema: { type: string, format: uuid } }
+      - { name: receiptId, in: query, schema: { type: string, format: uuid } }
+      - { name: status, in: query, schema: { $ref: '#/schemas/RefundStatus' } }
+    responses:
+      '200':
+        description: Paginated refund facts.
+        content:
+          application/json: { schema: { $ref: '#/schemas/PageEnvelope' } }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+detail:
+  get:
+    operationId: getFinanceRefund
+    summary: Read refund history and actual payment
+    tags: [Finance]
+    parameters: [{ $ref: '#/parameters/Id' }]
+    responses:
+      '200':
+        description: FINANCE_REFUND_READ-only detail without storage paths.
+        content:
+          application/json: { schema: { $ref: '#/schemas/Envelope' } }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+reviewDetail:
+  get:
+    operationId: getManagementFinanceRefund
+    summary: Read refund facts for review
+    tags: [Management]
+    parameters: [{ $ref: '#/parameters/Id' }]
+    responses:
+      '200':
+        description: FINANCE_REFUND_REVIEW-only detail.
+        content:
+          application/json: { schema: { $ref: '#/schemas/Envelope' } }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+actions:
+  post:
+    operationId: changeFinanceRefund
+    summary: Withdraw or request cancellation of an unpaid refund
+    description: FINANCE_REFUND_WRITE; only WITHDRAW and REQUEST_CANCELLATION. No approval or payment actions.
+    tags: [Finance]
+    parameters: [{ $ref: '#/parameters/Id' }, { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }]
+    requestBody: { $ref: '#/requestBodies/Action' }
+    responses:
+      '200': { $ref: '#/responses/Changed' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+paymentActions:
+  post:
+    operationId: processFinanceRefundPayment
+    summary: Start, investigate or record an offline refund
+    description: FINANCE_REFUND_PAY; only START_PAYMENT, MARK_UNCERTAIN, RECORD_PAYMENT. Never initiates money transfer.
+    tags: [Finance]
+    parameters: [{ $ref: '#/parameters/Id' }, { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }]
+    requestBody: { $ref: '#/requestBodies/Action' }
+    responses:
+      '200': { $ref: '#/responses/Changed' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+reviewActions:
+  post:
+    operationId: reviewManagementFinanceRefund
+    summary: Review refund or approved cancellation
+    description: FINANCE_REFUND_REVIEW; only APPROVE, REJECT, CONFIRM_CANCELLATION, DENY_CANCELLATION. Requester cannot self-review.
+    tags: [Management]
+    parameters: [{ $ref: '#/parameters/Id' }, { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }]
+    requestBody: { $ref: '#/requestBodies/Action' }
+    responses:
+      '200': { $ref: '#/responses/Changed' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+upload:
+  post:
+    operationId: uploadFinanceRefundProof
+    summary: Upload an uploader-owned private refund proof
+    description: FINANCE_REFUND_PAY. PNG/JPEG maximum 3 MiB, binary signature checked. No public URL; original receipt proofs cannot be reused.
+    tags: [Finance]
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required: [file]
+            properties:
+              file: { type: string, format: binary }
+    responses:
+      '201':
+        description: Uploaded metadata.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    id: { type: string, format: uuid }
+                    mimeType: { type: string, enum: [image/png, image/jpeg] }
+                    sizeBytes: { type: integer }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+proof:
+  get:
+    operationId: readFinanceRefundProof
+    summary: Read linked actual refund proof
+    description: FINANCE_REFUND_READ. Private no-store; unlinked uploads cannot be downloaded.
+    tags: [Finance]
+    parameters: [{ $ref: '#/parameters/Id' }]
+    responses:
+      '200': { $ref: '#/responses/Image' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+reviewProof:
+  get:
+    operationId: readManagementFinanceRefundProof
+    summary: Read linked refund proof for headquarters review
+    description: FINANCE_REFUND_REVIEW. Private no-store.
+    tags: [Management]
+    parameters: [{ $ref: '#/parameters/Id' }]
+    responses:
+      '200': { $ref: '#/responses/Image' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+parameters:
+  Id: { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+requestBodies:
+  Action:
+    required: true
+    content:
+      application/json: { schema: { $ref: '#/schemas/RefundAction' } }
+responses:
+  Changed:
+    description: Atomic state change or same-key replay; all prior facts retained.
+    content:
+      application/json: { schema: { $ref: '#/schemas/Envelope' } }
+  Image:
+    description: Original authenticated image bytes.
+    content:
+      image/png: { schema: { type: string, format: binary } }
+      image/jpeg: { schema: { type: string, format: binary } }
+schemas:
+  Envelope:
+    type: object
+    properties:
+      data: { $ref: '#/schemas/Refund' }
+  PageEnvelope:
+    type: object
+    properties:
+      data:
+        type: object
+        required: [items, page, pageSize, total]
+        properties:
+          items: { type: array, items: { $ref: '#/schemas/Refund' } }
+          page: { type: integer }
+          pageSize: { type: integer }
+          total: { type: integer }
+  RefundStatus:
+    type: string
+    enum: [SUBMITTED, APPROVED, REJECTED, WITHDRAWN, CANCEL_REQUESTED, CANCELLED, PAYING, UNCERTAIN, PAID]
+  CreateRefund:
+    type: object
+    additionalProperties: false
+    required: [mainUnits, giftUnits, amountFen, reason]
+    properties:
+      mainUnits: { type: integer, minimum: 1, maximum: 100000000 }
+      giftUnits: { type: integer, minimum: 0, maximum: 100000000 }
+      amountFen: { type: integer, minimum: 1, maximum: 2147483647 }
+      reason: { type: string, minLength: 1, maxLength: 500 }
+    description: |
+      Single headquarters FINANCE only. Receipt must have an immutable issuance.
+      Original amount / initial MAIN units determines the half-up integer-fen reference;
+      gift units never enter the price. One atomic transaction reserves units and money,
+      without decreasing gross balances or recording payment. Completed and pending
+      refunds together cannot exceed original receipt cash or original granted quantities.
+      This cash-refund workflow excludes zero-cash/gift-only reclamation and correction.
+  RefundAction:
+    type: object
+    additionalProperties: false
+    required: [action, expectedVersion, reason]
+    properties:
+      action:
+        type: string
+        enum: [APPROVE, REJECT, WITHDRAW, START_PAYMENT, MARK_UNCERTAIN, REQUEST_CANCELLATION, CONFIRM_CANCELLATION, DENY_CANCELLATION, RECORD_PAYMENT]
+      expectedVersion: { type: integer, minimum: 1 }
+      reason: { type: string, minLength: 1, maxLength: 500 }
+      payment: { $ref: '#/schemas/RecordRefundPayment' }
+    description: |
+      Payment object required only for RECORD_PAYMENT and forbidden for other actions.
+      APPROVE/REJECT/CONFIRM_CANCELLATION/DENY_CANCELLATION require a single
+      headquarters SUPER_ADMIN, never the requester. Other actions require FINANCE.
+      WITHDRAW is allowed only before approval. Approved cancellation first requires a
+      FINANCE request followed by admin confirmation. PAYING/UNCERTAIN never release
+      reservations automatically. RECORD_PAYMENT accepts PAYING or UNCERTAIN with
+      verified offline payment evidence; it never initiates any bank/WeChat transaction.
+      Mutations require Idempotency-Key; stale versions or invalid transitions return 409.
+  RecordRefundPayment:
+    type: object
+    additionalProperties: false
+    required: [amountFen, paidAt, proofFileId, externalReference]
+    properties:
+      amountFen: { type: integer, minimum: 1, maximum: 2147483647, description: Must exactly equal approved amount. }
+      paidAt: { type: string, format: date-time, description: Explicit offset required; not future or before this workflow entered PAYING. }
+      proofFileId: { type: string, format: uuid, description: 'Uploader-owned unused FINANCE_REFUND_PROOF, PNG/JPEG up to 3 MiB.' }
+      externalReference: { type: string, minLength: 1, maxLength: 100, description: Unique offline payment reference; never a bank account or secret. }
+  Refund:
+    type: object
+    required: [id, receiptId, coursePackageId, campusId, campusName, studentId, studentName, mainUnits, giftUnits, referenceAmountFen, amountFen, reason, status, version, requestedByUserId, createdAt, events, payment]
+    properties:
+      id: { type: string, format: uuid }
+      receiptId: { type: string, format: uuid }
+      coursePackageId: { type: string, format: uuid }
+      campusId: { type: string, format: uuid }
+      campusName: { type: string }
+      studentId: { type: string, format: uuid }
+      studentName: { type: string }
+      mainUnits: { type: integer }
+      giftUnits: { type: integer }
+      referenceAmountFen: { type: integer }
+      amountFen: { type: integer }
+      reason: { type: string }
+      status: { $ref: '#/schemas/RefundStatus' }
+      version: { type: integer }
+      requestedByUserId: { type: string, format: uuid }
+      createdAt: { type: string, format: date-time }
+      events:
+        type: array
+        items:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            action: { type: string }
+            fromStatus: { type: [string, 'null'] }
+            toStatus: { $ref: '#/schemas/RefundStatus' }
+            version: { type: integer }
+            reason: { type: string }
+            actorName: { type: string }
+            createdAt: { type: string, format: date-time }
+      payment:
+        oneOf:
+          - type: 'null'
+          - type: object
+            properties:
+              amountFen: { type: integer }
+              paidAt: { type: string, format: date-time }
+              recordedAt: { type: string, format: date-time }
+              externalReference: { type: string }

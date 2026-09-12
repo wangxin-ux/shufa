@@ -1,0 +1,74 @@
+<super-admin-page-shell
+  show-back
+  mark-title="我的"
+  mark-icon="/pages/super-admin/assets/profile-mark-glyph.png"
+  surface-page
+  plain-mark="{{true}}"
+  style="--super-admin-surface: #ffffff;"
+>
+  <view class="profile">
+    <view wx:if="{{viewState === 'loading'}}" class="state">
+      <text class="state__title">正在加载我的资料</text>
+    </view>
+    <view wx:elif="{{viewState === 'error' || viewState === 'forbidden'}}" class="state">
+      <text class="state__title">无法查看资料</text>
+      <text class="state__message">{{errorMessage}}</text>
+      <button class="state__retry" bindtap="onRetry">重试</button>
+    </view>
+    <block wx:else>
+      <view class="profile__hero">
+        <view class="profile__identity-card">
+          <text class="profile__name">{{displayName}}</text>
+          <text class="profile__role">超级管理员</text>
+          <text class="profile__campus">{{campusName}}</text>
+        </view>
+        <image
+          class="profile__character"
+          src="/pages/super-admin/assets/profile-top-character.png"
+          mode="widthFix"
+          aria-hidden="true"
+        />
+      </view>
+
+      <view class="profile__menu-stage">
+        <image
+          class="profile__lower"
+          src="/pages/super-admin/assets/profile-lower-character.png"
+          mode="widthFix"
+          aria-hidden="true"
+        />
+        <view class="profile__menu-card">
+          <button class="profile__menu-row" data-url="/pages/super-admin/staff-accounts/index" bindtap="onNavigate">
+            <view class="profile__menu-main"><view class="profile__menu-bullet"></view><text class="profile__menu-label">账号管理</text></view>
+            <text class="profile__menu-command">管理</text>
+          </button>
+          <button class="profile__menu-row" data-url="/pages/super-admin/group-campaigns/index" bindtap="onNavigate">
+            <view class="profile__menu-main"><view class="profile__menu-bullet"></view><text class="profile__menu-label">拼团活动</text></view>
+            <text class="profile__menu-command">管理</text>
+          </button>
+          <button class="profile__menu-row" data-url="/pages/super-admin/finance-review/index" bindtap="onNavigate">
+            <view class="profile__menu-main"><view class="profile__menu-bullet"></view><text class="profile__menu-label">财务审批</text></view>
+            <text class="profile__menu-command">审核</text>
+          </button>
+          <button class="profile__menu-row" data-url="/pages/super-admin/settings/index" bindtap="onNavigate">
+            <view class="profile__menu-main"><view class="profile__menu-bullet"></view><text class="profile__menu-label">全局设置</text></view>
+            <text class="profile__menu-command">查看</text>
+          </button>
+          <button class="profile__menu-row" data-url="/pages/super-admin/role-permissions/index" bindtap="onNavigate">
+            <view class="profile__menu-main"><view class="profile__menu-bullet"></view><text class="profile__menu-label">角色权限</text></view>
+            <text class="profile__menu-command">查看</text>
+          </button>
+          <button class="profile__menu-row" data-url="/pages/super-admin/audit-logs/index" bindtap="onNavigate">
+            <view class="profile__menu-main"><view class="profile__menu-bullet"></view><text class="profile__menu-label">操作日志</text></view>
+            <text class="profile__menu-command">查看</text>
+          </button>
+          <button class="profile__menu-row" data-url="/pages/super-admin/brand/index" bindtap="onNavigate">
+            <view class="profile__menu-main"><view class="profile__menu-bullet"></view><text class="profile__menu-label">品牌配置</text></view>
+            <text class="profile__menu-command">查看</text>
+          </button>
+        </view>
+        <session-logout id="sessionLogout" />
+      </view>
+    </block>
+  </view>
+</super-admin-page-shell>

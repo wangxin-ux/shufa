@@ -1,0 +1,29 @@
+<campus-manager-page-shell markTitle="人员" markIcon="/pages/campus-manager/assets/icon-student-create.png" showBack="{{true}}">
+  <view class="teachers-page">
+    <view class="teachers-page__heading"><view><text class="teachers-page__title">人员管理</text><text class="teachers-page__summary">本校区共 {{total}} 名教师</text></view></view>
+    <view class="roster-tabs">
+      <button class="roster-tab" bindtap="onStudentRosterTap">学员名册</button>
+      <button class="roster-tab roster-tab--active" hover-class="none">教师名册</button>
+    </view>
+    <view class="roster-actions">
+      <button class="roster-action roster-action--primary" bindtap="onQuickToggle">{{quickOpen ? '收起录入' : '快捷录入'}}</button>
+      <button class="roster-action" bindtap="onRosterImport">Excel 导入</button>
+      <button class="roster-action" bindtap="onRosterExport">导出 Excel</button>
+    </view>
+    <view wx:if="{{quickOpen}}" class="quick-form">
+      <text class="quick-form__title">录入教师</text>
+      <input class="quick-form__field" maxlength="100" value="{{quickTeacherName}}" bindinput="onQuickNameInput" placeholder="教师姓名" />
+      <input class="quick-form__field" type="number" maxlength="11" value="{{quickPhone}}" bindinput="onQuickPhoneInput" placeholder="手机号" />
+      <button class="quick-form__submit" disabled="{{rosterBusy}}" bindtap="onQuickSubmit">{{rosterBusy ? '正在录入' : '确认录入'}}</button>
+    </view>
+    <view class="teacher-search"><input class="teacher-search__input" value="{{query}}" bindinput="onQueryInput" bindconfirm="onSearch" confirm-type="search" placeholder="搜索教师姓名" /><button class="teacher-search__button" bindtap="onSearch">查询</button></view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="page-state"><text class="page-state__title">正在加载教师名册</text></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="page-state"><text class="page-state__title">暂无匹配教师</text><text class="page-state__message">可调整姓名或手机号关键词</text></view>
+    <view wx:elif="{{viewState === 'error' || viewState === 'forbidden'}}" class="page-state"><text class="page-state__title">{{viewState === 'forbidden' ? '无访问权限' : '教师名册加载失败'}}</text><text class="page-state__message">{{errorMessage}}</text><button class="page-state__retry" bindtap="onRetry">重试</button></view>
+    <view wx:elif="{{viewState === 'ready'}}" class="teacher-list">
+      <view class="teacher-row" wx:for="{{items}}" wx:key="id"><view class="teacher-row__identity"><text class="teacher-row__name">{{item.teacherName}}</text><text class="teacher-row__phone">{{item.maskedPhone}}</text></view><text class="teacher-row__status {{item.status === 'ACTIVE' ? '' : 'teacher-row__status--disabled'}}">{{item.status === 'ACTIVE' ? '已启用' : '已停用'}}</text></view>
+      <button wx:if="{{hasMore}}" class="load-more" disabled="{{loadingMore}}" bindtap="onLoadMore">{{loadingMore ? '加载中' : '加载更多'}}</button>
+    </view>
+  </view>
+</campus-manager-page-shell>

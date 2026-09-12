@@ -1,0 +1,34 @@
+@import "../../../styles/super-admin-workspace.wxss";
+
+.review-toolbar {
+  display: grid;
+  grid-template-columns: minmax(180rpx, 0.36fr) minmax(0, 1fr);
+  gap: 18rpx;
+  margin-bottom: 24rpx;
+}
+
+.review-toolbar .textarea {
+  min-height: 116rpx;
+  margin: 0;
+}
+
+.partner-earning-row__amount {
+  display: block;
+  margin-top: 8rpx;
+  overflow-wrap: anywhere;
+  font-family: var(--super-admin-font-display);
+  font-size: 38rpx;
+  font-weight: 700;
+  color: #111111;
+}
+
+.load-more {
+  width: calc(100% - 40rpx);
+  margin: 20rpx;
+}
+
+@media (max-width: 380px) {
+  .review-toolbar {
+    grid-template-columns: 1fr;
+  }
+}

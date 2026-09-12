@@ -1,0 +1,31 @@
+<teacher-page-shell markTitle="扣课" markIcon="/pages/teacher/assets/icon-confirm.png" tone="yellow" showBack="{{true}}">
+  <view class="ledger-page">
+    <teacher-workspace-banner
+      class="ledger-page__overview"
+      title="扣课流水"
+      detail="当前列表 {{items.length}} 条 · 只读记录"
+    />
+    <view wx:if="{{viewState === 'loading'}}" class="page-state"><text class="page-state__title">正在加载流水</text></view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state"><text class="page-state__title">无访问权限</text><text class="page-state__message">{{errorMessage}}</text></view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state">
+      <text class="page-state__title">流水加载失败</text><text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-command" bindtap="onRetry">重试</button>
+    </view>
+    <view wx:elif="{{viewState === 'empty'}}" class="page-state"><text class="page-state__title">暂无扣课流水</text></view>
+    <view wx:else class="ledger-list">
+      <view class="ledger-row" wx:for="{{items}}" wx:key="id">
+        <view class="ledger-row__main">
+          <view class="ledger-row__identity">
+            <text class="ledger-row__student">{{item.studentName}}</text>
+            <text class="ledger-row__type">{{item.typeLabel}} · {{item.bucketLabel}}</text>
+          </view>
+          <text class="ledger-row__delta ledger-row__delta--{{item.tone}}">{{item.deltaLabel}}</text>
+        </view>
+        <text class="ledger-row__time">{{item.occurredAtLabel}}</text>
+      </view>
+      <button wx:if="{{hasMore}}" class="page-command load-more" disabled="{{loadingMore}}" bindtap="onLoadMore">
+        {{loadingMore ? '加载中' : '加载更多'}}
+      </button>
+    </view>
+  </view>
+</teacher-page-shell>

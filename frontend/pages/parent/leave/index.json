@@ -1,0 +1,10 @@
+{
+  "usingComponents": {
+    "parent-page-shell": "/components/parent-page-shell/parent-page-shell",
+    "parent-action-card": "/components/parent-action-card/parent-action-card",
+    "parent-primary-button": "/components/parent-primary-button/parent-primary-button",
+    "parent-record-card": "/components/parent-record-card/parent-record-card",
+    "view-state": "/components/view-state/view-state"
+  },
+  "enablePullDownRefresh": true
+}

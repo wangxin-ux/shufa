@@ -1,0 +1,64 @@
+<teacher-page-shell
+  markTitle="反馈"
+  markIcon="/pages/teacher/assets/icon-student-record.png"
+  tone="yellow"
+  showBack="{{true}}"
+>
+  <view class="feedback-page">
+    <teacher-workspace-banner
+      class="feedback-page__overview"
+      title="课堂反馈"
+      detail="已完成课次 · 当前列表 {{items.length}} 条"
+    />
+
+    <view wx:if="{{viewState === 'loading'}}" class="page-state">
+      <text class="page-state__title">正在加载课堂反馈</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state">
+      <text class="page-state__title">课堂反馈加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-command" bindtap="onRetry" hover-class="control--hover">重试</button>
+    </view>
+    <view wx:elif="{{viewState === 'empty'}}" class="page-state">
+      <text class="page-state__title">暂无可填写的课堂反馈</text>
+      <text class="page-state__message">完成课次后会在这里生成反馈任务</text>
+    </view>
+
+    <view wx:else class="feedback-list">
+      <button
+        wx:for="{{items}}"
+        wx:key="id"
+        class="feedback-row"
+        data-id="{{item.lessonSessionId}}"
+        bindtap="onFeedbackTap"
+        hover-class="feedback-row--hover"
+      >
+        <view class="feedback-row__head">
+          <text class="feedback-row__course">{{item.courseName}}</text>
+          <text class="status-chip status-chip--{{item.statusTone}}">{{item.statusLabel}}</text>
+        </view>
+        <text class="feedback-row__class">{{item.className}}</text>
+        <view class="feedback-row__meta">
+          <text>{{item.timeLabel}}</text>
+          <text>{{item.attendeeLabel}}</text>
+        </view>
+        <view class="feedback-row__foot">
+          <text class="feedback-row__progress">{{item.progressLabel}}</text>
+          <text class="feedback-row__action">{{item.actionLabel}}</text>
+        </view>
+      </button>
+
+      <button
+        wx:if="{{hasMore}}"
+        class="page-command load-more"
+        disabled="{{loadingMore}}"
+        bindtap="onLoadMore"
+        hover-class="control--hover"
+      >{{loadingMore ? '加载中' : '加载更多'}}</button>
+    </view>
+  </view>
+</teacher-page-shell>

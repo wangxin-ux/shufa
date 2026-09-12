@@ -1,0 +1,29 @@
+<teacher-page-shell markTitle="记录" markIcon="/pages/teacher/assets/icon-student-record.png" tone="yellow" showBack="{{true}}">
+  <view class="records-page">
+    <teacher-workspace-banner
+      class="records-page__overview"
+      title="授课记录"
+      detail="当前列表 {{items.length}} 条 · 服务端记录"
+    />
+    <view wx:if="{{viewState === 'loading'}}" class="page-state"><text class="page-state__title">正在加载记录</text></view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state"><text class="page-state__title">无访问权限</text><text class="page-state__message">{{errorMessage}}</text></view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state">
+      <text class="page-state__title">记录加载失败</text><text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-command" bindtap="onRetry">重试</button>
+    </view>
+    <view wx:elif="{{viewState === 'empty'}}" class="page-state"><text class="page-state__title">暂无授课记录</text></view>
+    <view wx:else class="record-list">
+      <view class="record-row" wx:for="{{items}}" wx:key="id">
+        <view class="record-row__head">
+          <text class="record-row__course">{{item.courseName}}</text>
+          <text class="record-row__status record-row__status--{{item.statusTone}}">{{item.statusLabel}}</text>
+        </view>
+        <text class="record-row__class">{{item.className}}</text>
+        <view class="record-row__meta"><text>{{item.timeLabel}}</text><text>{{item.attendeeLabel}}</text></view>
+      </view>
+      <button wx:if="{{hasMore}}" class="page-command load-more" disabled="{{loadingMore}}" bindtap="onLoadMore">
+        {{loadingMore ? '加载中' : '加载更多'}}
+      </button>
+    </view>
+  </view>
+</teacher-page-shell>

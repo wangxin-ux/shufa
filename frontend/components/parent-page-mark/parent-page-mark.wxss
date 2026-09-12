@@ -1,0 +1,29 @@
+.page-mark {
+  display: flex;
+}
+
+.page-mark__circle {
+  width: var(--role-page-mark-size);
+  height: var(--role-page-mark-size);
+  border-radius: 50%;
+  background: var(--role-page-mark-background);
+  box-shadow: var(--role-page-mark-shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-mark__icon {
+  width: var(--role-page-mark-icon-size);
+  height: var(--role-page-mark-icon-size);
+}
+
+.page-mark__title {
+  margin-top: var(--role-page-mark-title-gap);
+  font-size: var(--role-page-mark-title-font-size);
+  line-height: 1.2;
+  font-family: var(--parent-font-nav);
+  font-weight: 700;
+  color: var(--role-page-mark-ink);
+}

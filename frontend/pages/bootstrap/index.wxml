@@ -1,0 +1,85 @@
+<view class="bootstrap">
+  <view class="bootstrap__content">
+    <text class="bootstrap__title">{{isTestAccountLogin ? '手机号登录' : '微信授权登录'}}</text>
+
+    <view wx:if="{{viewState === 'loading'}}" class="bootstrap__state bootstrap__state--loading" aria-live="polite">
+      <text>正在读取会话</text>
+    </view>
+
+    <view wx:elif="{{viewState === 'login' || viewState === 'submitting'}}" class="bootstrap__state bootstrap__state--login" aria-live="polite">
+      <block wx:if="{{isTestAccountLogin}}">
+        <form class="bootstrap__form">
+          <view class="bootstrap__field">
+            <input
+              id="phone-input"
+              class="bootstrap__input"
+              name="phone"
+              type="number"
+              maxlength="11"
+              value="{{phone}}"
+              placeholder="请输入手机号"
+              placeholder-class="bootstrap__placeholder"
+              confirm-type="next"
+              bindinput="onPhoneInput"
+            />
+          </view>
+          <view class="bootstrap__field bootstrap__field--code">
+            <input
+              id="verification-code-input"
+              class="bootstrap__input bootstrap__input--code"
+              name="verificationCode"
+              type="number"
+              maxlength="6"
+              value="{{verificationCode}}"
+              placeholder="请输入验证码"
+              placeholder-class="bootstrap__placeholder"
+              confirm-type="done"
+              bindinput="onVerificationCodeInput"
+            />
+            <button
+              id="phone-code-request"
+              class="bootstrap__code-button"
+              disabled="{{!canRequestCode || codeCountdown > 0 || viewState === 'submitting'}}"
+              bindtap="onRequestPhoneCodeTap"
+              hover-class="bootstrap__button--hover"
+            >{{codeCountdown > 0 ? codeCountdown + 's' : '获取验证码'}}</button>
+          </view>
+          <button
+            id="phone-code-login-submit"
+            class="bootstrap__primary bootstrap__primary--login {{canSubmit && viewState !== 'submitting' ? 'bootstrap__primary--active' : 'bootstrap__primary--disabled'}}"
+            bindtap="onPhoneCodeLoginTap"
+            disabled="{{!canSubmit || viewState === 'submitting'}}"
+            loading="{{viewState === 'submitting'}}"
+            hover-class="bootstrap__button--hover"
+          >{{viewState === 'submitting' ? '登录中' : '登录'}}</button>
+        </form>
+      </block>
+      <block wx:else>
+        <view class="bootstrap__wechat">
+          <text class="bootstrap__state-message">使用已绑定的微信手机号继续</text>
+          <button
+            class="bootstrap__primary bootstrap__primary--wechat"
+            open-type="getPhoneNumber"
+            bindgetphonenumber="onWechatPhoneTap"
+            disabled="{{viewState === 'submitting'}}"
+            loading="{{viewState === 'submitting'}}"
+            hover-class="bootstrap__button--hover"
+          >微信授权登录</button>
+        </view>
+      </block>
+      <text wx:if="{{errorMessage}}" class="bootstrap__state-message bootstrap__state-message--error">{{errorMessage}}</text>
+    </view>
+
+    <view wx:elif="{{viewState === 'forbidden'}}" class="bootstrap__state" aria-live="polite">
+      <text class="bootstrap__state-title">暂无可用身份</text>
+      <text class="bootstrap__state-message">当前账号未分配可用的客户端权限</text>
+    </view>
+
+    <view wx:elif="{{viewState === 'error'}}" class="bootstrap__state bootstrap__state--error" aria-live="polite">
+      <view class="bootstrap__error-mark" aria-hidden="true">!</view>
+      <text class="bootstrap__state-title">会话加载失败</text>
+      <text class="bootstrap__state-message">{{errorMessage}}</text>
+      <button class="bootstrap__primary" bindtap="onRetry" hover-class="bootstrap__button--hover">重试</button>
+    </view>
+  </view>
+</view>

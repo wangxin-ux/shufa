@@ -1,0 +1,287 @@
+.bootstrap {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  padding: env(safe-area-inset-top) 48rpx calc(env(safe-area-inset-bottom) + 64rpx);
+  background: #f6f7f9;
+  color: var(--teacher-ink);
+  font-family: var(--teacher-font-body);
+}
+
+.bootstrap::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(env(safe-area-inset-top) + 260rpx);
+  background: var(--role-home-yellow-gradient);
+  content: "";
+}
+
+.bootstrap__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 650rpx;
+  min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 64rpx);
+  margin: 0 auto;
+  padding-top: 176rpx;
+  box-sizing: border-box;
+}
+
+.bootstrap__title {
+  width: 100%;
+  font-family: var(--parent-font-display);
+  font-size: 48rpx;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0;
+  text-align: center;
+  color: #1f2429;
+}
+
+.bootstrap__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 160rpx;
+  margin-top: 84rpx;
+  text-align: center;
+}
+
+.bootstrap__state--loading {
+  color: #8b9097;
+  font-size: 26rpx;
+}
+
+.bootstrap__primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 480rpx;
+  max-width: 100%;
+  min-height: var(--teacher-touch-min);
+  margin: 0;
+  padding: 0 30rpx;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 16rpx;
+  background: #f1d4ba;
+  font-family: var(--teacher-font-body);
+  font-size: 28rpx;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.bootstrap__primary::after {
+  border: 0;
+}
+
+.bootstrap__state--login {
+  align-items: center;
+  width: 100%;
+  text-align: center;
+}
+
+.bootstrap__form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 600rpx;
+  gap: 0;
+}
+
+.bootstrap__field + .bootstrap__field {
+  margin-top: 24rpx;
+}
+
+.bootstrap__field {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 108rpx;
+  padding: 0 34rpx;
+  box-sizing: border-box;
+  border: 2rpx solid #eceff2;
+  border-radius: 14rpx;
+  background: #ffffff;
+  box-shadow: 0 10rpx 30rpx rgba(31, 36, 41, 0.06);
+}
+
+.bootstrap__input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 108rpx;
+  font-family: var(--teacher-font-body);
+  font-size: 30rpx;
+  line-height: 108rpx;
+  color: #1f2429;
+  text-align: left;
+}
+
+.bootstrap__placeholder {
+  font-size: 29rpx;
+  color: #b8bdc4;
+}
+
+.bootstrap__field--code {
+  padding-right: 20rpx;
+}
+
+.bootstrap__input--code {
+  width: auto;
+}
+
+.bootstrap__code-button {
+  flex: 0 0 184rpx;
+  width: 184rpx;
+  height: 68rpx;
+  min-height: 68rpx;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-left: 2rpx solid #eceff2;
+  border-radius: 0;
+  background: transparent;
+  font-family: var(--teacher-font-body);
+  font-size: 25rpx;
+  font-weight: 500;
+  line-height: 68rpx;
+  color: var(--teacher-orange);
+}
+
+.bootstrap__code-button::after {
+  border: 0;
+}
+
+button.bootstrap__code-button[disabled] {
+  background: transparent;
+  color: #b8bdc4;
+  opacity: 1;
+}
+
+.bootstrap__primary--login {
+  width: 100%;
+  height: 100rpx;
+  margin-top: 28rpx;
+  box-shadow: none;
+}
+
+.bootstrap__primary--active {
+  background: var(--teacher-orange);
+  box-shadow: 0 10rpx 24rpx rgba(222, 102, 19, 0.18);
+  color: #ffffff;
+}
+
+button.bootstrap__primary--login[disabled] {
+  background: #efb47e;
+  box-shadow: none;
+  color: rgba(255, 255, 255, 0.9);
+  opacity: 1;
+}
+
+.bootstrap__wechat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 600rpx;
+}
+
+.bootstrap__state--error {
+  align-items: center;
+  width: 100%;
+  min-height: 320rpx;
+  padding: 48rpx 36rpx 44rpx;
+  box-sizing: border-box;
+  border: 2rpx solid #eceff2;
+  border-radius: 16rpx;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12rpx 30rpx rgba(31, 36, 41, 0.08);
+}
+
+.bootstrap__error-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76rpx;
+  height: 76rpx;
+  box-sizing: border-box;
+  border: 2rpx solid rgba(160, 72, 22, 0.16);
+  border-radius: 50%;
+  background: rgba(255, 211, 80, 0.42);
+  font-family: var(--teacher-font-body);
+  font-size: 38rpx;
+  font-weight: 800;
+  line-height: 1;
+  color: #9d431b;
+}
+
+.bootstrap__state--error .bootstrap__state-title {
+  margin-top: 22rpx;
+  text-align: center;
+}
+
+.bootstrap__state--error .bootstrap__state-message {
+  text-align: center;
+}
+
+.bootstrap__state--error .bootstrap__primary {
+  align-items: center;
+  justify-content: center;
+  width: 260rpx;
+  height: 88rpx;
+  min-height: 88rpx;
+  padding: 0 30rpx;
+  border-radius: 44rpx;
+  background: var(--teacher-orange);
+  box-shadow: 0 8rpx 18rpx rgba(224, 91, 18, 0.18);
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+}
+
+.bootstrap__state-title {
+  font-family: var(--teacher-font-body);
+  font-size: 36rpx;
+  font-weight: 600;
+}
+
+.bootstrap__state-message {
+  max-width: 100%;
+  margin-top: 14rpx;
+  overflow-wrap: anywhere;
+  font-size: 25rpx;
+  text-align: center;
+  color: #767c83;
+}
+
+.bootstrap__state-message--error {
+  color: #8b201b;
+}
+
+.bootstrap__primary--wechat {
+  width: 100%;
+  margin-top: 36rpx;
+  background: #07c160;
+  color: #ffffff;
+}
+
+.bootstrap__button--hover {
+  opacity: 0.72;
+}
+
+@media (min-width: 420px) {
+  .bootstrap__content {
+    padding-right: 24rpx;
+    padding-left: 24rpx;
+  }
+}

@@ -1,0 +1,303 @@
+@import "../../../styles/partner-workspace.wxss";
+
+.account-page {
+  position: relative;
+  padding-top: 8rpx;
+}
+
+.account-page::before {
+  position: absolute;
+  top: 330rpx;
+  right: -180rpx;
+  bottom: -72rpx;
+  left: -180rpx;
+  z-index: 0;
+  border-radius: 50% 50% 0 0 / 80rpx 80rpx 0 0;
+  background: #ffffff;
+  content: '';
+}
+
+.account-page__title,
+.account-ledger-stage__title {
+  position: relative;
+  z-index: 2;
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-family: var(--partner-font-display);
+  font-size: 54rpx;
+  font-weight: 700;
+  color: #ff7b10;
+}
+
+.account-hero {
+  position: relative;
+  z-index: 2;
+  width: 653rpx;
+  min-height: 360rpx;
+  margin: 22rpx 0 0 14rpx;
+  overflow: visible;
+  border-radius: 32rpx;
+  background: #ff7b10;
+  box-shadow: var(--partner-shadow);
+}
+
+.account-hero__copy {
+  position: relative;
+  z-index: 2;
+  width: 54%;
+  padding: 54rpx 0 36rpx 38rpx;
+  box-sizing: border-box;
+}
+
+.account-hero__label {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.account-hero__number,
+.account-balance__number {
+  display: flex;
+  align-items: flex-end;
+  min-width: 0;
+}
+
+.account-hero__number {
+  margin-top: 20rpx;
+}
+
+.account-hero__value {
+  max-width: 100%;
+  overflow: hidden;
+  font-family: var(--partner-font-display);
+  font-size: 116rpx;
+  font-weight: 700;
+  line-height: 0.96;
+  color: #111111;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-hero__unit,
+.account-balance__unit {
+  flex: none;
+  margin: 0 0 8rpx 7rpx;
+  font-family: var(--partner-font-display);
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #111111;
+}
+
+.account-hero__character {
+  position: absolute;
+  right: -18rpx;
+  bottom: 0;
+  z-index: 1;
+  width: 434rpx;
+  pointer-events: none;
+}
+
+.account-balances {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 92rpx;
+  width: 653rpx;
+  margin: 58rpx 0 0 14rpx;
+}
+
+.account-balances::after {
+  position: absolute;
+  top: 66rpx;
+  left: 50%;
+  width: 72rpx;
+  transform: translateX(-50%);
+  font-family: var(--partner-font-display);
+  font-size: 72rpx;
+  font-weight: 700;
+  line-height: 1;
+  color: #e5484d;
+  text-align: center;
+  content: '+';
+}
+
+.account-balance {
+  min-width: 0;
+  min-height: 204rpx;
+  padding: 25rpx 27rpx;
+  box-sizing: border-box;
+  border-radius: 32rpx;
+  background: #ffd75e;
+  box-shadow: 0 9rpx 18rpx rgba(63, 46, 15, 0.16);
+}
+
+.account-balance__label {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: var(--partner-ink);
+}
+
+.account-balance__number {
+  margin-top: 24rpx;
+}
+
+.account-balance__value {
+  max-width: 100%;
+  overflow: hidden;
+  font-family: var(--partner-font-display);
+  font-size: 82rpx;
+  font-weight: 700;
+  line-height: 1;
+  color: #111111;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-ledger-stage {
+  position: relative;
+  z-index: 2;
+  min-height: 850rpx;
+  margin: 76rpx -32rpx -72rpx;
+  padding: 0 32rpx 110rpx;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: #ffffff;
+}
+
+.account-ledger-stage__character {
+  position: absolute;
+  bottom: -55rpx;
+  left: -74rpx;
+  z-index: 0;
+  width: 590rpx;
+  opacity: 0.96;
+  pointer-events: none;
+}
+
+.account-ledger-stage__head {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18rpx;
+  padding-top: 48rpx;
+}
+
+.account-ledger-stage__count {
+  flex: none;
+  font-size: 23rpx;
+  color: var(--partner-muted);
+}
+
+.account-ledger {
+  position: relative;
+  z-index: 2;
+  margin-top: 24rpx;
+  overflow: hidden;
+  border-radius: 32rpx;
+  background: rgba(246, 212, 104, 0.86);
+  box-shadow: 0 10rpx 22rpx rgba(63, 46, 15, 0.18);
+}
+
+.account-ledger__row {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 16rpx;
+  min-height: 178rpx;
+  padding: 22rpx 24rpx;
+  box-sizing: border-box;
+  border-bottom: 3rpx solid rgba(255, 255, 255, 0.92);
+}
+
+.account-ledger__row:last-child {
+  border-bottom: 0;
+}
+
+.account-ledger__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.account-ledger__type {
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--partner-font-display);
+  font-size: 30rpx;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-ledger__delta {
+  flex: none;
+  font-family: var(--partner-font-display);
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.account-ledger__delta--negative {
+  color: #a52720;
+}
+
+.account-ledger__delta--positive {
+  color: #237b59;
+}
+
+.account-ledger__delta--neutral {
+  color: var(--partner-muted);
+}
+
+.account-ledger__student,
+.account-ledger__meta,
+.account-ledger__reason {
+  display: block;
+  max-width: 100%;
+  margin-top: 6rpx;
+  overflow-wrap: anywhere;
+  font-size: 22rpx;
+  line-height: 1.4;
+  color: var(--partner-muted);
+}
+
+.account-ledger__aside {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  min-width: 150rpx;
+  max-width: 180rpx;
+  padding: 3rpx 0;
+}
+
+.account-ledger__balance {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: 22rpx;
+  line-height: 1.35;
+  color: var(--partner-ink);
+  text-align: right;
+}
+
+.account-empty {
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 380px) {
+  .account-hero__copy {
+    width: 56%;
+  }
+
+  .account-hero__value {
+    font-size: 102rpx;
+  }
+}

@@ -1,0 +1,49 @@
+<super-admin-page-shell show-back mark-title="看板" mark-icon="/pages/super-admin/assets/icon-dashboard.png">
+  <view class="workspace">
+    <view class="workspace__head"><view><text class="workspace__title">全局看板</text><text class="workspace__subtitle">全部校区实时业务概览</text></view></view>
+    <view wx:if="{{viewState === 'loading'}}" class="state"><text class="state__title">正在汇总数据</text></view>
+    <view wx:elif="{{viewState === 'error' || viewState === 'forbidden'}}" class="state"><text class="state__title">{{viewState === 'forbidden' ? '无访问权限' : '加载失败'}}</text><text class="state__message">{{errorMessage}}</text><button class="button" bindtap="onRetry">重试</button></view>
+    <view wx:else>
+      <view class="metrics"><view class="metric" wx:for="{{metrics}}" wx:key="label"><text class="metric__label">{{item.label}}</text><text class="metric__value">{{item.value}}</text></view></view>
+      <view class="revenue">
+        <view class="revenue__head">
+          <view><text class="revenue__title">经营收益</text><text class="revenue__subtitle">按校区汇总 · {{revenuePeriodLabel}}</text></view>
+          <text class="revenue__partner-count">{{partnerCountLabel}}</text>
+        </view>
+        <view class="revenue-periods" role="tablist" aria-label="收益统计周期">
+          <button class="revenue-period {{selectedRevenuePeriod === 'TODAY' ? 'revenue-period--active' : ''}}" data-period="TODAY" bindtap="onRevenuePeriodTap">今日</button>
+          <button class="revenue-period {{selectedRevenuePeriod === 'LAST_7_DAYS' ? 'revenue-period--active' : ''}}" data-period="LAST_7_DAYS" bindtap="onRevenuePeriodTap">近7天</button>
+          <button class="revenue-period {{selectedRevenuePeriod === 'CURRENT_MONTH' ? 'revenue-period--active' : ''}}" data-period="CURRENT_MONTH" bindtap="onRevenuePeriodTap">本月</button>
+          <button class="revenue-period {{selectedRevenuePeriod === 'HISTORY' ? 'revenue-period--active' : ''}}" data-period="HISTORY" bindtap="onRevenuePeriodTap">历史</button>
+        </view>
+        <view class="revenue-summary">
+          <view class="revenue-metric revenue-metric--people"><text class="revenue-metric__label">有效人次</text><text class="revenue-metric__value">{{revenueMetrics[0].value}}</text></view>
+          <view class="revenue-metric revenue-metric--gross"><text class="revenue-metric__label">课耗流水</text><text class="revenue-metric__value">{{revenueMetrics[1].value}}</text></view>
+          <view class="revenue-metric revenue-metric--partner"><text class="revenue-metric__label">合作方收益</text><text class="revenue-metric__value">{{revenueMetrics[2].value}}</text></view>
+          <view class="revenue-metric revenue-metric--retained"><text class="revenue-metric__label">总部留存</text><text class="revenue-metric__value">{{revenueMetrics[3].value}}</text></view>
+        </view>
+        <text class="revenue__note">内部课耗口径，未扣教师课时费及其他成本</text>
+        <view class="revenue-campuses">
+          <view class="revenue-campus" wx:for="{{revenueCampuses}}" wx:key="campusId">
+            <view class="revenue-campus__head"><text class="revenue-campus__name">{{item.campusName}}</text><text class="revenue-campus__partner">{{item.partnerCountLabel}}</text></view>
+            <view class="revenue-campus__values">
+              <view><text>有效人次</text><text>{{item.countedAttendeeLabel}}</text></view>
+              <view><text>课耗流水</text><text>{{item.grossLessonRevenueLabel}}</text></view>
+              <view><text>合作方收益</text><text>{{item.partnerEarningLabel}}</text></view>
+              <view><text>总部留存</text><text>{{item.headquartersRetainedLabel}}</text></view>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="list">
+        <button class="row" data-url="/pages/super-admin/students/index" bindtap="onNavigate"><view class="row__main"><text class="row__title">人员管理</text><text class="row__meta">跨校区管理学员、教师及课包信息</text></view><text class="row__value">›</text></button>
+        <button class="row" data-url="/pages/super-admin/earning-rules/index" bindtap="onNavigate"><view class="row__main"><text class="row__title">教师课时费规则</text><text class="row__meta">按校区配置计费方式与单价</text></view><text class="row__value">›</text></button>
+        <button class="row" data-url="/pages/super-admin/earnings/index" bindtap="onNavigate"><view class="row__main"><text class="row__title">教师收益审核</text><text class="row__meta">审核内部预计收益</text></view><text class="row__value">›</text></button>
+        <button class="row" data-url="/pages/super-admin/partner-earning-rules/index" bindtap="onNavigate"><view class="row__main"><text class="row__title">合作方收益规则</text><text class="row__meta">按校区配置课耗单价与合作比例</text></view><text class="row__value">›</text></button>
+        <button class="row" data-url="/pages/super-admin/partner-earnings/index" bindtap="onNavigate"><view class="row__main"><text class="row__title">合作方收益审核</text><text class="row__meta">审核内部预计合作收益</text></view><text class="row__value">›</text></button>
+        <button class="row" data-url="/pages/super-admin/withdrawals/index" bindtap="onNavigate"><view class="row__main"><text class="row__title">人工提现处理</text><text class="row__meta">审核、打款中、凭证与完成</text></view><text class="row__value">›</text></button>
+        <button class="row" data-url="/pages/super-admin/audit-logs/index" bindtap="onNavigate"><view class="row__main"><text class="row__title">操作日志</text><text class="row__meta">全局审计记录</text></view><text class="row__value">›</text></button>
+      </view>
+    </view>
+  </view>
+</super-admin-page-shell>

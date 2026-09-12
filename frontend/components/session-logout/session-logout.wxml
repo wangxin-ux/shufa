@@ -1,0 +1,5 @@
+<button
+  class="session-logout"
+  bindtap="onLogoutTap"
+  hover-class="session-logout--pressed"
+>退出登录</button>

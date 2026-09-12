@@ -1,0 +1,240 @@
+.profile {
+  position: relative;
+  min-height: calc(100vh - 120rpx);
+  padding-top: 84rpx;
+  padding-bottom: 0;
+  box-sizing: border-box;
+}
+
+.profile::after {
+  position: absolute;
+  right: -160rpx;
+  bottom: -410rpx;
+  left: -160rpx;
+  z-index: 0;
+  height: 560rpx;
+  border-radius: 50% 50% 0 0;
+  background: var(--teacher-yellow);
+  content: '';
+}
+
+.profile__hero {
+  position: relative;
+  z-index: 2;
+  height: 456rpx;
+}
+
+.profile__identity-card {
+  position: absolute;
+  bottom: 0;
+  left: 14rpx;
+  z-index: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 653rpx;
+  min-height: 265rpx;
+  padding: 28rpx 43% 28rpx 42rpx;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 32rpx;
+  background: var(--teacher-orange);
+  box-shadow: 0 13rpx 24rpx rgba(24, 18, 14, 0.19);
+}
+
+.profile__card-mascot {
+  position: absolute;
+  right: -32rpx;
+  bottom: 0;
+  z-index: 2;
+  width: 462rpx;
+}
+
+.profile__card-mascot,
+.profile__footer-mascot {
+  pointer-events: none;
+}
+
+.profile__name,
+.profile__subject,
+.profile__student-count {
+  position: relative;
+  z-index: 3;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: #ffffff;
+}
+
+.profile__name {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-family: var(--teacher-font-display);
+  font-size: 78rpx;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.profile__meta {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8rpx;
+  width: 318rpx;
+  max-width: 318rpx;
+  min-width: 0;
+  margin-top: 14rpx;
+}
+
+.profile__subject-row {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+}
+
+.profile__subject-label {
+  flex: none;
+  width: 56rpx;
+  margin-top: 2rpx;
+  padding: 3rpx 0;
+  border: 2rpx solid rgba(255, 255, 255, 0.66);
+  border-radius: 10rpx;
+  font-family: var(--teacher-font-display);
+  font-size: 20rpx;
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.profile__subject-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4rpx;
+  min-width: 0;
+  margin-left: 12rpx;
+}
+
+.profile__subject {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--teacher-font-display);
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 1.18;
+  white-space: normal;
+}
+
+.profile__student-count {
+  width: 100%;
+  padding-left: 68rpx;
+  box-sizing: border-box;
+  font-family: var(--teacher-font-display);
+  font-size: 25rpx;
+  font-weight: 700;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.82);
+  white-space: nowrap;
+}
+
+.profile__student-count--compact {
+  font-size: 23rpx;
+}
+
+.profile__actions-stage {
+  position: relative;
+  z-index: 1;
+  min-height: 800rpx;
+  margin-top: 54rpx;
+}
+
+.profile__footer-mascot {
+  position: absolute;
+  top: 100rpx;
+  left: -32rpx;
+  z-index: 0;
+  width: 573rpx;
+  opacity: 1;
+}
+
+.profile-actions {
+  position: relative;
+  z-index: 2;
+  width: 653rpx;
+  margin-left: 14rpx;
+  overflow: hidden;
+  border-radius: 32rpx;
+  background: rgba(255, 215, 94, 0.84);
+  box-shadow: 0 13rpx 24rpx rgba(24, 18, 14, 0.19);
+}
+
+.profile-actions teacher-action-row {
+  --teacher-action-background: transparent;
+  --teacher-action-border: rgba(255, 255, 255, 0.94);
+  --teacher-action-bullet: #2fbd82;
+  --teacher-action-label-font: var(--teacher-font-display);
+  --teacher-action-label-size: 34rpx;
+}
+
+.profile-session {
+  position: relative;
+  z-index: 3;
+  width: 653rpx;
+  max-width: 100%;
+  margin: 28rpx 0 120rpx 14rpx;
+}
+
+.page-state {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 520rpx;
+  padding: 40rpx 20rpx;
+}
+
+.page-state__title {
+  font-family: var(--teacher-font-display);
+  font-size: 48rpx;
+  font-weight: 700;
+}
+
+.page-state__message {
+  max-width: 100%;
+  margin-top: 18rpx;
+  overflow-wrap: anywhere;
+  font-size: 26rpx;
+  color: var(--teacher-muted);
+}
+
+.page-state__retry {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--teacher-touch-min);
+  margin: 28rpx 0 0;
+  padding: 0 34rpx;
+  border: 0;
+  border-radius: 16rpx;
+  background: var(--teacher-orange);
+  font-size: 26rpx;
+  color: #ffffff;
+}
+
+.page-state__retry::after {
+  border: 0;
+}
+
+.button--hover {
+  opacity: 0.72;
+}

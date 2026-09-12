@@ -1,0 +1,10 @@
+{
+  "name": "education-mini-program",
+  "private": true,
+  "scripts": {
+    "lint": "pnpm -r --if-present lint",
+    "test": "pnpm -r --if-present test",
+    "test:e2e": "pnpm --filter backend test:e2e",
+    "check": "pnpm --dir backend contract:lint && pnpm --dir frontend check && pnpm --dir frontend assets:check && pnpm --dir backend lint && pnpm --dir backend test --runInBand && pnpm --dir backend test:e2e --runInBand && pnpm --dir backend build"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "teacher-page-mark": "/components/teacher-page-mark/teacher-page-mark"
+  }
+}

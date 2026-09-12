@@ -1,0 +1,102 @@
+<super-admin-page-shell
+  mark-title="首页"
+  mark-icon="/pages/hr/assets/home-mark-glyph.png"
+>
+  <view class="home">
+    <view wx:if="{{viewState === 'loading'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">正在进入人力工作台</text>
+    </view>
+
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-state__retry" bindtap="onLogout">返回登录</button>
+    </view>
+
+    <view wx:elif="{{viewState === 'error'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">工作台加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-state__retry" bindtap="onRetry">重试</button>
+    </view>
+
+    <view wx:elif="{{viewState === 'ready'}}" class="home__content">
+      <view class="home__head">
+        <text class="home__title">人力工作台</text>
+        <button class="home__more" data-key="teachers" bindtap="onActionTap">查看更多</button>
+      </view>
+
+      <button
+        class="focus"
+        data-key="teachers"
+        bindtap="onActionTap"
+        hover-class="button--hover"
+        aria-label="进入教师档案"
+      >
+        <view class="focus__keyword">
+          <text class="focus__value">教师</text>
+          <text class="focus__unit">档案</text>
+        </view>
+        <view class="focus__divider" aria-hidden="true"></view>
+        <view class="focus__detail">
+          <text class="focus__name">教师档案管理</text>
+          <text class="focus__summary">资质 · 培训 · 成长记录</text>
+        </view>
+      </button>
+
+      <view class="home__stage">
+        <image class="home__character" src="/pages/hr/assets/home-character.png" mode="widthFix" aria-hidden="true" />
+
+        <button
+          class="home__identity"
+          data-key="profile"
+          bindtap="onActionTap"
+          hover-class="button--hover"
+          aria-label="进入我的"
+        >
+          <text class="home__name">{{displayName}}</text>
+          <text class="home__role">{{roleLabel}}</text>
+        </button>
+
+        <view class="home__overview">
+          <image
+            class="home__overview-glass"
+            src="/pages/hr/assets/home-stat-glass.png"
+            mode="scaleToFill"
+            aria-hidden="true"
+          />
+          <button
+            wx:for="{{overviewItems}}"
+            wx:key="key"
+            class="overview-action"
+            data-key="{{item.key}}"
+            bindtap="onActionTap"
+          >
+            <text class="overview-action__label">{{item.label}}</text>
+            <view class="overview-action__number">
+              <text class="overview-action__value">{{item.value}}</text>
+              <text class="overview-action__unit">{{item.unit}}</text>
+            </view>
+            <text class="overview-action__sub">{{item.sub}}</text>
+          </button>
+        </view>
+      </view>
+
+      <view class="home__footer">
+        <view class="quick-actions">
+          <button
+            wx:for="{{actions}}"
+            wx:key="key"
+            class="quick-action {{item.key === 'teachers' ? 'quick-action--active' : ''}}"
+            data-key="{{item.key}}"
+            bindtap="onActionTap"
+            hover-class="button--hover"
+          >
+            <image class="quick-action__icon" src="{{item.icon}}" mode="aspectFit" aria-hidden="true" />
+            <text class="quick-action__label">{{item.label}}</text>
+          </button>
+        </view>
+        <button class="home__footer-more" data-key="reports" bindtap="onActionTap">查看更多</button>
+      </view>
+    </view>
+  </view>
+</super-admin-page-shell>

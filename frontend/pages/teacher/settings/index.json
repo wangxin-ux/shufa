@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "teacher-page-shell": "/components/teacher-page-shell/teacher-page-shell",
+    "session-logout": "/components/session-logout/session-logout"
+  }
+}

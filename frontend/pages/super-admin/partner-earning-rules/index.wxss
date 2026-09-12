@@ -1,0 +1,39 @@
+@import "../../../styles/super-admin-workspace.wxss";
+
+.partner-rule-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18rpx;
+}
+
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 72rpx;
+  padding: 12rpx;
+  box-sizing: border-box;
+  border: 2rpx solid rgba(255, 123, 16, 0.2);
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.84);
+  font-size: 21rpx;
+  color: #263b36;
+}
+
+.option checkbox {
+  flex: none;
+  transform: scale(0.82);
+}
+
+@media (max-width: 380px) {
+  .partner-rule-form__grid,
+  .option-grid {
+    grid-template-columns: 1fr;
+  }
+}

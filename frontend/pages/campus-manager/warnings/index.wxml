@@ -1,0 +1,76 @@
+<campus-manager-page-shell
+  markTitle="预警"
+  markIcon="/pages/campus-manager/assets/icon-warnings.png"
+  showBack="{{true}}"
+>
+  <view class="warnings-page">
+    <view class="workspace-heading">
+      <text class="workspace-heading__title">预警名单</text>
+      <text class="workspace-heading__count">{{total}}人</text>
+    </view>
+
+    <view class="warning-search">
+      <input
+        class="warning-search__input"
+        value="{{query}}"
+        placeholder="搜索学员姓名"
+        maxlength="100"
+        bindinput="onSearchInput"
+        confirm-type="search"
+      />
+    </view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">正在加载预警名单</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">预警名单加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-state__retry" bindtap="onRetry" hover-class="button--hover">重试</button>
+    </view>
+    <view wx:elif="{{viewState === 'empty'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">暂无低课时学员</text>
+      <text class="page-state__message">当前筛选范围内没有达到预警条件的学员</text>
+    </view>
+
+    <view wx:else class="warning-list">
+      <view wx:for="{{items}}" wx:key="studentId" class="warning-card">
+        <view class="warning-card__head">
+          <view class="warning-card__identity">
+            <text class="warning-card__name">{{item.studentName}}</text>
+            <text class="warning-card__class">{{item.classLabel}}</text>
+            <text wx:if="{{item.reservationLabel}}" class="warning-card__class">{{item.reservationLabel}}</text>
+          </view>
+          <text class="warning-card__status">{{item.urgencyLabel}}</text>
+        </view>
+        <view class="warning-card__balances">
+          <view class="balance-cell">
+            <text class="balance-cell__value">{{item.mainBalanceLabel}}</text>
+            <text class="balance-cell__label">主课时</text>
+          </view>
+          <view class="balance-cell">
+            <text class="balance-cell__value">{{item.giftBalanceLabel}}</text>
+            <text class="balance-cell__label">赠送课时</text>
+          </view>
+          <view class="balance-cell balance-cell--total">
+            <text class="balance-cell__value">{{item.totalBalanceLabel}}</text>
+            <text class="balance-cell__label">合计课时</text>
+          </view>
+        </view>
+        <text class="warning-card__threshold">预警阈值 {{item.thresholdLabel}} 课时</text>
+      </view>
+      <button
+        wx:if="{{page < totalPages}}"
+        class="warning-load-more"
+        loading="{{loadingMore}}"
+        disabled="{{loadingMore}}"
+        bindtap="onLoadMore"
+        hover-class="button--hover"
+      >{{loadingMore ? '加载中' : '加载更多'}}</button>
+    </view>
+  </view>
+</campus-manager-page-shell>

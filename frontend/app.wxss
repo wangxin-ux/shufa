@@ -1,0 +1,7 @@
+@import "styles/tokens.wxss";
+
+page {
+  background: #ffffff;
+  color: var(--parent-ink);
+  font-family: var(--parent-font-body);
+}

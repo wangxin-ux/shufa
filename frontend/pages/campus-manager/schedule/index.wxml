@@ -1,0 +1,180 @@
+<campus-manager-page-shell
+  markTitle="排课"
+  markIcon="/pages/campus-manager/assets/icon-schedule.png"
+  showBack="{{true}}"
+>
+  <view class="schedule-page">
+    <view class="schedule-page__heading">
+      <view class="schedule-page__heading-copy">
+        <text class="schedule-page__title">排课管理</text>
+        <text class="schedule-page__summary">当前筛选共 {{total}} 节课程</text>
+      </view>
+      <button
+        class="schedule-control schedule-page__create"
+        bindtap="onCreateTap"
+        hover-class="control--hover"
+      >新增课次</button>
+    </view>
+
+    <view class="schedule-filters">
+      <picker
+        class="schedule-filter"
+        mode="date"
+        value="{{filterDate}}"
+        bindchange="onFilterDateChange"
+      >
+        <view class="schedule-filter__content">
+          <text class="schedule-filter__label">日期</text>
+          <text class="schedule-filter__value">{{filterDate || '全部日期'}}</text>
+        </view>
+      </picker>
+      <button
+        wx:if="{{filterDate}}"
+        class="schedule-control schedule-filter__clear"
+        aria-label="清除日期筛选"
+        bindtap="onClearFilterDate"
+        hover-class="control--hover"
+      >×</button>
+      <picker
+        class="schedule-filter schedule-filter--status"
+        range="{{statusOptions}}"
+        range-key="label"
+        value="{{statusIndex}}"
+        bindchange="onStatusChange"
+      >
+        <view class="schedule-filter__content">
+          <text class="schedule-filter__label">状态</text>
+          <text class="schedule-filter__value">{{statusLabel}}</text>
+        </view>
+      </picker>
+    </view>
+
+    <view wx:if="{{formVisible}}" class="schedule-form" aria-live="polite">
+      <view class="schedule-form__head">
+        <text class="schedule-form__title">{{formMode === 'edit' ? '编辑课次' : '新增课次'}}</text>
+        <button
+          class="schedule-control schedule-form__close"
+          aria-label="关闭排课表单"
+          disabled="{{submitting}}"
+          bindtap="onCloseForm"
+          hover-class="control--hover"
+        >×</button>
+      </view>
+
+      <view class="schedule-form__field">
+        <text class="schedule-form__label">班级</text>
+        <picker
+          class="schedule-form__picker"
+          range="{{classOptions}}"
+          range-key="label"
+          value="{{classIndex}}"
+          disabled="{{formMode === 'edit' || optionsState !== 'ready'}}"
+          bindchange="onClassChange"
+        >
+          <text class="schedule-form__value">{{selectedClassLabel}}</text>
+        </picker>
+      </view>
+
+      <view class="schedule-form__derived">
+        <view class="schedule-form__derived-item">
+          <text class="schedule-form__derived-label">授课教师</text>
+          <text class="schedule-form__derived-value">{{selectedTeacherLabel}}</text>
+        </view>
+        <view class="schedule-form__derived-item">
+          <text class="schedule-form__derived-label">课时量</text>
+          <text class="schedule-form__derived-value">{{selectedLessonUnitsLabel}}</text>
+        </view>
+      </view>
+
+      <view class="schedule-form__grid">
+        <view class="schedule-form__field schedule-form__field--wide">
+          <text class="schedule-form__label">上课日期</text>
+          <picker class="schedule-form__picker" mode="date" value="{{formDate}}" start="{{minDate}}" bindchange="onFormDateChange">
+            <text class="schedule-form__value">{{formDate}}</text>
+          </picker>
+        </view>
+        <view class="schedule-form__field">
+          <text class="schedule-form__label">开始时间</text>
+          <picker class="schedule-form__picker" mode="time" value="{{startsAt}}" bindchange="onStartTimeChange">
+            <text class="schedule-form__value">{{startsAt}}</text>
+          </picker>
+        </view>
+        <view class="schedule-form__field">
+          <text class="schedule-form__label">结束时间</text>
+          <picker class="schedule-form__picker" mode="time" value="{{endsAt}}" bindchange="onEndTimeChange">
+            <text class="schedule-form__value">{{endsAt}}</text>
+          </picker>
+        </view>
+        <view class="schedule-form__field schedule-form__field--wide">
+          <text class="schedule-form__label">课程类型</text>
+          <picker class="schedule-form__picker" range="{{kindOptions}}" range-key="label" value="{{kindIndex}}" bindchange="onKindChange">
+            <text class="schedule-form__value">{{kindLabel}}</text>
+          </picker>
+        </view>
+      </view>
+
+      <text wx:if="{{formError}}" class="schedule-form__error">{{formError}}</text>
+      <button
+        class="schedule-control schedule-form__submit"
+        disabled="{{submitting}}"
+        bindtap="onSubmit"
+        hover-class="control--hover"
+      >{{submitting ? '正在提交' : (formMode === 'edit' ? '保存修改' : '确认新增')}}</button>
+    </view>
+
+    <view wx:if="{{optionsState === 'error'}}" class="schedule-options-error">
+      <text>{{optionsError}}</text>
+      <button class="schedule-control schedule-options-error__retry" bindtap="onRetryOptions" hover-class="control--hover">重试班级</button>
+    </view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">正在加载排课</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">排课加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="schedule-control page-state__retry" bindtap="onRetry" hover-class="control--hover">重试</button>
+    </view>
+    <view wx:elif="{{viewState === 'empty'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">暂无匹配课次</text>
+      <text class="page-state__message">可调整日期或状态筛选</text>
+      <button class="schedule-control page-state__retry" bindtap="onCreateTap" hover-class="control--hover">新增课次</button>
+    </view>
+
+    <view wx:elif="{{viewState === 'ready'}}" class="schedule-list">
+      <view class="lesson-row" wx:for="{{items}}" wx:key="id">
+        <view class="lesson-row__head">
+          <view class="lesson-row__heading-copy">
+            <text class="lesson-row__course">{{item.courseName}}</text>
+            <text class="lesson-row__class">{{item.className}}</text>
+          </view>
+          <text class="lesson-row__status lesson-row__status--{{item.status}}">{{item.statusLabel}}</text>
+        </view>
+        <view class="lesson-row__time">
+          <text>{{item.dateLabel}}</text>
+          <text>{{item.timeLabel}}</text>
+        </view>
+        <view class="lesson-row__meta">
+          <text>{{item.teacherLabel}}</text>
+          <text>{{item.kindLabel}}</text>
+        </view>
+        <view wx:if="{{item.canManage}}" class="lesson-row__actions">
+          <button class="schedule-control lesson-row__edit" data-id="{{item.id}}" bindtap="onEditTap" hover-class="control--hover">编辑</button>
+          <button class="schedule-control lesson-row__cancel" data-id="{{item.id}}" bindtap="onCancelTap" hover-class="control--hover">取消课次</button>
+        </view>
+      </view>
+
+      <button
+        wx:if="{{hasMore}}"
+        class="schedule-control load-more"
+        disabled="{{loadingMore}}"
+        bindtap="onLoadMore"
+        hover-class="control--hover"
+      >{{loadingMore ? '加载中' : '加载更多'}}</button>
+    </view>
+  </view>
+</campus-manager-page-shell>

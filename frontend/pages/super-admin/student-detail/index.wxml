@@ -1,0 +1,43 @@
+<super-admin-page-shell show-back mark-title="学员" mark-icon="/pages/super-admin/assets/icon-campuses.png">
+  <view class="workspace student-detail">
+    <view wx:if="{{viewState === 'loading'}}" class="state"><text class="state__title">正在加载学员课包</text></view>
+    <view wx:elif="{{viewState === 'error' || viewState === 'forbidden'}}" class="state"><text class="state__title">{{viewState === 'forbidden' ? '无访问权限' : '加载失败'}}</text><text class="state__message">{{errorMessage}}</text><button class="button" bindtap="onRetry">重试</button></view>
+    <block wx:elif="{{viewState === 'ready'}}">
+      <view class="workspace__head student-hero">
+        <view><text class="workspace__title">{{detail.displayName}}</text><text class="workspace__subtitle">{{detail.campusLabel}} · {{detail.classLabel}}</text><text class="workspace__subtitle">出生日期 {{detail.birthDateLabel}}</text><text wx:if="{{detail.reservationLabel}}" class="workspace__subtitle">{{detail.reservationLabel}}</text></view>
+        <text class="status {{detail.lowBalance ? 'status--danger' : 'status--success'}}">{{detail.warningLabel}}</text>
+      </view>
+      <view class="metrics">
+        <view class="metric"><text class="metric__label">主课时</text><text class="metric__value">{{detail.mainBalanceLabel}}</text></view>
+        <view class="metric"><text class="metric__label">赠送课时</text><text class="metric__value">{{detail.giftBalanceLabel}}</text></view>
+        <view class="metric metric--total"><text class="metric__label">剩余合计</text><text class="metric__value">{{detail.totalBalanceLabel}}</text></view>
+      </view>
+      <view class="section-head"><text class="section-head__title">课包明细</text><text class="section-head__meta">调整将写入不可变课时流水</text></view>
+      <view wx:if="{{detail.packages.length === 0}}" class="state package-empty"><text class="state__title">暂无课包</text></view>
+      <view wx:else class="package-list">
+        <view class="package-card" wx:for="{{detail.packages}}" wx:key="id">
+          <view class="package-card__head"><text class="package-card__title">{{item.name}}</text><text class="status status--{{item.statusTone}}">{{item.statusLabel}}</text></view>
+          <text class="package-card__validity">有效期 {{item.validityLabel}}</text>
+          <view class="package-card__balances"><text>主课时 {{item.mainBalanceLabel}}</text><text>赠送 {{item.giftBalanceLabel}}</text><text>合计 {{item.totalBalanceLabel}}</text></view>
+          <text wx:if="{{item.reservationLabel}}" class="row__meta">{{item.reservationLabel}}</text>
+          <view class="actions"><button class="button button--ghost" data-package-id="{{item.id}}" data-bucket="MAIN" bindtap="onAdjustTap">调整主课时</button><button class="button button--ghost" data-package-id="{{item.id}}" data-bucket="GIFT" bindtap="onAdjustTap">调整赠送课时</button></view>
+          <button class="button package-card__validity-button" data-package-id="{{item.id}}" bindtap="onValidityTap">设置有效期</button>
+          <view wx:if="{{validityEditingPackageId === item.id}}" class="validity-editor">
+            <view class="validity-editor__row">
+              <text class="form__label">开始日期</text>
+              <picker mode="date" value="{{validityStartDate}}" bindchange="onValidityStartChange"><view class="select">{{validityStartDate}}</view></picker>
+            </view>
+            <view class="validity-editor__switch-row"><text class="form__label">长期有效</text><switch checked="{{validityLongTerm}}" color="#fe8419" bindchange="onValidityLongTermChange" /></view>
+            <view wx:if="{{!validityLongTerm}}" class="validity-editor__row">
+              <text class="form__label">结束日期</text>
+              <picker mode="date" value="{{validityEndDate}}" start="{{validityStartDate}}" bindchange="onValidityEndChange"><view class="select">{{validityEndDate}}</view></picker>
+            </view>
+            <view class="validity-editor__row"><text class="form__label">调整原因</text><textarea class="textarea validity-editor__reason" maxlength="500" value="{{validityReason}}" bindinput="onValidityReasonInput" placeholder="必填，将记录到审计日志" /></view>
+            <text wx:if="{{validityError}}" class="state__message validity-editor__error">{{validityError}}</text>
+            <view class="validity-editor__actions"><button class="button button--ghost" disabled="{{validitySubmitting}}" bindtap="onValidityCancel">取消</button><button class="button" disabled="{{validitySubmitting}}" bindtap="onValiditySubmit">{{validitySubmitting ? '保存中' : '确认保存'}}</button></view>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+</super-admin-page-shell>

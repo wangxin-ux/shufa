@@ -1,0 +1,9 @@
+{
+  "usingComponents": {
+    "parent-page-shell": "/components/parent-page-shell/parent-page-shell",
+    "parent-action-card": "/components/parent-action-card/parent-action-card",
+    "session-logout": "/components/session-logout/session-logout",
+    "view-state": "/components/view-state/view-state"
+  },
+  "enablePullDownRefresh": true
+}
