@@ -1,0 +1,31 @@
+<super-admin-page-shell show-back mark-title="收益" mark-icon="/pages/super-admin/assets/icon-dashboard.png">
+  <view class="workspace partner-earnings-page">
+    <view class="workspace__head"><view><text class="workspace__title">合作方收益审核</text><text class="workspace__subtitle">内部预计合作收益，按课次规则快照审核</text></view></view>
+
+    <view class="review-toolbar">
+      <picker range="{{statusOptions}}" range-key="label" value="{{statusIndex}}" bindchange="onStatusChange"><view class="select">{{statusOptions[statusIndex].label}}</view></picker>
+      <textarea class="textarea" value="{{reason}}" bindinput="onReasonInput" placeholder="驳回时必须填写原因" maxlength="500" />
+    </view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="state"><text class="state__title">正在加载合作方收益</text></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="state"><text class="state__title">暂无合作方收益记录</text><text class="state__message">可切换状态查看其他记录</text></view>
+    <view wx:elif="{{viewState === 'error' || viewState === 'forbidden'}}" class="state"><text class="state__title">{{viewState === 'forbidden' ? '无访问权限' : '加载失败'}}</text><text class="state__message">{{errorMessage}}</text><button class="button" bindtap="onRetry">重试</button></view>
+    <view wx:else class="list">
+      <view class="row partner-earning-row" wx:for="{{entries}}" wx:key="id">
+        <view class="row__main">
+          <text class="row__title">{{item.campusName}} · {{item.courseName}}</text>
+          <text class="partner-earning-row__amount">{{item.amountLabel}}</text>
+          <text class="row__meta">{{item.completedAtLabel}} · 有效 {{item.attendeeLabel}}</text>
+          <text class="row__meta">课耗 {{item.unitPriceLabel}} × {{item.shareLabel}} · 每人 {{item.perAttendeeLabel}}</text>
+          <text wx:if="{{item.reviewReason}}" class="row__meta">原因：{{item.reviewReason}}</text>
+          <view wx:if="{{item.canReview}}" class="actions">
+            <button class="button" disabled="{{submittingId === item.id}}" data-id="{{item.id}}" data-version="{{item.version}}" data-action="approve" bindtap="onReview">通过</button>
+            <button class="button button--danger" disabled="{{submittingId === item.id}}" data-id="{{item.id}}" data-version="{{item.version}}" data-action="reject" bindtap="onReview">驳回</button>
+          </view>
+        </view>
+        <text class="status {{item.status === 'AVAILABLE' ? 'status--success' : item.status === 'REJECTED' || item.status === 'REVERSED' ? 'status--danger' : ''}}">{{item.statusLabel}}</text>
+      </view>
+      <button wx:if="{{hasMore}}" class="button load-more" loading="{{loadingMore}}" disabled="{{loadingMore}}" bindtap="onLoadMore">{{loadingMore ? '加载中' : '加载更多'}}</button>
+    </view>
+  </view>
+</super-admin-page-shell>

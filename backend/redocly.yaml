@@ -1,0 +1,5 @@
+extends:
+  - recommended
+telemetry: off
+rules:
+  no-unused-components: off

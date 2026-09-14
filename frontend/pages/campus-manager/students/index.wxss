@@ -1,0 +1,350 @@
+.students-page {
+  padding: 24rpx 0 60rpx;
+}
+
+.students-page__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22rpx;
+  min-height: 164rpx;
+  padding: 26rpx 28rpx;
+  box-sizing: border-box;
+  border-radius: 16rpx;
+  background: var(--campus-manager-orange);
+  box-shadow: var(--campus-manager-shadow);
+}
+
+.students-page__heading-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.students-page__title {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-family: var(--campus-manager-font-display);
+  font-size: 48rpx;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #ffffff;
+}
+
+.students-page__summary {
+  margin-top: 10rpx;
+  font-size: 23rpx;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.page-state__retry,
+.load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--campus-manager-touch-min);
+  margin: 0;
+  padding: 0 26rpx;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 16rpx;
+  background: var(--campus-manager-surface);
+  font-size: 24rpx;
+  line-height: 1.2;
+  color: var(--campus-manager-ink);
+}
+
+.page-state__retry::after,
+.load-more::after,
+.roster-action::after,
+.roster-tab::after,
+.quick-form__submit::after {
+  border: 0;
+}
+
+.roster-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8rpx;
+  margin-top: 20rpx;
+  padding: 8rpx;
+  box-sizing: border-box;
+  border: 2rpx solid rgba(255, 116, 71, 0.2);
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 7rpx 16rpx rgba(63, 46, 15, 0.1);
+}
+
+.roster-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 68rpx;
+  margin: 0;
+  padding: 0 18rpx;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 6rpx;
+  background: transparent;
+  font-size: 24rpx;
+  line-height: 1.2;
+  color: var(--campus-manager-muted);
+}
+
+.roster-tab--active {
+  background: var(--campus-manager-orange);
+  box-shadow: 0 6rpx 14rpx rgba(158, 69, 21, 0.2);
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.roster-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-top: 20rpx;
+}
+
+.roster-action,
+.quick-form__submit {
+  display: flex;
+  min-height: var(--campus-manager-touch-min);
+  margin: 0;
+  padding: 0 14rpx;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 6rpx 14rpx rgba(63, 46, 15, 0.12);
+  font-size: 22rpx;
+  line-height: 1.2;
+  color: var(--campus-manager-ink);
+  text-align: center;
+}
+
+.roster-action--primary,
+.quick-form__submit {
+  background: var(--campus-manager-orange);
+  color: #ffffff;
+}
+
+.quick-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx;
+  margin-top: 18rpx;
+  padding: 22rpx;
+  box-sizing: border-box;
+  border-left: 8rpx solid var(--campus-manager-orange);
+  border-radius: 8rpx;
+  background: var(--campus-manager-glass);
+  box-shadow: 0 7rpx 16rpx rgba(63, 46, 15, 0.13);
+}
+
+.quick-form__title,
+.quick-form__submit {
+  grid-column: 1 / -1;
+}
+
+.quick-form__title {
+  font-family: var(--campus-manager-font-display);
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.quick-form__field {
+  width: 100%;
+  min-height: var(--campus-manager-touch-min);
+  padding: 0 20rpx;
+  box-sizing: border-box;
+  border: 2rpx solid rgba(255, 116, 71, 0.26);
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.94);
+  font-size: 25rpx;
+  color: var(--campus-manager-ink);
+}
+
+.student-search {
+  display: flex;
+  align-items: center;
+  min-height: var(--campus-manager-touch-min);
+  margin-top: 24rpx;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+  border: 2rpx solid rgba(255, 255, 255, 0.66);
+  border-radius: 16rpx;
+  background: var(--campus-manager-glass);
+  box-shadow: 0 6rpx 14rpx rgba(63, 46, 15, 0.12);
+}
+
+.student-search__icon {
+  flex: none;
+  width: 40rpx;
+  font-size: 34rpx;
+  color: var(--campus-manager-muted);
+}
+
+.student-search__input {
+  flex: 1;
+  min-width: 0;
+  height: var(--campus-manager-touch-min);
+  font-size: 27rpx;
+  color: var(--campus-manager-ink);
+}
+
+.student-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+  margin-top: 26rpx;
+}
+
+.student-row {
+  min-height: 218rpx;
+  padding: 26rpx 28rpx;
+  box-sizing: border-box;
+  border-left: 8rpx solid var(--campus-manager-orange);
+  border-radius: 16rpx;
+  background: var(--campus-manager-glass);
+  box-shadow: 0 8rpx 18rpx rgba(63, 46, 15, 0.14);
+}
+
+.student-row--hover {
+  opacity: 0.76;
+}
+
+.student-row__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.student-row__name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--campus-manager-font-display);
+  font-size: 38rpx;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.student-row__status {
+  flex: none;
+  padding: 8rpx 16rpx;
+  border-radius: 14rpx;
+  background: rgba(35, 135, 96, 0.14);
+  font-size: 21rpx;
+  color: #176a4b;
+}
+
+.student-row__classes {
+  display: block;
+  margin-top: 13rpx;
+  overflow-wrap: anywhere;
+  font-size: 25rpx;
+  color: var(--campus-manager-muted);
+}
+
+.student-row__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+  margin-top: 20rpx;
+  padding-top: 18rpx;
+  border-top: 2rpx solid rgba(32, 29, 23, 0.12);
+}
+
+.student-row__meta-label {
+  flex: none;
+  font-size: 21rpx;
+  color: var(--campus-manager-muted);
+}
+
+.student-row__meta-value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 24rpx;
+  text-align: right;
+}
+
+.student-row__meta-command {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.student-row__chevron {
+  flex: none;
+  margin-left: 12rpx;
+  font-size: 42rpx;
+  line-height: 1;
+  color: var(--campus-manager-orange);
+}
+
+.page-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 390rpx;
+  margin-top: 26rpx;
+  padding: 34rpx;
+  box-sizing: border-box;
+  border-radius: 16rpx;
+  background: var(--campus-manager-glass);
+}
+
+.page-state__title {
+  font-family: var(--campus-manager-font-display);
+  font-size: 42rpx;
+  font-weight: 700;
+}
+
+.page-state__message {
+  margin-top: 14rpx;
+  overflow-wrap: anywhere;
+  font-size: 25rpx;
+  color: var(--campus-manager-muted);
+}
+
+.page-state__retry,
+.load-more {
+  margin-top: 24rpx;
+  background: var(--campus-manager-orange);
+  color: #ffffff;
+}
+
+.load-more {
+  align-self: center;
+  min-width: 220rpx;
+}
+
+.control--hover {
+  opacity: 0.72;
+}
+
+@media (max-width: 380px) {
+  .students-page__heading {
+    align-items: flex-start;
+  }
+
+  .roster-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quick-form {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-form__title,
+  .quick-form__submit {
+    grid-column: 1;
+  }
+}

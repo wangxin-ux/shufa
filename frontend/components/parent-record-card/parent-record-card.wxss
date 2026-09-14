@@ -1,0 +1,105 @@
+.record-card {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  border: var(--parent-record-card-border, 0);
+  background: var(--parent-record-card-background, var(--parent-yellow-card));
+  border-radius: var(--parent-card-radius);
+  box-shadow: var(--parent-record-card-shadow, var(--parent-shadow));
+  padding: var(--parent-record-card-padding, 28rpx 32rpx);
+}
+
+.record-card__dot {
+  flex: none;
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  margin-right: 24rpx;
+}
+
+.record-card__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.record-card__title {
+  font-size: 32rpx;
+  font-family: var(--parent-font-display);
+  font-weight: 600;
+  color: var(--parent-ink);
+}
+
+.record-card__subtitle {
+  margin-top: 8rpx;
+  font-size: var(--parent-record-card-subtitle-size, 24rpx);
+  color: var(--parent-record-card-subtitle-color, var(--parent-text-muted));
+}
+
+.record-card__tag {
+  flex: none;
+  margin-left: 24rpx;
+  padding: 0 28rpx;
+  min-height: 56rpx;
+  line-height: 56rpx;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  font-family: var(--parent-font-display);
+  font-weight: 600;
+}
+
+.record-card__tag--green {
+  background: var(--parent-success);
+  color: #ffffff;
+}
+
+.record-card__tag--orange {
+  background: var(--parent-orange);
+  color: #ffffff;
+}
+
+.record-card__tag--red {
+  background: var(--parent-danger);
+  color: #ffffff;
+}
+
+.record-card__tag--gray {
+  background: rgba(36, 59, 54, 0.15);
+  color: var(--parent-ink);
+}
+
+/* 嵌入整版容器的扁平行（课时流水） */
+.record-card--flat {
+  padding: var(--parent-record-card-flat-padding, 26rpx 16rpx);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* 纯色文字标签（请假记录状态） */
+.record-card__tag--plain-green,
+.record-card__tag--plain-orange,
+.record-card__tag--plain-red,
+.record-card__tag--plain-gray {
+  padding: 0 8rpx;
+  background: transparent;
+  font-size: var(--parent-record-card-plain-tag-size, 36rpx);
+  font-weight: 800;
+}
+
+.record-card__tag--plain-green {
+  color: var(--parent-success);
+}
+
+.record-card__tag--plain-orange {
+  color: var(--parent-orange);
+}
+
+.record-card__tag--plain-red {
+  color: var(--parent-danger);
+}
+
+.record-card__tag--plain-gray {
+  color: var(--parent-text-muted);
+}

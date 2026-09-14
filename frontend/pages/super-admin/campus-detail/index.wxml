@@ -1,0 +1,60 @@
+<super-admin-page-shell show-back mark-title="校区" mark-icon="/pages/super-admin/assets/icon-campuses.png">
+  <view class="workspace">
+    <view wx:if="{{viewState === 'loading'}}" class="state">
+      <text class="state__title">正在加载校区详情</text>
+    </view>
+    <view wx:elif="{{viewState === 'error' || viewState === 'forbidden'}}" class="state">
+      <text class="state__title">无法查看校区</text>
+      <text class="state__message">{{errorMessage}}</text>
+      <button class="button" bindtap="onRetry">重试</button>
+    </view>
+    <view wx:else>
+      <view class="workspace__head">
+        <view>
+          <text class="workspace__title">{{campus.name}}</text>
+          <text class="workspace__subtitle">{{campus.code}} · {{campus.timezone}}</text>
+          <text wx:if="{{reservationLabel}}" class="workspace__subtitle">{{reservationLabel}}</text>
+        </view>
+      </view>
+      <view class="metrics">
+        <view class="metric"><text class="metric__label">在读学员</text><text class="metric__value">{{campus.activeStudentCount}}人</text></view>
+        <view class="metric"><text class="metric__label">低课时预警</text><text class="metric__value">{{campus.warningStudentCount}}人</text></view>
+        <view class="metric"><text class="metric__label">主课时余额</text><text class="metric__value">{{mainLessons}}节</text></view>
+        <view class="metric"><text class="metric__label">赠送课时余额</text><text class="metric__value">{{giftLessons}}节</text></view>
+      </view>
+      <view class="list">
+        <view class="row"><view class="row__main"><text class="row__title">联系方式</text><text class="row__meta">{{campus.contactPhone || '未填写'}}</text></view></view>
+        <view class="row"><view class="row__main"><text class="row__title">校区地址</text><text class="row__meta">{{campus.address || '未填写'}}</text></view></view>
+        <view class="row"><view class="row__main"><text class="row__title">预警阈值</text><text class="row__meta">由分校区管理员在校区设置中维护</text></view><text class="row__value">{{campus.lessonWarningThresholdUnits / 100}}节</text></view>
+      </view>
+      <view class="form map-editor">
+        <view class="map-editor__head">
+          <view>
+            <text class="map-editor__title">家长端门店地图</text>
+            <text class="map-editor__address">{{mapDraft.address || '尚未选择地图位置'}}</text>
+          </view>
+          <button class="button button--ghost map-editor__choose" bindtap="onChooseLocation" disabled="{{submittingMap}}">选择地图位置</button>
+        </view>
+        <view class="map-editor__switch">
+          <text>在家长地图展示</text>
+          <switch checked="{{mapDraft.mapVisible}}" disabled="{{!mapReady || submittingMap}}" color="#f07d2b" bindchange="onMapVisibleChange" />
+        </view>
+        <button class="button map-editor__save" bindtap="onSaveMapLocation" loading="{{submittingMap}}" disabled="{{!mapReady || submittingMap}}">保存地图配置</button>
+      </view>
+      <view class="form qr-editor">
+        <view class="qr-editor__copy">
+          <text class="qr-editor__title">家长端客服二维码</text>
+          <text class="qr-editor__hint">固定显示在活动客服弹窗，可随时替换</text>
+        </view>
+        <view class="qr-editor__preview" bindtap="onPreviewCustomerServiceQr">
+          <image wx:if="{{campus.customerServiceQrCodeUrl}}" class="qr-editor__image" src="{{campus.customerServiceQrCodeUrl}}" mode="aspectFit" />
+          <view wx:else class="qr-editor__placeholder"><text>未配置</text><text>二维码</text></view>
+        </view>
+        <button class="button qr-editor__button" bindtap="onChooseCustomerServiceQr" loading="{{uploadingQr}}" disabled="{{uploadingQr}}">{{campus.customerServiceQrCodeUrl ? '更换二维码' : '上传二维码'}}</button>
+      </view>
+      <view class="actions">
+        <button class="button" bindtap="onLedgerTap">查看本校区课时流水</button>
+      </view>
+    </view>
+  </view>
+</super-admin-page-shell>

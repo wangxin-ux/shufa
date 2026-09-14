@@ -1,0 +1,18 @@
+<view class="view-state view-state--{{state}} view-state--{{variant}}">
+  <block wx:if="{{state === 'loading'}}">
+    <view class="view-state__spinner" aria-hidden="true"></view>
+    <text class="view-state__text">{{loadingText}}</text>
+  </block>
+  <block wx:elif="{{state === 'empty'}}">
+    <text class="view-state__text">{{emptyText}}</text>
+  </block>
+  <block wx:elif="{{state === 'error'}}">
+    <view wx:if="{{variant === 'panel'}}" class="view-state__status-mark" aria-hidden="true">!</view>
+    <text class="view-state__text">{{errorText}}</text>
+    <button
+      class="view-state__retry {{variant === 'panel' ? 'view-state__retry--panel' : ''}}"
+      size="{{variant === 'panel' ? 'default' : 'mini'}}"
+      bindtap="onRetry"
+    >{{retryText}}</button>
+  </block>
+</view>

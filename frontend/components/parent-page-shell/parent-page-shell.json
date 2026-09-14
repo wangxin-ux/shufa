@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "parent-page-mark": "/components/parent-page-mark/parent-page-mark"
+  }
+}

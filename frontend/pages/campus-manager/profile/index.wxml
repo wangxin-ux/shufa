@@ -1,0 +1,66 @@
+<campus-manager-page-shell
+  markTitle="我的"
+  markIcon="/pages/campus-manager/assets/profile-mark-glyph.png"
+  showBack="{{true}}"
+  surfacePage="{{true}}"
+  plainMark="{{true}}"
+>
+  <view class="profile">
+    <view wx:if="{{viewState === 'loading'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">正在加载管理员资料</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">管理员资料加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-state__retry" bindtap="onRetry" hover-class="button--hover">重试</button>
+    </view>
+
+    <block wx:else>
+      <view class="profile-hero">
+        <view class="profile-card">
+          <text class="profile-card__name">{{displayName}}</text>
+          <view class="profile-card__meta">
+            <text class="profile-card__campus">{{campusName}}</text>
+            <text class="profile-card__role">{{identityLabel}}</text>
+          </view>
+        </view>
+        <image
+          class="profile-hero__character"
+          src="/pages/campus-manager/assets/profile-top-character.png"
+          mode="widthFix"
+          aria-hidden="true"
+        />
+      </view>
+
+      <view class="profile-actions-stage">
+        <image
+          class="profile-actions-stage__character"
+          src="/pages/campus-manager/assets/profile-lower-character.png"
+          mode="widthFix"
+          aria-hidden="true"
+        />
+        <view class="profile-actions">
+          <button
+            wx:for="{{actions}}"
+            wx:key="key"
+            class="profile-action"
+            data-key="{{item.key}}"
+            bindtap="onActionTap"
+            hover-class="button--hover"
+          >
+            <view class="profile-action__bullet" aria-hidden="true"></view>
+            <text class="profile-action__label">{{item.label}}</text>
+            <text class="profile-action__command">查看</text>
+          </button>
+        </view>
+        <view class="profile-session">
+          <session-logout id="sessionLogout" />
+        </view>
+      </view>
+    </block>
+  </view>
+</campus-manager-page-shell>

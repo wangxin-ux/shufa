@@ -1,0 +1,16 @@
+@import "../../../styles/super-admin-workspace.wxss";
+@import "../../../styles/finance-overview.wxss";
+
+.overview-campus-checks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx;
+}
+
+.overview-campus-check {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 23rpx;
+}

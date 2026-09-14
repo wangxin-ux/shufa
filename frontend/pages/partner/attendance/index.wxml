@@ -1,0 +1,32 @@
+<partner-page-shell
+  markTitle="出勤"
+  markIcon="/pages/partner/assets/icon-attendance.png"
+  showBack="{{true}}"
+>
+  <view class="partner-workspace attendance-page">
+    <view class="partner-heading"><text class="partner-heading__title">出勤统计</text><text class="partner-heading__count">{{total}}条记录</text></view>
+
+    <view class="attendance-overview">
+      <view class="attendance-overview__rate"><text class="attendance-overview__rate-value">{{summary.attendanceRateLabel}}</text><text class="attendance-overview__rate-label">到课率</text></view>
+      <view class="attendance-overview__counts">
+        <view class="attendance-overview__count"><text class="attendance-overview__count-value">{{summary.presentCountLabel}}</text><text class="attendance-overview__count-label">到课</text></view>
+        <view class="attendance-overview__count"><text class="attendance-overview__count-value">{{summary.leaveCountLabel}}</text><text class="attendance-overview__count-label">请假</text></view>
+        <view class="attendance-overview__count"><text class="attendance-overview__count-value">{{summary.absentCountLabel}}</text><text class="attendance-overview__count-label">缺勤</text></view>
+        <view class="attendance-overview__count"><text class="attendance-overview__count-value">{{summary.recordedCountLabel}}</text><text class="attendance-overview__count-label">已记录</text></view>
+      </view>
+    </view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="partner-state"><text class="partner-state__title">正在加载出勤统计</text></view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="partner-state"><text class="partner-state__title">无访问权限</text><text class="partner-state__message">{{errorMessage}}</text></view>
+    <view wx:elif="{{viewState === 'error'}}" class="partner-state"><text class="partner-state__title">出勤统计加载失败</text><text class="partner-state__message">{{errorMessage}}</text><button class="partner-command" bindtap="onRetry">重试</button></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="partner-state"><text class="partner-state__title">暂无出勤记录</text><text class="partner-state__message">当前校区还没有已记录的出勤事实</text></view>
+
+    <view wx:else class="partner-list attendance-list">
+      <view wx:for="{{items}}" wx:key="id" class="partner-card attendance-card">
+        <view class="partner-card__head"><view class="partner-card__identity"><text class="partner-card__title">{{item.studentName}}</text><text class="partner-card__subtitle">{{item.lessonLabel}}</text></view><text class="attendance-card__status attendance-card__status--{{item.statusTone}}">{{item.statusLabel}}</text></view>
+        <text class="partner-card__line">授课教师：{{item.teacherLabel}}</text>
+      </view>
+      <button wx:if="{{hasMore}}" class="partner-command partner-command--load-more" loading="{{loadingMore}}" disabled="{{loadingMore}}" bindtap="onLoadMore">{{loadingMore ? '加载中' : '加载更多'}}</button>
+    </view>
+  </view>
+</partner-page-shell>

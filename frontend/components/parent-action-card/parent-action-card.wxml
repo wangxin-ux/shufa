@@ -1,0 +1,8 @@
+<view class="action-card action-card--{{tone}}">
+  <view class="action-card__body">
+    <slot />
+  </view>
+  <view class="action-card__footer">
+    <slot name="footer" />
+  </view>
+</view>

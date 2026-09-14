@@ -1,0 +1,138 @@
+<view class="finance">
+  <view class="finance__wave" aria-hidden="true"></view>
+  <view class="finance__header" style="padding-top: {{headerTop}}px; padding-right: {{headerRight}}px;">
+    <button class="finance__back" bindtap="onBack" aria-label="返回上一页">‹</button>
+    <view class="finance__mark"><text class="finance__mark-icon">¥</text><text class="finance__mark-title">财务</text></view>
+  </view>
+  <view wx:if="{{!previewEnabled && !apiEnabled}}" class="finance__body">
+    <view class="state"><text class="state__title">{{viewState === 'loading' ? '正在核验身份' : viewState === 'error' ? '暂时无法加载' : '请使用总部财务账号'}}</text><text wx:if="{{errorMessage}}" class="state__message">{{errorMessage}}</text><button wx:if="{{viewState === 'error'}}" class="button" bindtap="onRetry">重试</button><button wx:else class="button" bindtap="onBack">返回</button></view>
+  </view>
+  <view wx:else class="finance__body">
+    <view class="workspace">
+    <view class="workspace__head">
+      <view><text class="workspace__title">收款总览</text><text class="workspace__subtitle">期间收款与学员明细{{previewEnabled ? ' · 本地演示数据' : ''}}</text></view>
+    </view>
+    <view wx:if="{{apiEnabled}}" class="toolbar finance__primary-toolbar"><button class="button finance__create-button" data-action="create" bindtap="onCreate">登记收款</button></view>
+    <view wx:if="{{exportError}}" class="notice">{{exportError}}</view>
+    <view class="toolbar finance__filters">
+      <picker class="finance__campus-picker" range="{{campuses}}" range-key="name" value="{{campusIndex}}" bindchange="onCampusChange"><view class="select">{{campuses[campusIndex].name}}</view></picker>
+      <input class="field" value="{{keyword}}" bindinput="onKeywordInput" placeholder="搜索学员姓名" confirm-type="search" maxlength="100" />
+      <view class="finance__dates">
+        <picker mode="date" value="{{startDate}}" bindchange="onStartChange"><view class="select">{{startDate}}</view></picker>
+        <text class="finance__date-separator">至</text>
+        <picker mode="date" value="{{endDate}}" bindchange="onEndChange"><view class="select">{{endDate}}</view></picker>
+      </view>
+    </view>
+    <view class="metrics">
+      <view class="metric finance__receipt-total"><text class="metric__label">原始实际收款 · {{total}} 笔</text><text class="metric__value">¥ {{summary.receiptsLabel}}</text></view>
+      <view class="metric"><text class="metric__label">账面纠错影响</text><text class="metric__value">¥ {{summary.correctionEffectLabel}}</text></view>
+      <view class="metric"><text class="metric__label">纠错后金额</text><text class="metric__value">¥ {{summary.netAmountLabel}}</text></view>
+      <view class="metric"><text class="metric__label">待录包</text><text class="metric__value">{{summary.unlinkedCount}} 笔</text></view>
+    </view>
+    <view class="roster-tabs finance__tabs">
+      <button wx:for="{{tabs}}" wx:key="code" class="roster-tab {{status === item.code ? 'roster-tab--active' : ''}}" data-status="{{item.code}}" bindtap="onStatusTap">{{item.name}}</button>
+    </view>
+    <view wx:if="{{viewState === 'loading'}}" class="state"><text class="state__title">正在加载收款记录</text></view>
+    <view wx:elif="{{viewState === 'error'}}" class="state"><text class="state__title">暂时无法展示</text><text class="state__message">{{errorMessage}}</text><button class="button" bindtap="onRetry">重试</button></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="state"><text class="state__title">暂无收款记录</text><text class="state__message">当前筛选条件下没有记录</text><button class="button" bindtap="onReset">重置筛选</button></view>
+    <view wx:else class="list">
+      <button class="row receipt" wx:for="{{rows}}" wx:key="id" data-id="{{item.id}}" bindtap="onReceiptTap" hover-class="row-hover">
+        <view class="row__main">
+          <view class="receipt__head"><text class="row__title">{{item.studentName}}</text><text class="status {{item.linked ? 'status--success' : ''}}">{{item.statusLabel}}</text></view>
+          <text class="row__meta">{{item.campusName}} · {{item.channel}}</text>
+          <text class="row__meta">{{item.packageLabel}}</text>
+          <text wx:if="{{item.recordKind === 'REPLACEMENT'}}" class="row__meta">纠错替代记录</text>
+          <text wx:if="{{item.correction}}" class="row__meta">{{item.correctionTypeLabel}} · {{item.correctionStatusLabel}}</text>
+          <text class="row__meta">{{item.date}}</text>
+        </view>
+        <text class="row__value">¥ {{item.amountLabel}} ›</text>
+      </button>
+      <button wx:if="{{hasMore}}" class="button" bindtap="onLoadMore">加载更多收款记录</button>
+      <text wx:else class="row__meta finance__end">共 {{total}} 笔收款</text>
+    </view>
+    </view>
+  </view>
+  <view wx:if="{{detail}}" class="finance__mask" bindtap="onCloseDetail">
+    <view class="finance__sheet" catchtap="onSheetTap">
+      <view class="finance__sheet-head"><text class="form__label">收款详情</text><button class="finance__sheet-close" bindtap="onCloseDetail" aria-label="关闭详情">×</button></view>
+      <scroll-view scroll-y class="finance__sheet-scroll">
+        <view class="workspace__head"><view><text class="workspace__title">{{detail.studentName}}</text><text class="workspace__subtitle">¥ {{detail.amountLabel}}</text></view></view>
+        <view class="finance__detail-panel">
+          <view class="finance__detail-row"><text class="finance__detail-label">所属校区</text><text class="finance__detail-value">{{detail.campusName}}</text></view>
+          <view class="finance__detail-row"><text class="finance__detail-label">收款信息</text><text class="finance__detail-value">{{detail.date}} · {{detail.channel}}</text></view>
+          <view class="finance__detail-row"><text class="finance__detail-label">课包名称</text><view class="finance__detail-package"><text class="finance__detail-value">{{detail.course || '尚未录入课包'}}</text><text class="status {{detail.linked ? 'status--success' : ''}}">{{detail.statusLabel}}</text></view></view>
+          <view class="finance__detail-row"><text class="finance__detail-label">课时组成</text><text class="finance__detail-value">{{detail.packageLabel}}</text></view>
+          <view class="finance__detail-row"><text class="finance__detail-label">购买课时单价</text><text class="finance__detail-value">{{detail.unitPriceLabel}}</text></view>
+          <block wx:if="{{apiEnabled}}">
+            <view class="finance__detail-row"><text class="finance__detail-label">登记时间</text><text class="finance__detail-value">{{detail.createdLabel}}</text></view>
+            <view wx:if="{{detail.validityLabel}}" class="finance__detail-row"><text class="finance__detail-label">课包有效期</text><text class="finance__detail-value">{{detail.validityLabel}}</text></view>
+            <view wx:if="{{detail.note}}" class="finance__detail-row finance__detail-row--note"><text class="finance__detail-label">备注</text><text class="finance__detail-value">{{detail.note}}</text></view>
+          </block>
+        </view>
+        <view wx:if="{{previewEnabled}}" class="notice">本地演示记录 · 未发生真实收款或发包</view>
+        <block wx:if="{{apiEnabled}}">
+          <view class="finance__detail-actions"><button class="button button--ghost" data-action="view-proof" bindtap="onViewProof">查看收款凭证</button><button wx:if="{{detail.linked && detail.recordKind === 'ORIGINAL'}}" class="button" bindtap="onRefund">申请退课</button><button wx:if="{{detail.linked && detail.recordKind === 'ORIGINAL'}}" class="button button--ghost" bindtap="onCorrection">{{detail.correctionButtonLabel}}</button></view>
+          <view wx:if="{{showCorrection && correctionDetail}}" class="finance__correction">
+            <view class="notice">账面纠错，不代表退款</view>
+            <view class="workspace__head"><view><text class="workspace__title">{{correctionDetail.typeLabel}}</text><text class="workspace__subtitle">{{correctionDetail.statusLabel}} · {{correctionDetail.createdLabel}}</text></view></view>
+            <view class="row"><view class="row__main"><text class="row__title">原记录</text><text class="row__meta">{{correctionDetail.original.studentName}} · {{correctionDetail.original.campusName}}</text><text class="row__meta">¥ {{correctionDetail.original.amountLabel}} · {{correctionDetail.original.package.name}}</text><text class="row__meta">购买 {{correctionDetail.original.mainLabel}} 节 · 赠送 {{correctionDetail.original.giftLabel}} 节</text></view></view>
+            <view wx:if="{{correctionDetail.proposedReplacement}}" class="row"><view class="row__main"><text class="row__title">拟替代记录</text><text class="row__meta">{{correctionDetail.proposedReplacement.studentName}} · {{correctionDetail.proposedReplacement.campusName}}</text><text class="row__meta">¥ {{correctionDetail.proposedReplacement.amountLabel}} · {{correctionDetail.proposedReplacement.package.name}}</text><text class="row__meta">购买 {{correctionDetail.proposedReplacement.mainLabel}} 节 · 赠送 {{correctionDetail.proposedReplacement.giftLabel}} 节</text></view></view>
+            <view class="row"><view class="row__main"><text class="row__title">申请原因</text><text class="row__meta">{{correctionDetail.reason}}</text></view></view>
+            <view class="toolbar"><button class="button button--ghost" data-kind="original" bindtap="onCorrectionProof">查看原凭证</button><button wx:if="{{correctionDetail.proposedReplacement && correctionDetail.proposedReplacement.proofAvailable}}" class="button button--ghost" data-kind="replacement" bindtap="onCorrectionProof">查看替代凭证</button><button wx:for="{{correctionActions}}" wx:key="code" class="button" data-action="{{item.code}}" bindtap="onCorrectionAction">{{item.name}}</button></view>
+          </view>
+        </block>
+      </scroll-view>
+    </view>
+  </view>
+  <view wx:if="{{formMode}}" class="finance__mask finance__form-mask" bindtap="onCloseForm">
+    <view class="finance__sheet" catchtap="onSheetTap">
+      <view class="finance__sheet-head"><text class="form__label">{{formMode === 'receipt' ? '登记收款' : formMode === 'correction' ? '申请收款纠错' : '处理收款纠错'}}</text><button class="button button--ghost" disabled="{{submitting}}" bindtap="onCloseForm" aria-label="关闭表单">×</button></view>
+      <scroll-view scroll-y class="finance__sheet-scroll">
+        <view class="form finance__form">
+          <block wx:if="{{formMode === 'receipt'}}">
+            <text class="form__label">校区</text>
+            <picker data-field="campus" range="{{campuses}}" range-key="name" value="{{createCampusIndex}}" disabled="{{submitting}}" bindchange="onCreateCampus"><view class="select">{{createCampusIndex > 0 ? campuses[createCampusIndex].name : '选择校区'}}</view></picker>
+            <text class="form__label">学员</text>
+            <view class="toolbar"><input class="field" placeholder="学员姓名" value="{{studentQuery}}" data-field="studentQuery" bindinput="onField" disabled="{{submitting}}" maxlength="100" /><button class="button button--ghost" bindtap="onStudentSearch" disabled="{{submitting || choicesLoading}}">查询</button></view>
+            <picker data-field="student" range="{{studentOptions}}" range-key="name" value="{{studentIndex}}" disabled="{{submitting || choicesLoading}}" bindchange="onStudent"><view class="select">{{choicesLoading ? '加载中' : studentIndex >= 0 ? studentOptions[studentIndex].name : '选择学员'}}</view></picker>
+            <button wx:if="{{studentHasMore}}" class="button button--ghost" disabled="{{choicesLoading || submitting}}" bindtap="onMoreStudents">加载更多学员</button>
+            <text class="form__label">实际收款（元）</text><input class="field" type="digit" value="{{amount}}" data-field="amount" bindinput="onField" disabled="{{submitting}}" maxlength="11" placeholder="0.00" />
+            <text class="form__label">实际收款日</text><picker mode="date" value="{{receivedOn}}" end="{{today}}" data-field="receivedOn" bindchange="onDateField" disabled="{{submitting}}"><view class="select">{{receivedOn}}</view></picker>
+            <text class="form__label">收款方式</text><picker range="{{channels}}" range-key="name" value="{{channelIndex}}" bindchange="onChannel" disabled="{{submitting}}"><view class="select">{{channels[channelIndex].name}}</view></picker>
+            <text class="form__label">收款凭证</text><button class="button button--ghost" data-action="choose-proof" bindtap="onChooseProof" disabled="{{submitting}}">{{proofPath ? '更换凭证' : '选择凭证'}}</button>
+            <image wx:if="{{proofPath}}" class="finance__proof" src="{{proofPath}}" mode="aspectFit" />
+            <text class="form__label">备注</text><textarea class="field finance__note" value="{{note}}" data-field="note" bindinput="onField" maxlength="500" disabled="{{submitting}}" />
+          </block>
+          <block wx:elif="{{formMode === 'correction'}}">
+            <view class="roster-tabs finance__correction-tabs"><button class="roster-tab {{correctionType === 'VOID' ? 'roster-tab--active' : ''}}" data-type="VOID" bindtap="onCorrectionType">撤销收款</button><button class="roster-tab {{correctionType === 'REPLACE' ? 'roster-tab--active' : ''}}" data-type="REPLACE" bindtap="onCorrectionType">更正替代</button></view>
+            <view class="notice">账面纠错，不代表退款；原收款、课包和流水会继续保留。</view>
+            <block wx:if="{{correctionType === 'REPLACE'}}">
+              <text class="form__label">更正后校区</text><picker range="{{campuses}}" range-key="name" value="{{createCampusIndex}}" disabled="{{submitting}}" bindchange="onCreateCampus"><view class="select">{{createCampusIndex > 0 ? campuses[createCampusIndex].name : '选择校区'}}</view></picker>
+              <text class="form__label">更正后学员</text><view class="toolbar"><input class="field" placeholder="学员姓名" value="{{studentQuery}}" data-field="studentQuery" bindinput="onField" disabled="{{submitting}}" maxlength="100" /><button class="button button--ghost" bindtap="onStudentSearch" disabled="{{submitting || choicesLoading}}">查询</button></view>
+              <picker range="{{studentOptions}}" range-key="name" value="{{studentIndex}}" disabled="{{submitting || choicesLoading}}" bindchange="onStudent"><view class="select">{{choicesLoading ? '加载中' : studentIndex >= 0 ? studentOptions[studentIndex].name : '选择学员'}}</view></picker>
+              <button wx:if="{{studentHasMore}}" class="button button--ghost" disabled="{{choicesLoading || submitting}}" bindtap="onMoreStudents">加载更多学员</button>
+              <text class="form__label">更正后收款（元）</text><input class="field" type="digit" value="{{amount}}" data-field="amount" bindinput="onField" disabled="{{submitting}}" maxlength="11" />
+              <text class="form__label">更正后收款日</text><picker mode="date" value="{{receivedOn}}" end="{{today}}" data-field="receivedOn" bindchange="onDateField" disabled="{{submitting}}"><view class="select">{{receivedOn}}</view></picker>
+              <text class="form__label">更正后收款方式</text><picker range="{{channels}}" range-key="name" value="{{channelIndex}}" bindchange="onChannel" disabled="{{submitting}}"><view class="select">{{channels[channelIndex].name}}</view></picker>
+              <text class="form__label">新的收款凭证</text><button class="button button--ghost" bindtap="onChooseProof" disabled="{{submitting}}">{{proofPath ? '更换凭证' : '选择凭证'}}</button><image wx:if="{{proofPath}}" class="finance__proof" src="{{proofPath}}" mode="aspectFit" />
+              <text class="form__label">更正后备注</text><textarea class="field finance__note" value="{{note}}" data-field="note" bindinput="onField" maxlength="500" disabled="{{submitting}}" />
+                  <text class="form__label">更正后课包名称（家长课时流水可见）</text><input class="field" value="{{packageName}}" data-field="packageName" bindinput="onField" maxlength="200" disabled="{{submitting}}" />
+              <text class="form__label">购买课时（节）</text><input class="field" type="digit" value="{{mainLessons}}" data-field="mainLessons" bindinput="onField" maxlength="10" disabled="{{submitting}}" />
+              <text class="form__label">赠送课时（节）</text><input class="field" type="digit" value="{{giftLessons}}" data-field="giftLessons" bindinput="onField" maxlength="10" disabled="{{submitting}}" />
+              <text class="form__label">生效日</text><picker mode="date" value="{{validFrom}}" data-field="validFrom" bindchange="onDateField" disabled="{{submitting}}"><view class="select">{{validFrom}}</view></picker>
+              <text class="form__label">到期日</text><picker mode="date" value="{{expiresOn}}" start="{{validFrom}}" data-field="expiresOn" bindchange="onDateField" disabled="{{submitting}}"><view class="select">{{expiresOn || '长期有效'}}</view></picker><button wx:if="{{expiresOn}}" class="button button--ghost" bindtap="onClearExpiry" disabled="{{submitting}}">设为长期有效</button>
+            </block>
+            <text class="form__label">纠错原因</text><textarea class="field finance__note" value="{{correctionReason}}" data-field="correctionReason" bindinput="onField" maxlength="500" disabled="{{submitting}}" />
+          </block>
+          <block wx:else>
+            <text class="row__title">{{correctionDetail.typeLabel}} · {{correctionDetail.statusLabel}}</text>
+            <view class="notice">账面纠错，不代表退款</view>
+            <text class="form__label">处理说明</text><textarea class="field finance__note" value="{{correctionReason}}" data-field="correctionReason" bindinput="onField" maxlength="500" disabled="{{submitting}}" />
+          </block>
+          <text wx:if="{{formError}}" class="notice">{{formError}}</text>
+          <button class="button" data-action="submit" loading="{{submitting}}" disabled="{{submitting || choicesLoading}}" bindtap="onSubmit">{{submitting ? '正在提交' : formMode === 'receipt' ? '确认登记' : formMode === 'correction' ? '提交纠错申请' : '确认处理'}}</button>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+</view>

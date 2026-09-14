@@ -1,0 +1,22 @@
+.action-card {
+  border-radius: var(--parent-card-radius);
+  box-shadow: var(--parent-action-card-shadow, var(--parent-shadow));
+  padding: 32rpx;
+  background: var(--parent-yellow-card);
+}
+
+.action-card--orange {
+  background: var(--parent-orange);
+}
+
+.action-card--bright {
+  background: var(--parent-yellow-bright);
+}
+
+.action-card--white {
+  background: #ffffff;
+}
+
+.action-card__footer:empty {
+  display: none;
+}

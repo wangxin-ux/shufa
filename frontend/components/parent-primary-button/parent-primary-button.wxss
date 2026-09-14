@@ -1,0 +1,46 @@
+.primary-btn {
+  min-height: var(--parent-touch-min);
+  line-height: var(--parent-touch-min);
+  padding: 0 48rpx;
+  border-radius: 999rpx;
+  background: var(--parent-orange);
+  color: var(--parent-primary-color, var(--parent-ink));
+  font-size: 32rpx;
+  font-family: var(--parent-font-display);
+  font-weight: 700;
+  box-shadow: var(--parent-primary-shadow, var(--parent-shadow));
+}
+
+.primary-btn--deep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--parent-primary-deep-height, 160rpx);
+  min-height: var(--parent-primary-deep-height, 160rpx);
+  padding: var(--parent-primary-deep-padding, 12rpx 34rpx);
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--parent-orange-deep);
+  font-size: var(--parent-primary-deep-font-size, 32rpx);
+  line-height: 1.05;
+  text-align: center;
+  white-space: normal;
+}
+
+.primary-btn__line {
+  display: block;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+
+.primary-btn--hover {
+  opacity: 0.85;
+}
+
+.primary-btn--disabled {
+  background: rgba(36, 59, 54, 0.25);
+  color: rgba(255, 255, 255, 0.8);
+  box-shadow: none;
+}

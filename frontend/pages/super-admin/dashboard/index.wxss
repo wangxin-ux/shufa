@@ -1,0 +1,201 @@
+@import "../../../styles/super-admin-workspace.wxss";
+
+.revenue {
+  margin-bottom: 28rpx;
+}
+
+.revenue__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20rpx;
+  margin-bottom: 18rpx;
+}
+
+.revenue__title,
+.revenue__subtitle {
+  display: block;
+}
+
+.revenue__title {
+  font-family: var(--super-admin-font-display);
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--super-admin-ink);
+}
+
+.revenue__subtitle,
+.revenue__partner-count {
+  font-size: 21rpx;
+  color: var(--super-admin-muted);
+}
+
+.revenue__subtitle {
+  margin-top: 5rpx;
+}
+
+.revenue__partner-count {
+  flex: none;
+  padding-bottom: 4rpx;
+}
+
+.revenue-periods {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  height: 72rpx;
+  margin-bottom: 16rpx;
+  padding: 6rpx;
+  box-sizing: border-box;
+  border: 2rpx solid rgba(240, 125, 43, 0.2);
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.revenue-period {
+  display: flex;
+  min-width: 0;
+  height: 56rpx;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0 4rpx;
+  border: 0;
+  border-radius: 6rpx;
+  background: transparent;
+  font-size: 22rpx;
+  line-height: 1;
+  color: var(--super-admin-muted);
+}
+
+.revenue-period::after {
+  border: 0;
+}
+
+.revenue-period--active {
+  background: var(--super-admin-accent);
+  box-shadow: 0 5rpx 12rpx rgba(151, 78, 27, 0.2);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.revenue-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx;
+}
+
+.revenue-metric {
+  min-width: 0;
+  min-height: 126rpx;
+  padding: 18rpx 20rpx;
+  box-sizing: border-box;
+  border-left: 7rpx solid #2fbd82;
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 8rpx 18rpx rgba(84, 59, 13, 0.13);
+}
+
+.revenue-metric--gross {
+  border-left-color: #ef7c2b;
+}
+
+.revenue-metric--partner {
+  border-left-color: #dfb228;
+}
+
+.revenue-metric--retained {
+  border-left-color: #218866;
+}
+
+.revenue-metric__label,
+.revenue-metric__value {
+  display: block;
+}
+
+.revenue-metric__label {
+  font-size: 21rpx;
+  color: var(--super-admin-muted);
+}
+
+.revenue-metric__value {
+  margin-top: 8rpx;
+  overflow-wrap: anywhere;
+  font-family: var(--super-admin-font-display);
+  font-size: 34rpx;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--super-admin-ink);
+}
+
+.revenue__note {
+  display: block;
+  margin: 14rpx 2rpx 18rpx;
+  font-size: 20rpx;
+  line-height: 1.45;
+  color: var(--super-admin-muted);
+}
+
+.revenue-campuses {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.revenue-campus {
+  padding: 20rpx;
+  box-sizing: border-box;
+  border-left: 8rpx solid var(--super-admin-accent);
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 8rpx 18rpx rgba(84, 59, 13, 0.12);
+}
+
+.revenue-campus__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  padding-bottom: 14rpx;
+  border-bottom: 2rpx solid rgba(240, 125, 43, 0.16);
+}
+
+.revenue-campus__name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 27rpx;
+  font-weight: 700;
+  color: var(--super-admin-ink);
+}
+
+.revenue-campus__partner {
+  flex: none;
+  font-size: 20rpx;
+  color: var(--super-admin-muted);
+}
+
+.revenue-campus__values {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx 18rpx;
+  padding-top: 14rpx;
+}
+
+.revenue-campus__values > view {
+  min-width: 0;
+}
+
+.revenue-campus__values text {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 20rpx;
+  line-height: 1.35;
+  color: var(--super-admin-muted);
+}
+
+.revenue-campus__values text + text {
+  margin-top: 4rpx;
+  font-family: var(--super-admin-font-display);
+  font-size: 27rpx;
+  font-weight: 700;
+  color: var(--super-admin-ink);
+}

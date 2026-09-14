@@ -1,0 +1,35 @@
+:host {
+  position: relative;
+  z-index: 3;
+  display: block;
+  width: 100%;
+}
+
+.session-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 653rpx;
+  min-height: 76rpx;
+  margin: 24rpx auto 0;
+  padding: 0 32rpx;
+  box-sizing: border-box;
+  border: 2rpx solid rgba(92, 65, 14, 0.12);
+  border-radius: 8rpx;
+  background: rgba(255, 215, 94, 0.84);
+  box-shadow: 0 7rpx 16rpx rgba(84, 59, 13, 0.12);
+  font-family: var(--parent-font-display);
+  font-size: 28rpx;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--parent-ink);
+}
+
+.session-logout::after {
+  border: 0;
+}
+
+.session-logout--pressed {
+  opacity: 0.68;
+}

@@ -1,0 +1,94 @@
+<parent-page-shell
+  markTitle="门店"
+  markIcon="/pages/parent/assets/icon-qa-campus.png"
+  bg="yellow"
+  showBack="{{true}}"
+>
+  <view class="campus-page">
+    <view class="campus-head">
+      <view class="campus-head__copy">
+        <text class="campus-head__title">附近门店</text>
+        <text class="campus-head__subtitle">选择门店后可打开微信地图导航</text>
+      </view>
+      <button
+        wx:if="{{viewState === 'ready' || viewState === 'location-denied'}}"
+        class="relocate-button"
+        bindtap="onRelocateTap"
+      >重新定位</button>
+    </view>
+
+    <view-state
+      wx:if="{{viewState === 'locating'}}"
+      state="loading"
+      loadingText="正在获取附近门店…"
+    />
+    <view-state
+      wx:elif="{{viewState === 'empty'}}"
+      state="empty"
+      emptyText="暂无可导航门店"
+    />
+    <view-state
+      wx:elif="{{viewState === 'error'}}"
+      state="error"
+      errorText="{{errorMessage}}"
+      bind:retry="onRetry"
+    />
+
+    <block wx:else>
+      <view wx:if="{{viewState === 'location-denied'}}" class="location-note">
+        <text class="location-note__mark">i</text>
+        <text class="location-note__text">{{locationMessage}}</text>
+      </view>
+
+      <map
+        class="campus-map"
+        latitude="{{mapLatitude}}"
+        longitude="{{mapLongitude}}"
+        scale="13"
+        markers="{{markers}}"
+        include-points="{{includePoints}}"
+        show-location
+        bindmarkertap="onMarkerTap"
+      ></map>
+
+      <view class="campus-list-head">
+        <text class="campus-list-head__title">门店列表</text>
+        <text class="campus-list-head__count">共 {{campuses.length}} 家</text>
+      </view>
+
+      <view class="campus-list">
+        <view
+          wx:for="{{campuses}}"
+          wx:key="id"
+          class="campus-card {{selectedCampusId === item.id ? 'campus-card--selected' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="onCampusTap"
+          hover-class="campus-card--pressed"
+        >
+          <view class="campus-card__head">
+            <view class="campus-card__name-row">
+              <text class="campus-card__name">{{item.name}}</text>
+              <text wx:if="{{item.isNearest}}" class="campus-card__nearest">最近</text>
+            </view>
+            <text class="campus-card__distance">{{item.distanceLabel}}</text>
+          </view>
+          <text class="campus-card__address">{{item.address}}</text>
+          <text wx:if="{{item.contactPhone}}" class="campus-card__phone">{{item.contactPhone}}</text>
+          <view class="campus-card__actions">
+            <button
+              wx:if="{{item.contactPhone}}"
+              class="campus-action campus-action--secondary"
+              data-id="{{item.id}}"
+              catchtap="onPhoneTap"
+            >联系门店</button>
+            <button
+              class="campus-action campus-action--primary"
+              data-id="{{item.id}}"
+              catchtap="onNavigateTap"
+            >导航前往</button>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+</parent-page-shell>

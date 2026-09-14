@@ -1,0 +1,87 @@
+<parent-page-shell markTitle="课时" markIcon="/pages/parent/assets/icon-mark-hours.png" bg="yellow" showBack="{{true}}">
+  <view-state
+    wx:if="{{viewState !== 'ready'}}"
+    state="{{viewState}}"
+    errorText="{{errorMessage}}"
+    bind:retry="onRetry"
+  />
+
+  <view wx:else class="hours">
+    <text class="hours__title">课时账户</text>
+
+    <view class="balance-card">
+      <text class="balance-card__label">{{hasReservations ? '可用课时' : '剩余课时'}}</text>
+      <view class="balance-card__value-row">
+        <text class="balance-card__value">{{remainingTotal}}</text>
+        <text class="balance-card__unit">节</text>
+      </view>
+      <view class="balance-card__meta">
+        <view class="balance-card__meta-row">
+          <text class="balance-card__meta-label">有效期</text>
+          <text class="balance-card__meta-value">{{validUntilLabel || '待确认'}}</text>
+        </view>
+      </view>
+      <view class="balance-card__mascot-frame" aria-hidden="true">
+        <image class="balance-card__mascot" src="/pages/parent/assets/hours-mascot.png" mode="widthFix" />
+      </view>
+      <view class="balance-card__renew">
+        <parent-primary-button topText="立即" bottomText="续费" theme="deep" bind:tap="onRenewTap" />
+      </view>
+    </view>
+
+    <view class="hour-cards {{hourCards.length === 1 ? 'hour-cards--single' : ''}}">
+      <block wx:for="{{hourCards}}" wx:key="key">
+        <text wx:if="{{index === 1}}" class="hour-cards__plus">+</text>
+        <view class="hour-card">
+          <text class="hour-card__label">{{item.label}}</text>
+          <view class="hour-card__value-row">
+            <text class="hour-card__value {{item.remaining >= 100 ? 'hour-card__value--compact' : ''}}">{{item.remaining}}</text>
+            <text class="hour-card__unit">节</text>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <view wx:if="{{hasReservations}}" class="hours__refund-status">
+      <text class="hours__refund-title">退课处理中</text>
+      <text class="hours__refund-line">购买 {{reservedPaidHours}} 节 · 赠送 {{reservedGiftHours}} 节</text>
+      <text class="hours__refund-line">账面剩余 {{grossTotal}} 节</text>
+    </view>
+
+    <view class="ledger">
+      <view class="ledger__head">
+        <text class="ledger__title">课时流水</text>
+        <view class="ledger__filters">
+          <view
+            wx:for="{{filters}}"
+            wx:key="key"
+            class="ledger__filter {{activeFilter === item.key ? 'ledger__filter--active' : ''}}"
+            data-filter="{{item.key}}"
+            bindtap="onFilterTap"
+            hover-class="tap-hover"
+          >{{item.label}}</view>
+        </view>
+      </view>
+
+      <view-state wx:if="{{isEmpty}}" state="empty" emptyText="当前筛选下暂无课时流水" />
+      <view wx:else class="ledger__card">
+        <image class="ledger__mascot" src="/pages/parent/assets/hours-ledger-mascot.png" mode="widthFix" aria-hidden="true" />
+        <view class="ledger__panel">
+          <block wx:for="{{entries}}" wx:key="id">
+            <view wx:if="{{index > 0}}" class="ledger__divider" aria-hidden="true"></view>
+            <parent-record-card
+              flat="{{true}}"
+              title="{{item.title}}"
+              subtitle="{{item.occurredAtLabel}}"
+              tagText="{{item.deltaLabel}}"
+              tagTone="orange"
+              dotColor="{{item.delta > 0 ? '#fe8419' : '#23b574'}}"
+            >
+              <text class="ledger__detail">{{item.detailLabel}}</text>
+            </parent-record-card>
+          </block>
+        </view>
+      </view>
+    </view>
+  </view>
+</parent-page-shell>

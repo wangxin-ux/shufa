@@ -1,0 +1,12 @@
+<view class="record-card {{flat ? 'record-card--flat' : ''}}">
+  <view wx:if="{{!hideDot}}" class="record-card__dot" style="background: {{dotColor}};" aria-hidden="true"></view>
+  <view class="record-card__main">
+    <text class="record-card__title">{{title}}</text>
+    <text class="record-card__subtitle">{{subtitle}}</text>
+    <slot />
+  </view>
+  <view
+    wx:if="{{tagText}}"
+    class="record-card__tag {{tagPlain ? 'record-card__tag--plain-' + tagTone : 'record-card__tag--' + tagTone}}"
+  >{{tagText}}</view>
+</view>

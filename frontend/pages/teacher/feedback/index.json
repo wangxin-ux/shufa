@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "teacher-page-shell": "/components/teacher-page-shell/teacher-page-shell",
+    "teacher-workspace-banner": "/components/teacher-workspace-banner/teacher-workspace-banner"
+  },
+  "enablePullDownRefresh": true
+}

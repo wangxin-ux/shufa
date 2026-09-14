@@ -1,0 +1,12 @@
+<button
+  class="primary-btn {{theme ? 'primary-btn--' + theme : ''}} {{disabled ? 'primary-btn--disabled' : ''}}"
+  disabled="{{disabled}}"
+  bindtap="onTap"
+  hover-class="primary-btn--hover"
+>
+  <block wx:if="{{topText || bottomText}}">
+    <text class="primary-btn__line">{{topText}}</text>
+    <text class="primary-btn__line">{{bottomText}}</text>
+  </block>
+  <text wx:else>{{text}}</text>
+</button>

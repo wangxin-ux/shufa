@@ -1,0 +1,54 @@
+<super-admin-page-shell show-back mark-title="规则" mark-icon="/pages/super-admin/assets/icon-dashboard.png">
+  <view class="workspace">
+    <view class="workspace__head">
+      <view>
+        <text class="workspace__title">课时费规则</text>
+        <text class="workspace__subtitle">版本化保存，修改不影响历史收益</text>
+      </view>
+    </view>
+
+    <view class="form">
+      <view>
+        <text class="form__label">适用校区</text>
+        <picker range="{{campuses}}" range-key="name" value="{{campusIndex}}" bindchange="onCampusChange">
+          <view class="select">{{campuses[campusIndex].name || '请选择校区'}}</view>
+        </picker>
+      </view>
+      <view>
+        <text class="form__label">计费方式</text>
+        <picker range="{{basisOptions}}" range-key="label" value="{{basisIndex}}" bindchange="onBasisChange">
+          <view class="select">{{basisOptions[basisIndex].label}}</view>
+        </picker>
+      </view>
+      <view>
+        <text class="form__label">{{basisOptions[basisIndex].amountLabel}}</text>
+        <input class="field" type="digit" value="{{unitYuan}}" bindinput="onAmountInput" />
+      </view>
+      <button class="button" disabled="{{submitting}}" bindtap="onCreate">{{submitting ? '正在创建' : '创建规则草稿'}}</button>
+    </view>
+
+    <view class="notice">演示默认按实际到课人数计算，每人次 3 元；总端可创建新版本调整，历史收益不会随之改变。</view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="state">
+      <text class="state__title">正在加载规则</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="state">
+      <text class="state__title">加载失败</text>
+      <text class="state__message">{{errorMessage}}</text>
+      <button class="button" bindtap="onRetry">重试</button>
+    </view>
+    <view wx:else class="list">
+      <view class="row" wx:for="{{rules}}" wx:key="id">
+        <view class="row__main">
+          <text class="row__title">{{item.amountLabel}} / {{item.unitLabel}}</text>
+          <text class="row__meta">{{item.basisLabel}} · 版本{{item.version}} · {{item.statusLabel}}</text>
+          <view class="actions">
+            <button wx:if="{{item.status === 'DRAFT'}}" class="button" data-id="{{item.id}}" data-version="{{item.version}}" data-action="activate" bindtap="onTransition">启用</button>
+            <button wx:if="{{item.status === 'ACTIVE'}}" class="button button--ghost" data-id="{{item.id}}" data-version="{{item.version}}" data-action="retire" bindtap="onTransition">退役</button>
+          </view>
+        </view>
+        <text class="status">{{item.statusLabel}}</text>
+      </view>
+    </view>
+  </view>
+</super-admin-page-shell>

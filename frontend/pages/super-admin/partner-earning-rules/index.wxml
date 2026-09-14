@@ -1,0 +1,32 @@
+<super-admin-page-shell show-back mark-title="规则" mark-icon="/pages/super-admin/assets/icon-dashboard.png">
+  <view class="workspace partner-rule-page">
+    <view class="workspace__head"><view><text class="workspace__title">合作方收益规则</text><text class="workspace__subtitle">按校区版本化配置，历史课次保留原规则快照</text></view></view>
+
+    <view class="form partner-rule-form">
+      <view><text class="form__label">适用校区</text><picker range="{{campuses}}" range-key="name" value="{{campusIndex}}" bindchange="onCampusChange"><view class="select">{{campuses[campusIndex].name || '请选择校区'}}</view></picker></view>
+      <view class="partner-rule-form__grid">
+        <view><text class="form__label">课耗单价（元/人次）</text><input class="field" type="digit" value="{{unitPriceYuan}}" bindinput="onUnitPriceInput" /></view>
+        <view><text class="form__label">合作方比例（%）</text><input class="field" type="digit" value="{{sharePercent}}" bindinput="onShareInput" /></view>
+      </view>
+      <view><text class="form__label">计入课次类型</text><checkbox-group class="option-grid" bindchange="onLessonKindsChange"><label wx:for="{{lessonKindOptions}}" wx:key="value" class="option"><checkbox value="{{item.value}}" checked="{{item.checked}}" color="#ff7b10" /><text>{{item.label}}</text></label></checkbox-group></view>
+      <view><text class="form__label">计入出勤状态</text><checkbox-group class="option-grid" bindchange="onAttendanceChange"><label wx:for="{{attendanceOptions}}" wx:key="value" class="option"><checkbox value="{{item.value}}" checked="{{item.checked}}" color="#ff7b10" /><text>{{item.label}}</text></label></checkbox-group></view>
+      <view class="partner-rule-form__grid">
+        <view><text class="form__label">审核延迟（天）</text><input class="field" type="number" value="{{settlementDelayDays}}" bindinput="onDelayInput" /></view>
+        <view><text class="form__label">生效日期</text><picker mode="date" value="{{effectiveDate}}" bindchange="onEffectiveDateChange"><view class="select">{{effectiveDate}}</view></picker></view>
+      </view>
+      <view><text class="form__label">生效时间</text><picker mode="time" value="{{effectiveTime}}" bindchange="onEffectiveTimeChange"><view class="select">{{effectiveTime}}</view></picker></view>
+      <button class="button" disabled="{{submittingId !== ''}}" bindtap="onCreate">{{submittingId === 'create' ? '正在创建' : '创建规则草稿'}}</button>
+    </view>
+
+    <view class="notice">演示默认：课耗单价 10 元、合作比例 40%、只计实际到课；总端可创建新版本调整。</view>
+    <view wx:if="{{viewState === 'loading'}}" class="state"><text class="state__title">正在加载规则</text></view>
+    <view wx:elif="{{viewState === 'error' || viewState === 'forbidden'}}" class="state"><text class="state__title">{{viewState === 'forbidden' ? '无访问权限' : '加载失败'}}</text><text class="state__message">{{errorMessage}}</text><button class="button" bindtap="onRetry">重试</button></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="state"><text class="state__title">暂无合作方收益规则</text><text class="state__message">可在上方创建第一份校区规则草稿</text></view>
+    <view wx:else class="list">
+      <view class="row" wx:for="{{rules}}" wx:key="id">
+        <view class="row__main"><text class="row__title">{{item.campusName}} · {{item.unitPriceLabel}} × {{item.shareLabel}}</text><text class="row__meta">版本 {{item.version}} · {{item.effectiveFromLabel}} · {{item.statusLabel}}</text><view class="actions"><button wx:if="{{item.status === 'DRAFT'}}" class="button" disabled="{{submittingId === item.id}}" data-id="{{item.id}}" data-version="{{item.version}}" data-action="activate" bindtap="onTransition">启用</button><button wx:if="{{item.status === 'ACTIVE'}}" class="button button--ghost" disabled="{{submittingId === item.id}}" data-id="{{item.id}}" data-version="{{item.version}}" data-action="retire" bindtap="onTransition">退役</button></view></view>
+        <text class="status {{item.status === 'ACTIVE' ? 'status--success' : ''}}">{{item.statusLabel}}</text>
+      </view>
+    </view>
+  </view>
+</super-admin-page-shell>

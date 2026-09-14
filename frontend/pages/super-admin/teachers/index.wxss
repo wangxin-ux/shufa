@@ -1,0 +1,110 @@
+@import "../../../styles/super-admin-workspace.wxss";
+
+.roster-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-bottom: 18rpx;
+}
+
+.roster-action {
+  display: flex;
+  min-height: 72rpx;
+  margin: 0;
+  padding: 0 20rpx;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 7rpx 16rpx rgba(84, 59, 13, 0.12);
+  font-size: 23rpx;
+  line-height: 1.2;
+  color: var(--super-admin-ink);
+  text-align: center;
+}
+
+.roster-action::after {
+  border: 0;
+}
+
+.roster-action--primary {
+  background: var(--super-admin-accent);
+  color: #ffffff;
+}
+
+.quick-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14rpx;
+  margin-bottom: 18rpx;
+  padding: 22rpx;
+  box-sizing: border-box;
+  border-left: 8rpx solid var(--super-admin-accent);
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.quick-form__title,
+.quick-form__hint,
+.quick-form__submit {
+  grid-column: 1 / -1;
+}
+
+.quick-form__title {
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.quick-form__hint {
+  font-size: 21rpx;
+  color: var(--super-admin-muted);
+}
+
+.quick-form__submit,
+.load-more {
+  width: 100%;
+}
+
+.teacher-toolbar {
+  display: grid;
+  grid-template-columns: minmax(180rpx, 0.8fr) minmax(0, 1.2fr) auto;
+  gap: 12rpx;
+  margin-bottom: 22rpx;
+  padding: 14rpx;
+  box-sizing: border-box;
+  border-left: 8rpx solid var(--super-admin-accent);
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 8rpx 18rpx rgba(84, 59, 13, 0.14);
+}
+
+.teacher-toolbar picker,
+.teacher-toolbar .select {
+  min-width: 0;
+}
+
+.teacher-row .status {
+  flex: none;
+}
+
+@media (max-width: 380px) {
+  .quick-form {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-form__title,
+  .quick-form__hint,
+  .quick-form__submit {
+    grid-column: 1;
+  }
+
+  .teacher-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .teacher-toolbar picker {
+    grid-column: 1 / -1;
+  }
+}

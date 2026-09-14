@@ -1,0 +1,26 @@
+<view class="shell shell--{{tone}}">
+  <view wx:if="{{tone === 'yellow' || tone === 'home'}}" class="shell__wave" aria-hidden="true"></view>
+  <view class="shell__header {{fixedHeader ? 'shell__header--fixed' : ''}}" style="padding-top: {{headerTopPx}}px;">
+    <view
+      class="shell__header-inner"
+      style="min-height: {{headerHeightPx}}px; padding-right: {{headerRightPx}}px;"
+    >
+      <view
+        class="shell__leading {{fixedHeader ? 'shell__leading--fixed' : ''}}"
+        style="top: {{headerTopPx}}px;"
+      >
+        <button
+          wx:if="{{showBack}}"
+          class="shell__back"
+          aria-label="返回上一页"
+          catchtap="onBackTap"
+          hover-class="shell__back--hover"
+        >
+          <text class="shell__back-icon">‹</text>
+        </button>
+        <teacher-page-mark title="{{markTitle}}" icon="{{markIcon}}" plain="{{plainMark}}" />
+      </view>
+    </view>
+  </view>
+  <view class="shell__body"><slot /></view>
+</view>

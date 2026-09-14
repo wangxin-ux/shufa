@@ -1,0 +1,14 @@
+.git
+.worktrees
+**/node_modules
+**/dist
+**/coverage
+.env
+.env.*
+backend/storage
+storage/*
+artifacts
+tmp
+frontend
+docs
+素材

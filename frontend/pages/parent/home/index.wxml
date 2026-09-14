@@ -1,0 +1,67 @@
+<parent-page-shell markTitle="首页" markIcon="/pages/parent/assets/icon-mark-home.png" bg="yellow">
+  <view-state
+    wx:if="{{viewState !== 'ready'}}"
+    state="{{viewState}}"
+    emptyText="暂无近期课程"
+    errorText="{{errorMessage}}"
+    bind:retry="onRetry"
+  />
+  <view wx:else class="home">
+    <!-- 近期课程 -->
+    <view class="course">
+      <view class="course__head">
+        <text class="course__title">近期课程</text>
+        <view class="course__more" bindtap="onMoreCourseTap" hover-class="tap-hover">查看更多</view>
+      </view>
+      <view class="course__body">
+        <view class="course__date">
+          <text class="course__day">{{course.day}}</text>
+          <text class="course__weekday">{{course.weekday}}</text>
+        </view>
+        <view class="course__divider" aria-hidden="true"></view>
+        <view class="course__info">
+          <text class="course__campus">{{course.campus}}</text>
+          <text class="course__name">{{course.name}}</text>
+          <text class="course__time">{{course.time}} · {{course.teacher}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 学员 + 人物 + 统计 -->
+    <view class="stage">
+      <image class="stage__mascot" src="/pages/parent/assets/home-mascot.png" mode="widthFix" aria-hidden="true" />
+      <view class="stage__student" bindtap="onStudentTap" hover-class="tap-hover">
+        <text class="stage__student-name">{{student.name}}</text>
+        <text class="stage__student-age">{{student.age}}岁</text>
+      </view>
+      <view class="stage__metrics">
+        <parent-metric-card
+          metrics="{{metrics}}"
+          glassSrc="/pages/parent/assets/home-metric-glass.png"
+        />
+      </view>
+    </view>
+
+    <!-- 快捷入口 -->
+    <view class="quickbar">
+      <view class="quickbar__capsule">
+        <view
+          class="quickbar__item"
+          wx:for="{{quickActions}}"
+          wx:key="key"
+          data-key="{{item.key}}"
+          bindtap="onQuickAction"
+          hover-class="tap-hover"
+        >
+          <image class="quickbar__icon" src="{{item.icon}}" mode="aspectFit" />
+          <text class="quickbar__label">{{item.label}}</text>
+        </view>
+      </view>
+      <view class="quickbar__remind" bindtap="onCampusTap" hover-class="tap-hover">
+        <image class="quickbar__remind-icon" src="/pages/parent/assets/icon-qa-campus.png" mode="aspectFit" />
+        <text class="quickbar__remind-label">附近门店</text>
+      </view>
+      <view class="quickbar__more" bindtap="onMoreCourseTap" hover-class="tap-hover">查看更多</view>
+    </view>
+  </view>
+</parent-page-shell>

@@ -1,0 +1,23 @@
+<super-admin-page-shell show-back fallback-url="/pages/finance/home/index" mark-title="功能" mark-icon="/pages/finance/assets/icon-reports.png">
+  <view class="workspace finance-overview">
+    <view class="workspace__head"><view><text class="workspace__title">财务业务总览</text><text class="workspace__subtitle">日常办理与跨校区财务核对</text></view></view>
+
+    <view class="directory-section">
+      <text class="directory-section__title">日常办理</text>
+      <view class="list">
+        <button class="row" wx:for="{{dailyEntries}}" wx:key="key" data-key="{{item.key}}" bindtap="onNavigate">
+          <view class="row__main"><text class="row__title">{{item.title}}</text><text class="row__meta">{{item.description}}</text></view><text class="row__value">›</text>
+        </button>
+      </view>
+    </view>
+
+    <view class="directory-section">
+      <text class="directory-section__title">财务核对</text>
+      <view class="list">
+        <button class="row" wx:for="{{oversightEntries}}" wx:key="key" data-key="{{item.key}}" bindtap="onNavigate">
+          <view class="row__main"><text class="row__title">{{item.title}}</text><text class="row__meta">{{item.description}}</text></view><text class="row__value">›</text>
+        </button>
+      </view>
+    </view>
+  </view>
+</super-admin-page-shell>

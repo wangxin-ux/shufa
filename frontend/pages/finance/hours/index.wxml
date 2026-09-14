@@ -1,0 +1,24 @@
+<super-admin-page-shell show-back fallback-url="/pages/finance/home/index" mark-title="课时" mark-icon="/pages/finance/assets/icon-reports.png">
+  <view class="workspace finance-overview">
+    <view class="workspace__head"><view><text class="workspace__title">课时一览</text><text class="workspace__subtitle">期间耗课、购买课时单价与各课包有效期</text></view></view>
+    <view class="toolbar overview-filters">
+      <picker range="{{campuses}}" range-key="name" value="{{campusIndex}}" bindchange="onCampusChange"><view class="select">{{campuses[campusIndex].name}}</view></picker>
+      <input class="field" value="{{keyword}}" bindinput="onKeywordInput" placeholder="搜索学员姓名" maxlength="100" />
+      <view class="overview-dates"><picker mode="date" value="{{startDate}}" bindchange="onStartChange"><view class="select">{{startDate}}</view></picker><text class="overview-date-separator">至</text><picker mode="date" value="{{endDate}}" bindchange="onEndChange"><view class="select">{{endDate}}</view></picker></view>
+    </view>
+    <view wx:if="{{viewState === 'ready' || viewState === 'empty'}}" class="metrics">
+      <view class="metric"><text class="metric__label">学员</text><text class="metric__value">{{studentCount}} 人</text></view>
+      <view class="metric"><text class="metric__label">期间耗课</text><text class="metric__value">{{consumedLabel}} 节</text></view>
+      <view class="metric"><text class="metric__label">查询期末剩余</text><text class="metric__value">{{remainingLabel}} 节</text></view>
+      <view class="metric"><text class="metric__label">统计截至</text><text class="metric__value">{{asOfLabel}}</text></view>
+    </view>
+    <view wx:if="{{viewState === 'loading'}}" class="state"><text class="state__title">正在汇总学员课时</text></view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="state"><text class="state__title">请使用总部财务账号</text></view>
+    <view wx:elif="{{viewState === 'error'}}" class="state"><text class="state__title">暂时无法加载</text><text class="state__message">{{errorMessage}}</text><button class="button" bindtap="onRetry">重试</button></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="state"><text class="state__title">暂无课时记录</text><text class="state__message">当前期间和筛选范围内没有学员课包</text></view>
+    <view wx:else class="list">
+      <view class="row" wx:for="{{rows}}" wx:key="id"><view class="row__main"><view class="overview-row-head"><text class="row__title">{{item.studentName}}</text><text class="status {{item.priceStatus === 'KNOWN' ? 'status--success' : ''}}">{{item.unitPriceLabel}}</text></view><text class="row__meta">{{item.campusName}} · {{item.packageName}}</text><text class="row__meta">{{item.validityLabel}}</text><text class="row__meta">期间耗课 {{item.consumedLabel}}</text><text class="row__meta">{{item.remainingDetail}}</text><text wx:if="{{item.reservedLabel}}" class="row__meta">{{item.reservedLabel}}</text></view><text class="row__value">{{item.remainingLabel}}</text></view>
+      <button wx:if="{{hasMore}}" class="button" bindtap="onLoadMore">加载更多</button>
+    </view>
+  </view>
+</super-admin-page-shell>

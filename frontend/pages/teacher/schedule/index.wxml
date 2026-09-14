@@ -1,0 +1,93 @@
+<teacher-page-shell
+  markTitle="课表"
+  markIcon="/pages/teacher/assets/icon-schedule.png"
+  tone="yellow"
+  showBack="{{true}}"
+>
+  <view class="schedule-page">
+    <teacher-workspace-banner
+      class="schedule-overview"
+      title="我的课表"
+      detail="{{selectedDate || '全部日期'}} · 当前列表 {{items.length}} 个课次"
+    />
+
+    <view class="schedule-filter">
+      <picker mode="date" value="{{selectedDate}}" bindchange="onDateChange">
+        <view class="schedule-filter__date" hover-class="control--hover">
+          <image class="schedule-filter__date-icon" src="/pages/teacher/assets/icon-schedule.png" mode="aspectFit" />
+          <text>{{selectedDate || '选择日期'}}</text>
+        </view>
+      </picker>
+      <button
+        wx:if="{{selectedDate}}"
+        class="schedule-filter__clear"
+        bindtap="onClearDate"
+        hover-class="control--hover"
+        aria-label="清除日期筛选"
+      >×</button>
+    </view>
+
+    <scroll-view class="status-filter" scroll-x enhanced show-scrollbar="{{false}}">
+      <view class="status-filter__inner">
+        <button
+          wx:for="{{statusFilters}}"
+          wx:key="value"
+          class="status-filter__item {{selectedStatus === item.value ? 'status-filter__item--active' : ''}}"
+          data-status="{{item.value}}"
+          bindtap="onStatusTap"
+          hover-class="control--hover"
+        >{{item.label}}</button>
+      </view>
+    </scroll-view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="page-state">
+      <text class="page-state__title">正在加载课表</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state">
+      <text class="page-state__title">课表加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-state__retry" bindtap="onRetry" hover-class="control--hover">重试</button>
+    </view>
+    <view wx:elif="{{viewState === 'empty'}}" class="page-state">
+      <text class="page-state__title">当前筛选下暂无课次</text>
+      <text class="page-state__message">可调整日期或状态后重新查看</text>
+    </view>
+
+    <view wx:else class="lesson-list">
+      <button
+        wx:for="{{items}}"
+        wx:key="id"
+        class="lesson-row {{item.actionDisabled ? 'lesson-row--disabled' : ''}}"
+        data-id="{{item.id}}"
+        disabled="{{item.actionDisabled}}"
+        bindtap="onLessonTap"
+        hover-class="lesson-row--hover"
+      >
+        <view class="lesson-row__topline">
+          <text class="lesson-row__date">{{item.dateLabel}}</text>
+          <text class="status-chip status-chip--{{item.statusTone}}">{{item.statusLabel}}</text>
+        </view>
+        <text class="lesson-row__course">{{item.courseName}}</text>
+        <text class="lesson-row__class">{{item.className}}</text>
+        <view class="lesson-row__time">
+          <image class="lesson-row__time-icon" src="/pages/teacher/assets/icon-schedule.png" mode="aspectFit" />
+          <text class="lesson-row__time-value">{{item.timeLabel}}</text>
+          <text>{{item.studentCountLabel}}</text>
+        </view>
+        <text class="lesson-row__campus">{{item.campusName}}</text>
+      </button>
+
+      <button
+        wx:if="{{hasMore}}"
+        class="load-more"
+        disabled="{{loadingMore}}"
+        bindtap="onLoadMore"
+        hover-class="control--hover"
+      >{{loadingMore ? '加载中' : '加载更多'}}</button>
+    </view>
+  </view>
+</teacher-page-shell>

@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "partner-page-shell": "/components/partner-page-shell/partner-page-shell",
+    "session-logout": "/components/session-logout/session-logout"
+  },
+  "enablePullDownRefresh": true
+}

@@ -1,0 +1,88 @@
+<teacher-page-shell
+  markTitle="活动中心"
+  markIcon="/pages/teacher/assets/icon-schedule.png"
+  tone="yellow"
+  showBack="{{true}}"
+>
+  <view class="campaign-page">
+    <view class="campaign-head">
+      <text class="campaign-head__eyebrow">本校区活动</text>
+      <text class="campaign-head__title">招生推广</text>
+      <text class="campaign-head__subtitle">查看活动素材，转发给有需要的家长</text>
+    </view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="page-state">
+      <text class="page-state__title">正在加载活动</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state">
+      <text class="page-state__title">活动加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="state-button" bindtap="onRetry">重试</button>
+    </view>
+    <view wx:elif="{{viewState === 'empty'}}" class="page-state">
+      <text class="page-state__title">暂无可推广活动</text>
+      <text class="page-state__message">本校区当前没有正在进行的拼团活动</text>
+    </view>
+
+    <view wx:elif="{{viewState === 'ready'}}" class="campaign-list">
+      <view
+        class="campaign-card"
+        wx:for="{{campaigns}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="onOpen"
+        hover-class="campaign-card--pressed"
+      >
+        <view class="campaign-card__visual">
+          <image
+            wx:if="{{item.posterImages.length}}"
+            class="campaign-card__cover"
+            src="{{item.posterImages[0].accessUrl}}"
+            mode="widthFix"
+          />
+          <view wx:else class="campaign-card__fallback">
+            <text class="campaign-card__fallback-course">{{item.courseName}}</text>
+            <text class="campaign-card__fallback-title">限时拼团</text>
+          </view>
+          <view class="campaign-card__status">
+            <view class="campaign-card__status-dot"></view>
+            <text>活动推广中</text>
+          </view>
+        </view>
+        <view class="campaign-card__body">
+          <view class="campaign-card__top">
+            <text class="campaign-card__course">{{item.courseName}}</text>
+            <text class="campaign-card__poster-count">{{item.posterCountLabel}}</text>
+          </view>
+          <text class="campaign-card__title">{{item.title}}</text>
+          <text class="campaign-card__description">{{item.description}}</text>
+          <view class="campaign-card__footer">
+            <view class="campaign-card__price-block">
+              <text class="campaign-card__price-caption">活动价</text>
+              <text class="campaign-card__price">{{item.priceLabel}}</text>
+            </view>
+            <view class="campaign-card__action">
+              <text>查看活动</text>
+              <text class="campaign-card__action-arrow">›</text>
+            </view>
+          </view>
+          <view class="campaign-card__time-row">
+            <view class="campaign-card__time-dot"></view>
+            <text class="campaign-card__deadline">{{item.deadlineLabel}}</text>
+          </view>
+        </view>
+      </view>
+      <button
+        wx:if="{{hasMore}}"
+        class="load-more"
+        loading="{{loadingMore}}"
+        disabled="{{loadingMore}}"
+        bindtap="onReachBottom"
+      >{{loadingMore ? '加载中' : '加载更多'}}</button>
+    </view>
+  </view>
+</teacher-page-shell>

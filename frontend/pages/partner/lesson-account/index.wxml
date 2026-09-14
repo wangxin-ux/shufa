@@ -1,0 +1,37 @@
+<partner-page-shell
+  markTitle="统计"
+  markIcon="/pages/partner/assets/lesson-account-mark-glyph.png"
+  showBack="{{true}}"
+  plainGradient="{{true}}"
+>
+  <view class="partner-workspace account-page">
+    <view wx:if="{{viewState === 'loading'}}" class="partner-state"><text class="partner-state__title">正在加载课时账户</text></view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="partner-state"><text class="partner-state__title">无访问权限</text><text class="partner-state__message">{{errorMessage}}</text></view>
+    <view wx:elif="{{viewState === 'error'}}" class="partner-state"><text class="partner-state__title">课时账户加载失败</text><text class="partner-state__message">{{errorMessage}}</text><button class="partner-command" bindtap="onRetry">重试</button></view>
+
+    <block wx:else>
+      <text class="account-page__title">校区课时账户</text>
+      <view class="account-hero">
+        <view class="account-hero__copy"><text class="account-hero__label">全校区学员课时合计</text><view class="account-hero__number"><text class="account-hero__value">{{summary.totalBalanceLabel}}</text><text class="account-hero__unit">节</text></view></view>
+        <image class="account-hero__character" src="/pages/partner/assets/lesson-account-top-character.png" mode="widthFix" aria-hidden="true" />
+      </view>
+      <view class="account-balances">
+        <view class="account-balance"><text class="account-balance__label">主课时</text><view class="account-balance__number"><text class="account-balance__value">{{summary.mainBalanceLabel}}</text><text class="account-balance__unit">节</text></view></view>
+        <view class="account-balance"><text class="account-balance__label">赠送课时</text><view class="account-balance__number"><text class="account-balance__value">{{summary.giftBalanceLabel}}</text><text class="account-balance__unit">节</text></view></view>
+      </view>
+
+      <view class="account-ledger-stage">
+        <image class="account-ledger-stage__character" src="/pages/partner/assets/lesson-account-lower-character.png" mode="widthFix" aria-hidden="true" />
+        <view class="account-ledger-stage__head"><text class="account-ledger-stage__title">课时流水</text><text class="account-ledger-stage__count">{{total}}条</text></view>
+        <view wx:if="{{viewState === 'empty'}}" class="partner-state account-empty"><text class="partner-state__title">暂无课时记录</text><text class="partner-state__message">当前校区还没有课时账本流水</text></view>
+        <view wx:else class="account-ledger">
+          <view wx:for="{{items}}" wx:key="id" class="account-ledger__row">
+            <view class="account-ledger__main"><text class="account-ledger__type">{{item.typeLabel}}</text><text class="account-ledger__student">{{item.studentName}} · {{item.packageName}}</text><text class="account-ledger__meta">{{item.timeLabel}} · {{item.bucketLabel}}</text><text class="account-ledger__reason">{{item.reasonLabel}}</text></view>
+            <view class="account-ledger__aside"><text class="account-ledger__delta account-ledger__delta--{{item.tone}}">{{item.deltaLabel}} 节</text><text class="account-ledger__balance">{{item.balanceAfterLabel}}</text></view>
+          </view>
+          <button wx:if="{{hasMore}}" class="partner-command partner-command--load-more" loading="{{loadingMore}}" disabled="{{loadingMore}}" bindtap="onLoadMore">{{loadingMore ? '加载中' : '加载更多'}}</button>
+        </view>
+      </view>
+    </block>
+  </view>
+</partner-page-shell>

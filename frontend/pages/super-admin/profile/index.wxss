@@ -1,0 +1,225 @@
+@import "../../../styles/tokens.wxss";
+
+.profile {
+  position: relative;
+  min-height: calc(100vh - 120rpx);
+  padding-top: 84rpx;
+  padding-bottom: 0;
+  box-sizing: border-box;
+}
+
+.profile::after {
+  position: absolute;
+  right: -160rpx;
+  bottom: -410rpx;
+  left: -160rpx;
+  z-index: 0;
+  height: 560rpx;
+  border-radius: 50% 50% 0 0;
+  background: var(--super-admin-yellow);
+  content: '';
+}
+
+.profile__hero {
+  position: relative;
+  z-index: 2;
+  height: 456rpx;
+}
+
+.profile__identity-card {
+  position: absolute;
+  bottom: 0;
+  left: 14rpx;
+  display: flex;
+  width: 653rpx;
+  min-height: 265rpx;
+  padding: 28rpx 43% 28rpx 42rpx;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 32rpx;
+  background: #fe8419;
+  box-shadow: 0 13rpx 24rpx rgba(24, 18, 14, 0.19);
+}
+
+.profile__character {
+  position: absolute;
+  right: -32rpx;
+  bottom: 0;
+  z-index: 2;
+  width: 462rpx;
+  pointer-events: none;
+}
+
+.profile__name,
+.profile__role,
+.profile__campus {
+  position: relative;
+  z-index: 3;
+  display: block;
+  max-width: 100%;
+  color: #ffffff;
+  overflow-wrap: anywhere;
+}
+
+.profile__name {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-family: var(--super-admin-font-display);
+  font-size: 54rpx;
+  font-weight: 700;
+  line-height: 1.08;
+}
+
+.profile__role {
+  margin-top: 14rpx;
+  font-family: var(--super-admin-font-display);
+  font-size: 31rpx;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.profile__campus {
+  margin-top: 8rpx;
+  overflow: hidden;
+  font-size: 22rpx;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile__menu-stage {
+  position: relative;
+  z-index: 1;
+  min-height: 800rpx;
+  margin-top: 54rpx;
+}
+
+.profile__lower {
+  position: absolute;
+  top: 100rpx;
+  left: -32rpx;
+  z-index: 0;
+  width: 573rpx;
+  pointer-events: none;
+}
+
+.profile__menu-card {
+  position: relative;
+  z-index: 2;
+  width: 653rpx;
+  margin-left: 14rpx;
+  overflow: hidden;
+  border-radius: 32rpx;
+  background: rgba(255, 215, 94, 0.84);
+  box-shadow: 0 13rpx 24rpx rgba(24, 18, 14, 0.19);
+}
+
+.profile__menu-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: calc(100% - 64rpx);
+  min-height: 116rpx;
+  margin: 0 32rpx;
+  padding: 0;
+  box-sizing: border-box;
+  border: 0;
+  border-bottom: 3rpx solid rgba(255, 255, 255, 0.94);
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.profile__menu-row:last-child {
+  border-bottom: 0;
+}
+
+.profile__menu-row::after,
+.state__retry::after {
+  border: 0;
+}
+
+.profile__menu-main {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 28rpx;
+}
+
+.profile__menu-bullet {
+  width: 22rpx;
+  height: 22rpx;
+  flex: none;
+  border-radius: 50%;
+  background: #2fbd82;
+}
+
+.profile__menu-label {
+  overflow: hidden;
+  font-family: var(--super-admin-font-display);
+  font-size: 34rpx;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--super-admin-ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile__menu-command {
+  display: flex;
+  width: 112rpx;
+  height: 62rpx;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18rpx;
+  background: #fe8419;
+  font-size: 25rpx;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.state {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  min-height: 520rpx;
+  padding: 40rpx 20rpx;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.state__title {
+  font-family: var(--super-admin-font-display);
+  font-size: 42rpx;
+  font-weight: 700;
+}
+
+.state__message {
+  max-width: 100%;
+  margin-top: 18rpx;
+  font-size: 25rpx;
+  line-height: 1.5;
+  color: var(--super-admin-muted);
+  overflow-wrap: anywhere;
+}
+
+.state__retry {
+  display: flex;
+  min-height: 72rpx;
+  margin: 28rpx 0 0;
+  padding: 0 34rpx;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8rpx;
+  background: #fe8419;
+  font-size: 24rpx;
+  color: #ffffff;
+}

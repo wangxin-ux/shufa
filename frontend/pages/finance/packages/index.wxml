@@ -1,0 +1,39 @@
+<super-admin-page-shell show-back fallback-url="/pages/finance/home/index" mark-title="课包" mark-icon="/pages/finance/assets/icon-receipts.png">
+  <view class="workspace finance-overview">
+    <view class="workspace__head"><view><text class="workspace__title">课包录入</text><text class="workspace__subtitle">选择待录包收款，为对应学员录入购买课时和赠送课时</text></view></view>
+    <view class="toolbar overview-filters">
+      <picker range="{{campuses}}" range-key="name" value="{{campusIndex}}" bindchange="onCampusChange"><view class="select">{{campuses[campusIndex].name}}</view></picker>
+      <input class="field" value="{{keyword}}" bindinput="onKeywordInput" placeholder="搜索学员姓名" maxlength="100" />
+    </view>
+    <view class="metrics"><view class="metric"><text class="metric__label">待录包收款</text><text class="metric__value">{{total}} 笔</text></view></view>
+    <view wx:if="{{viewState === 'loading'}}" class="state"><text class="state__title">正在加载待录包收款</text></view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="state"><text class="state__title">请使用总部财务账号</text></view>
+    <view wx:elif="{{viewState === 'error'}}" class="state"><text class="state__title">暂时无法加载</text><text class="state__message">{{errorMessage}}</text><button class="button" bindtap="onRetry">重试</button></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="state"><text class="state__title">没有待录包收款</text><text class="state__message">新登记且尚未录入课包的收款会显示在这里</text></view>
+    <view wx:else class="list">
+      <button class="row" wx:for="{{rows}}" wx:key="id" data-id="{{item.id}}" bindtap="onSelect">
+        <view class="row__main"><text class="row__title">{{item.studentName}}</text><text class="row__meta">{{item.campusName}} · {{item.receivedOn}} · {{item.channelLabel}}</text><text class="row__meta">一笔收款仅能录入一个课包</text></view>
+        <text class="row__value">¥ {{item.amountLabel}} ›</text>
+      </button>
+      <button wx:if="{{hasMore}}" class="button" bindtap="onLoadMore">加载更多</button>
+    </view>
+  </view>
+  <view wx:if="{{selected}}" class="overview-mask" bindtap="onClose">
+    <view class="overview-sheet" catchtap="noop">
+      <view class="overview-sheet__head"><view><text class="row__title">{{selected.studentName}}</text><text class="row__meta">{{selected.campusName}} · 实收 ¥ {{selected.amountLabel}}</text></view><button class="icon-button" bindtap="onClose" aria-label="关闭">×</button></view>
+      <scroll-view scroll-y class="overview-sheet__scroll">
+        <view class="form">
+          <text class="form__label">课包名称（家长课时流水可见）</text><input class="field" value="{{packageName}}" data-field="packageName" bindinput="onField" maxlength="200" placeholder="如：创意美术基础课包" disabled="{{submitting}}" />
+          <text class="form__label">购买课时（节）</text><input class="field" type="digit" value="{{mainLessons}}" data-field="mainLessons" bindinput="onField" maxlength="10" disabled="{{submitting}}" />
+          <text class="form__label">赠送课时（节）</text><input class="field" type="digit" value="{{giftLessons}}" data-field="giftLessons" bindinput="onField" maxlength="10" disabled="{{submitting}}" />
+          <text class="form__label">生效日</text><picker mode="date" value="{{validFrom}}" data-field="validFrom" bindchange="onDate" disabled="{{submitting}}"><view class="select">{{validFrom}}</view></picker>
+          <text class="form__label">到期日</text><picker mode="date" value="{{expiresOn}}" start="{{validFrom}}" data-field="expiresOn" bindchange="onDate" disabled="{{submitting}}"><view class="select">{{expiresOn || '长期有效'}}</view></picker>
+          <button wx:if="{{expiresOn}}" class="button button--ghost" bindtap="onClearExpiry" disabled="{{submitting}}">设为长期有效</button>
+          <view class="notice">赠送课时独立记录，不参与购买课时单价分摊。</view>
+          <text wx:if="{{formError}}" class="notice">{{formError}}</text>
+          <button class="button" loading="{{submitting}}" disabled="{{submitting}}" bindtap="onSubmit">{{submitting ? '正在录入' : '确认录入课包'}}</button>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+</super-admin-page-shell>

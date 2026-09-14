@@ -1,0 +1,21 @@
+<view class="metric-card">
+  <image
+    wx:if="{{glassSrc}}"
+    class="metric-card__glass"
+    src="{{glassSrc}}"
+    mode="scaleToFill"
+    aria-hidden="true"
+  />
+  <view class="metric-card__item" wx:for="{{metrics}}" wx:key="label">
+    <view wx:if="{{index > 0}}" class="metric-card__divider" aria-hidden="true"></view>
+    <text class="metric-card__label">{{item.label}}</text>
+    <view class="metric-card__value-row">
+      <text class="metric-card__value">{{item.value}}</text>
+      <text
+        wx:if="{{item.unit}}"
+        class="metric-card__unit {{item.unit === '%' ? 'metric-card__unit--percent' : ''}}"
+      >{{item.unit}}</text>
+    </view>
+    <text wx:if="{{item.sub}}" class="metric-card__sub">{{item.sub}}</text>
+  </view>
+</view>

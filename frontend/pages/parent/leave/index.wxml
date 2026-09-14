@@ -1,0 +1,84 @@
+<parent-page-shell markTitle="请假" markIcon="/pages/parent/assets/icon-mark-leave.png" bg="white" showBack="{{true}}">
+  <view-state
+    wx:if="{{viewState !== 'ready'}}"
+    state="{{viewState}}"
+    errorText="{{errorMessage}}"
+    bind:retry="onRetry"
+  />
+
+  <view wx:else class="leave">
+    <parent-action-card tone="bright">
+      <view class="form-card">
+        <view class="form-card__head">
+          <text class="form-card__title">请假申请</text>
+          <text class="form-card__cutoff">{{cutoffText}}</text>
+        </view>
+
+        <view class="field">
+          <text class="field__label">选择孩子</text>
+          <picker range="{{students}}" range-key="name" value="{{studentIndex}}" bindchange="onStudentChange">
+            <view class="field__control">
+              <text>{{studentIndex >= 0 ? students[studentIndex].name : '暂无可选学员'}}</text>
+              <text class="field__arrow">⌄</text>
+            </view>
+          </picker>
+        </view>
+
+        <view class="field">
+          <text class="field__label">请假课程</text>
+          <picker range="{{lessons}}" range-key="label" value="{{lessonIndex}}" bindchange="onLessonChange">
+            <view class="field__control">
+              <text class="field__value">{{lessonIndex >= 0 ? lessons[lessonIndex].label : '暂无可选课程'}}</text>
+              <text class="field__arrow">⌄</text>
+            </view>
+          </picker>
+        </view>
+
+        <view class="field">
+          <text class="field__label">请假原因</text>
+          <textarea
+            class="field__textarea"
+            value="{{draft.reason}}"
+            maxlength="200"
+            placeholder="请说明请假原因"
+            bindinput="onReasonInput"
+          />
+        </view>
+
+        <text wx:if="{{submitMessage}}" class="form-card__message">{{submitMessage}}</text>
+        <view class="form-card__submit">
+          <parent-primary-button
+            text="{{submitStatus === 'submitting' ? '提交中…' : '提交请假申请'}}"
+            disabled="{{submitStatus === 'submitting' || students.length === 0 || lessons.length === 0}}"
+            bind:tap="onSubmitTap"
+          />
+        </view>
+      </view>
+    </parent-action-card>
+
+    <view class="leave__mascot-frame" aria-hidden="true">
+      <image class="leave__mascot" src="/pages/parent/assets/leave-mascot.png" mode="widthFix" />
+    </view>
+
+    <view class="records">
+      <view class="records__head">
+        <text class="records__title">请假记录</text>
+      </view>
+
+      <view-state wx:if="{{recordsEmpty}}" state="empty" emptyText="暂无请假记录" />
+      <view wx:else class="records__list">
+        <parent-record-card
+          wx:for="{{records}}"
+          wx:key="id"
+          hideDot="{{true}}"
+          tagPlain="{{true}}"
+          title="{{item.courseName}}"
+          subtitle="{{item.subtitle}}"
+          tagText="{{item.statusLabel}}"
+          tagTone="{{item.tagTone}}"
+          dotColor="{{item.dotColor}}"
+        />
+      </view>
+    </view>
+  </view>
+</parent-page-shell>

@@ -1,0 +1,8 @@
+<view class="stats">
+  <image class="stats__glass" src="/assets/super-admin/home-stat-glass.png" mode="scaleToFill" aria-hidden="true" />
+  <view class="stats__item" wx:for="{{items}}" wx:key="key">
+    <text class="stats__label">{{item.label}}</text>
+    <view class="stats__number"><text class="stats__value {{item.compact ? 'stats__value--compact' : ''}}">{{item.value}}</text><text class="stats__unit">{{item.unit}}</text></view>
+    <text class="stats__sub">实时更新</text>
+  </view>
+</view>

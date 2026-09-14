@@ -1,0 +1,51 @@
+<teacher-page-shell
+  markTitle="设置"
+  markIcon="/pages/teacher/assets/icon-confirm.png"
+  tone="yellow"
+  showBack="{{true}}"
+>
+  <view class="settings-page">
+    <view wx:if="{{viewState === 'loading'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">正在加载账号信息</text>
+    </view>
+
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+    </view>
+
+    <view wx:elif="{{viewState === 'error'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">账号信息加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-state__retry" bindtap="onRetry" hover-class="button--hover">重试</button>
+    </view>
+
+    <block wx:else>
+      <view class="settings-identity">
+        <view class="settings-identity__copy">
+          <text class="settings-identity__name">{{displayName}}</text>
+          <text class="settings-identity__role">{{identityLabel}}</text>
+        </view>
+        <image
+          class="settings-identity__mascot"
+          src="/pages/teacher/assets/profile-card-mascot.png"
+          mode="widthFix"
+          aria-hidden="true"
+        />
+      </view>
+
+      <view class="settings" aria-label="当前账号信息">
+        <view class="settings__row">
+          <text class="settings__label">所属校区</text>
+          <text class="settings__value">{{campusLabel}}</text>
+        </view>
+        <view class="settings__row">
+          <text class="settings__label">数据环境</text>
+          <text class="settings__value settings__value--environment">{{environmentLabel}}</text>
+        </view>
+      </view>
+
+      <session-logout id="sessionLogout" />
+    </block>
+  </view>
+</teacher-page-shell>

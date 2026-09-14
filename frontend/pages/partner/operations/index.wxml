@@ -1,0 +1,37 @@
+<partner-page-shell markTitle="经营" markIcon="/pages/partner/assets/icon-attendance.png" showBack="{{true}}" plainGradient="{{true}}">
+  <view class="partner-workspace operations-page">
+    <view class="operations-head"><text class="operations-head__title">经营统计</text><text class="operations-head__subtitle">按本校区真实课耗、出勤与授课记录汇总</text></view>
+
+    <view class="operations-toolbar">
+      <view class="operations-segments" aria-label="统计周期">
+        <button wx:for="{{periodOptions}}" wx:key="value" class="operations-segment {{index === periodIndex ? 'operations-segment--active' : ''}}" data-period="{{item.value}}" bindtap="onPeriodTap">{{item.label}}</button>
+      </view>
+      <picker mode="date" value="{{anchorDate}}" bindchange="onAnchorDateChange"><view class="operations-anchor"><text>统计日期</text><text>{{periodLabel}}</text></view></picker>
+    </view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="partner-state"><text class="partner-state__title">正在加载经营统计</text></view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="partner-state"><text class="partner-state__title">无访问权限</text><text class="partner-state__message">{{errorMessage}}</text></view>
+    <view wx:elif="{{viewState === 'error'}}" class="partner-state"><text class="partner-state__title">经营统计加载失败</text><text class="partner-state__message">{{errorMessage}}</text><button class="partner-command" bindtap="onRetry">重试</button></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="partner-state"><text class="partner-state__title">所选周期暂无经营记录</text><text class="partner-state__message">可切换日、月、季度或更换统计日期</text></view>
+
+    <block wx:elif="{{viewState === 'ready'}}">
+      <view class="operations-summary">
+        <view class="operations-summary__primary"><text class="operations-summary__label">{{summary.periodLabel}}净课耗</text><text class="operations-summary__value">{{summary.consumedLessonLabel}}</text><text class="operations-summary__unit">节</text></view>
+        <view class="operations-summary__side"><view><text class="operations-summary__side-value">{{summary.completedLessonCountLabel}}</text><text class="operations-summary__side-label">完成课次</text></view><view><text class="operations-summary__side-value">{{summary.attendanceRateLabel}}</text><text class="operations-summary__side-label">到课率</text></view></view>
+      </view>
+
+      <view class="operations-attendance">
+        <view><text class="operations-attendance__value">{{summary.presentCountLabel}}</text><text class="operations-attendance__label">到课</text></view>
+        <view><text class="operations-attendance__value">{{summary.leaveCountLabel}}</text><text class="operations-attendance__label">请假</text></view>
+        <view><text class="operations-attendance__value">{{summary.absentCountLabel}}</text><text class="operations-attendance__label">缺勤</text></view>
+        <view><text class="operations-attendance__value">{{summary.recordedCountLabel}}</text><text class="operations-attendance__label">已记录</text></view>
+      </view>
+
+      <view class="operations-section-head"><text class="operations-section-head__title">教师授课量</text><text class="operations-section-head__meta">{{summary.teacherMetrics.length}} 位教师</text></view>
+      <view wx:if="{{summary.teacherMetrics.length}}" class="operations-teachers">
+        <view wx:for="{{summary.teacherMetrics}}" wx:key="teacherId" class="operations-teacher"><text class="operations-teacher__name">{{item.displayName}}</text><view><text class="operations-teacher__lesson">{{item.completedLessonCountLabel}}</text><text class="operations-teacher__attendee">{{item.attendeeCountLabel}}</text></view></view>
+      </view>
+      <text wx:else class="operations-empty-line">所选周期暂无教师授课记录</text>
+    </block>
+  </view>
+</partner-page-shell>

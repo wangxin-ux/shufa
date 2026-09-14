@@ -1,0 +1,16 @@
+<view class="workspace-banner {{compact ? 'workspace-banner--compact' : ''}}">
+  <view class="workspace-banner__copy">
+    <view class="workspace-banner__eyebrow">
+      <view class="workspace-banner__dot" aria-hidden="true"></view>
+      <text>{{eyebrow}}</text>
+    </view>
+    <text class="workspace-banner__title">{{title}}</text>
+    <text wx:if="{{detail}}" class="workspace-banner__detail">{{detail}}</text>
+  </view>
+  <image
+    class="workspace-banner__mascot"
+    src="/assets/teacher/home-mascot.png"
+    mode="widthFix"
+    aria-hidden="true"
+  />
+</view>

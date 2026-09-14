@@ -1,0 +1,16 @@
+<view class="shell {{surfacePage ? 'shell--surface' : ''}}">
+  <view wx:if="{{!surfacePage}}" class="shell__wave" aria-hidden="true"></view>
+  <view class="shell__header" style="padding-top: {{headerTopPx}}px;">
+    <view
+      class="shell__header-inner {{surfacePage ? 'shell__header-inner--surface' : ''}}"
+      style="--super-admin-header-height: {{headerHeightPx}}px; min-height: {{headerHeightPx}}px; padding-right: {{headerRightPx}}px;"
+    >
+      <button wx:if="{{showBack}}" class="shell__back" aria-label="返回上一页" catchtap="onBackTap" hover-class="shell__back--hover"><text class="shell__back-icon">‹</text></button>
+      <view class="shell__mark {{plainMark ? 'shell__mark--plain' : ''}}">
+        <image class="shell__mark-icon {{plainMark ? 'shell__mark-icon--plain' : ''}}" src="{{markIcon}}" mode="aspectFit" aria-hidden="true" />
+        <text class="shell__mark-title">{{markTitle}}</text>
+      </view>
+    </view>
+  </view>
+  <view class="shell__body"><slot /></view>
+</view>

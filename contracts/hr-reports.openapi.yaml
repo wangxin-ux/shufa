@@ -1,0 +1,137 @@
+teaching:
+  get:
+    operationId: listHrTeachingReport
+    summary: Read teaching history and effective totals
+    tags: [HR]
+    description: Single headquarters HR and HR_REPORT_READ required. Inclusive Asia/Shanghai dates filter original completedAt. Omitted dates mean all history. Rows include reversed records; summary counts only currently COMPLETED records. consumedUnits is actual CONSUME ledger consumption for those effective lessons, not attendeeCount multiplied by lessonUnits. No student identities.
+    parameters:
+      - { $ref: '#/parameters/From' }
+      - { $ref: '#/parameters/To' }
+      - { $ref: '#/parameters/Campus' }
+      - { $ref: '#/parameters/Teacher' }
+      - { $ref: './hr.openapi.yaml#/parameters/Page' }
+      - { $ref: './hr.openapi.yaml#/parameters/PageSize' }
+    responses:
+      '200':
+        description: Stable descending completedAt and ID pagination; summary covers all matching rows.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  allOf:
+                    - { $ref: './hr.openapi.yaml#/schemas/Page' }
+                    - type: object
+                      required: [items, summary]
+                      properties:
+                        items: { type: array, items: { $ref: '#/schemas/Teaching' } }
+                        summary:
+                          type: object
+                          required: [completedCount, attendeeCount, lessonUnits, consumedUnits]
+                          properties:
+                            completedCount: { type: integer }
+                            attendeeCount: { type: integer }
+                            lessonUnits: { type: integer, description: '100 units = one lesson.' }
+                            consumedUnits: { type: integer }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+earnings:
+  get:
+    operationId: listHrEarningReport
+    summary: Read teacher lesson fee ledger and settlement
+    tags: [HR]
+    description: Single headquarters HR and HR_REPORT_READ required. Inclusive Asia/Shanghai dates filter earningBasis.completedAt, including all linked accrual/reversal entries irrespective of their later posting dates. Net excludes rejected entries and sums stored signed amounts; pending and approved are current status totals. Paid and processing are current withdrawal allocations for the selected teaching-period entries, NOT cash paid during that period or payroll. Processing statuses SUBMITTED/APPROVED/PAYING; failed/cancelled/rejected allocations do not count. No payout references, bank details, rule editing, or review actions.
+    parameters:
+      - { $ref: '#/parameters/From' }
+      - { $ref: '#/parameters/To' }
+      - { $ref: '#/parameters/Campus' }
+      - { $ref: '#/parameters/Teacher' }
+      - { $ref: './hr.openapi.yaml#/parameters/Page' }
+      - { $ref: './hr.openapi.yaml#/parameters/PageSize' }
+    responses:
+      '200':
+        description: Descending createdAt and ID pagination, current settlement facts.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  allOf:
+                    - { $ref: './hr.openapi.yaml#/schemas/Page' }
+                    - type: object
+                      required: [items, summary]
+                      properties:
+                        items: { type: array, items: { $ref: '#/schemas/Earning' } }
+                        summary:
+                          type: object
+                          required: [netFen, pendingFen, approvedFen, paidFen, processingFen]
+                          properties:
+                            netFen: { type: integer }
+                            pendingFen: { type: integer }
+                            approvedFen: { type: integer }
+                            paidFen: { type: integer }
+                            processingFen: { type: integer }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+export:
+  get:
+    operationId: exportHrReport
+    summary: Download audited teaching or lesson fee workbook
+    tags: [HR]
+    description: HR_REPORT_EXPORT and a single headquarters HR identity required. Same date and field semantics as the corresponding report. A RepeatableRead snapshot includes all matching rows, up to 5000; larger results return 400 and require a narrower filter. Export is audited; no bank identity, phone or payout reference. Page parameters do not limit export.
+    parameters:
+      - { name: kind, in: path, required: true, schema: { type: string, enum: [teaching, earnings] } }
+      - { $ref: '#/parameters/From' }
+      - { $ref: '#/parameters/To' }
+      - { $ref: '#/parameters/Campus' }
+      - { $ref: '#/parameters/Teacher' }
+    responses:
+      '200':
+        description: Excel workbook containing report scope, summary and details.
+        content:
+          application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+            schema: { type: string, format: binary }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+parameters:
+  From: { name: from, in: query, schema: { type: string, format: date }, description: Inclusive Shanghai calendar date; must not exceed to. }
+  To: { name: to, in: query, schema: { type: string, format: date }, description: Inclusive Shanghai calendar date. }
+  Campus: { name: campusId, in: query, schema: { type: string, format: uuid } }
+  Teacher: { name: teacherId, in: query, schema: { type: string, format: uuid } }
+schemas:
+  Teaching:
+    type: object
+    required: [id, teacherId, teacherName, campusName, courseName, completedAt, status, attendeeCount, lessonUnits, consumedUnits]
+    properties:
+      id: { type: string, format: uuid }
+      teacherId: { type: string, format: uuid }
+      teacherName: { type: string }
+      campusName: { type: string }
+      courseName: { type: string }
+      completedAt: { type: string, format: date-time }
+      status: { type: string, enum: [COMPLETED, REVERSED] }
+      attendeeCount: { type: integer }
+      lessonUnits: { type: integer }
+      consumedUnits: { type: integer, description: 'Effective deduction units; zero for reversed lessons.' }
+  Earning:
+    type: object
+    required: [id, teacherId, teacherName, campusName, completedAt, createdAt, entryType, status, amountFen, paidFen, processingFen]
+    properties:
+      id: { type: string, format: uuid }
+      teacherId: { type: string, format: uuid }
+      teacherName: { type: string }
+      campusName: { type: string }
+      completedAt: { type: string, format: date-time }
+      createdAt: { type: string, format: date-time }
+      entryType: { type: string, enum: [ACCRUAL, REVERSAL] }
+      status: { type: string, enum: [PENDING_REVIEW, AVAILABLE, REJECTED, REVERSED] }
+      amountFen: { type: integer }
+      paidFen: { type: integer }
+      processingFen: { type: integer }

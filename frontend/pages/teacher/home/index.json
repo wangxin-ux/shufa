@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "teacher-page-shell": "/components/teacher-page-shell/teacher-page-shell",
+    "teacher-stat-strip": "/components/teacher-stat-strip/teacher-stat-strip",
+    "teacher-action-row": "/components/teacher-action-row/teacher-action-row"
+  },
+  "enablePullDownRefresh": true
+}

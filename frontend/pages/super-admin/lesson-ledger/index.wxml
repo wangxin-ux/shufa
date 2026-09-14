@@ -1,0 +1,101 @@
+<super-admin-page-shell
+  show-back
+  mark-title="课时"
+  mark-icon="/pages/super-admin/assets/ledger-mark-glyph.png"
+  surface-page
+  style="--super-admin-surface: #f6d468;"
+>
+  <view class="lesson-account">
+    <text class="lesson-account__title">课时账户</text>
+
+    <view wx:if="{{viewState === 'loading'}}" class="state">
+      <text class="state__title">正在加载课时流水</text>
+    </view>
+    <view wx:elif="{{viewState === 'error' || viewState === 'forbidden'}}" class="state">
+      <text class="state__title">课时流水加载失败</text>
+      <text class="state__message">{{errorMessage}}</text>
+      <button class="state__retry" bindtap="onRetry">重试</button>
+    </view>
+    <block wx:else>
+      <view class="lesson-account__hero">
+        <view class="lesson-account__hero-copy">
+          <text class="lesson-account__hero-label">{{heroLabel}}</text>
+          <view class="lesson-account__hero-number">
+            <text class="lesson-account__hero-count">{{ledgerCount}}</text>
+            <text class="lesson-account__hero-unit">笔</text>
+          </view>
+          <text class="lesson-account__hero-meta">全局不可变流水 · 后台调整追加新记录</text>
+        </view>
+        <image
+          class="lesson-account__hero-character"
+          src="/pages/super-admin/assets/ledger-top-character.png"
+          mode="widthFix"
+          aria-hidden="true"
+        />
+      </view>
+
+      <view class="lesson-account__bucket-grid">
+        <view class="lesson-account__bucket-card">
+          <text class="lesson-account__bucket-label">主课时流水</text>
+          <view class="lesson-account__bucket-number"><text>{{mainEntryCount}}</text><text class="lesson-account__bucket-unit">笔</text></view>
+          <text class="lesson-account__bucket-meta">当前页主课时记录</text>
+        </view>
+        <text class="lesson-account__bucket-plus">+</text>
+        <view class="lesson-account__bucket-card">
+          <text class="lesson-account__bucket-label">赠送课时流水</text>
+          <view class="lesson-account__bucket-number"><text>{{giftEntryCount}}</text><text class="lesson-account__bucket-unit">笔</text></view>
+          <text class="lesson-account__bucket-meta">当前页赠送课时记录</text>
+        </view>
+      </view>
+
+      <view class="lesson-account__flow-stage">
+        <text class="lesson-account__flow-title">课时流水</text>
+        <image
+          class="ledger-flow-character"
+          src="/pages/super-admin/assets/ledger-flow-character.png"
+          mode="widthFix"
+          aria-hidden="true"
+        />
+        <view class="lesson-account__flow-panel">
+          <view class="lesson-account__filters" aria-label="课时流水筛选">
+            <button class="lesson-account__filter {{entryType === '' ? 'lesson-account__filter--active' : ''}}" data-type="" bindtap="onFilterTap">全部</button>
+            <button class="lesson-account__filter {{entryType === 'CONSUME' ? 'lesson-account__filter--active' : ''}}" data-type="CONSUME" bindtap="onFilterTap">扣课</button>
+            <button class="lesson-account__filter {{entryType === 'REVERSAL' ? 'lesson-account__filter--active' : ''}}" data-type="REVERSAL" bindtap="onFilterTap">撤销</button>
+            <button class="lesson-account__filter {{entryType === 'ADJUSTMENT' ? 'lesson-account__filter--active' : ''}}" data-type="ADJUSTMENT" bindtap="onFilterTap">调整</button>
+            <button class="lesson-account__filter {{entryType === 'GRANT' ? 'lesson-account__filter--active' : ''}}" data-type="GRANT" bindtap="onFilterTap">课时发放</button>
+          </view>
+
+          <view wx:if="{{entries.length === 0}}" class="lesson-account__empty">
+            <text class="lesson-account__empty-title">暂无课时流水</text>
+            <text class="lesson-account__empty-message">更换筛选条件后再查看</text>
+          </view>
+          <view wx:else class="lesson-account__rows">
+            <view class="lesson-account__row" wx:for="{{entries}}" wx:key="id">
+              <view class="lesson-account__row-main">
+                <view class="lesson-account__row-heading">
+                  <view class="lesson-account__row-bullet"></view>
+                  <text class="lesson-account__row-title">{{item.studentName}} · {{item.coursePackageName}}</text>
+                </view>
+                <text class="lesson-account__row-meta">{{item.campusName}} · {{item.typeLabel}} · {{item.bucketLabel}}</text>
+                <text class="lesson-account__row-meta">{{item.timeLabel}} · {{item.reason || '无备注'}}</text>
+                <text class="lesson-account__row-meta">操作人 {{item.actorName}}</text>
+              </view>
+              <view class="lesson-account__row-side">
+                <text class="lesson-account__row-value">{{item.deltaLabel}}</text>
+                <text class="lesson-account__row-balance">余额 {{item.balanceLabel}}</text>
+                <button
+                  wx:if="{{item.entryType !== 'CORRECTION'}}"
+                  class="lesson-account__adjust"
+                  data-package-id="{{item.coursePackageId}}"
+                  data-student-name="{{item.studentName}}"
+                  data-bucket="{{item.bucket}}"
+                  bindtap="onAdjustTap"
+                >调整</button>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+</super-admin-page-shell>

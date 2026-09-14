@@ -1,0 +1,4 @@
+<view class="mark {{plain ? 'mark--plain' : ''}}" aria-role="img" aria-label="{{title}}">
+  <image wx:if="{{icon}}" class="mark__icon" src="{{icon}}" mode="aspectFit" />
+  <text class="mark__title">{{title}}</text>
+</view>

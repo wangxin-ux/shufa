@@ -1,0 +1,50 @@
+<parent-page-shell markTitle="课堂动态" markIcon="/pages/parent/assets/icon-mark-profile.png" bg="yellow" showBack="{{true}}">
+  <view-state
+    wx:if="{{viewState !== 'ready'}}"
+    state="{{viewState}}"
+    errorText="{{errorMessage}}"
+    bind:retry="onRetry"
+  />
+
+  <view wx:else class="updates">
+    <view class="updates__heading">
+      <text class="updates__title">课堂动态</text>
+      <text class="updates__subtitle">出勤与课堂反馈</text>
+    </view>
+
+    <view-state wx:if="{{isEmpty}}" state="empty" emptyText="暂无课堂动态" />
+    <view wx:else class="updates__list">
+      <view class="update-card" wx:for="{{records}}" wx:key="lessonSessionId">
+        <view class="update-card__head">
+          <view class="update-card__course">
+            <view class="update-card__dot" aria-hidden="true"></view>
+            <text class="update-card__name">{{item.courseName}}</text>
+          </view>
+          <text class="update-card__status update-card__status--{{item.statusTone}}">{{item.statusLabel}}</text>
+        </view>
+        <text class="update-card__meta">{{item.lessonTimeLabel}} · {{item.teacherName}}</text>
+        <view class="update-card__attendance">
+          <text class="update-card__label">出勤</text>
+          <text class="update-card__value">{{item.attendanceLabel}}</text>
+        </view>
+        <view class="update-card__feedback">
+          <text class="update-card__label">课堂反馈</text>
+          <text class="update-card__feedback-text">{{item.feedback || '老师暂未填写反馈'}}</text>
+          <view wx:if="{{item.feedbackImages.length}}" class="update-card__images">
+            <image
+              wx:for="{{item.feedbackImages}}"
+              wx:for-item="image"
+              wx:key="id"
+              class="update-card__image"
+              src="{{image.accessUrl}}"
+              mode="aspectFill"
+              data-id="{{item.lessonSessionId}}"
+              data-url="{{image.accessUrl}}"
+              bindtap="onPreviewImages"
+            />
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</parent-page-shell>

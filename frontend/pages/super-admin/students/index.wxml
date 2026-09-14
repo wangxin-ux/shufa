@@ -1,0 +1,46 @@
+<super-admin-page-shell show-back mark-title="名册" mark-icon="/pages/super-admin/assets/icon-campuses.png">
+  <view class="workspace">
+    <view class="workspace__head">
+      <view><text class="workspace__title">学员名册</text><text class="workspace__subtitle">跨校区查看学员课包与当前课时余额</text></view>
+    </view>
+    <view class="roster-tabs">
+      <button class="roster-tab roster-tab--active" hover-class="none">学员名册</button>
+      <button class="roster-tab" bindtap="onTeacherRosterTap">教师名册</button>
+    </view>
+    <view class="roster-actions">
+      <button class="roster-action roster-action--primary" bindtap="onQuickToggle">{{quickOpen ? '收起录入' : '快捷录入'}}</button>
+      <button class="roster-action" bindtap="onRosterImport">Excel 导入</button>
+      <button class="roster-action" bindtap="onRosterExport">导出 Excel</button>
+    </view>
+    <view wx:if="{{quickOpen}}" class="quick-form">
+      <text class="quick-form__title">录入顾客</text>
+      <text class="quick-form__hint">先在下方筛选栏选择所属校区</text>
+      <input class="field" maxlength="100" value="{{quickStudentName}}" bindinput="onQuickStudentInput" placeholder="学员姓名" />
+      <input class="field" type="number" maxlength="11" value="{{quickParentPhone}}" bindinput="onQuickPhoneInput" placeholder="家长手机号" />
+      <button class="button quick-form__submit" disabled="{{rosterBusy}}" bindtap="onQuickSubmit">{{rosterBusy ? '正在录入' : '确认录入'}}</button>
+    </view>
+    <view class="student-toolbar">
+      <picker range="{{campuses}}" range-key="name" value="{{campusIndex}}" bindchange="onCampusChange">
+        <view class="select">{{campuses[campusIndex].name}}</view>
+      </picker>
+      <input class="field" value="{{keyword}}" bindinput="onKeywordInput" confirm-type="search" bindconfirm="onSearch" placeholder="搜索学员姓名" />
+      <button class="button" bindtap="onSearch">查询</button>
+    </view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="state"><text class="state__title">正在加载学员与课包</text></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="state"><text class="state__title">暂无学员</text><text class="state__message">当前校区或搜索条件下没有在读学员</text></view>
+    <view wx:elif="{{viewState === 'error' || viewState === 'forbidden'}}" class="state"><text class="state__title">{{viewState === 'forbidden' ? '无访问权限' : '加载失败'}}</text><text class="state__message">{{errorMessage}}</text><button class="button" bindtap="onRetry">重试</button></view>
+    <view wx:elif="{{viewState === 'ready'}}" class="list">
+      <button class="row student-row" wx:for="{{students}}" wx:key="id" data-id="{{item.id}}" bindtap="onStudentTap" hover-class="row-hover">
+        <view class="row__main">
+          <view class="student-row__head"><text class="row__title">{{item.displayName}}</text><text class="status {{item.lowBalance ? 'status--danger' : 'status--success'}}">{{item.warningLabel}}</text></view>
+          <text class="row__meta">{{item.campusLabel}} · {{item.classLabel}}</text>
+          <text class="row__meta">主课时 {{item.mainBalanceLabel}} · 赠送 {{item.giftBalanceLabel}}</text>
+          <text wx:if="{{item.reservationLabel}}" class="row__meta">{{item.reservationLabel}}</text>
+        </view>
+        <text class="row__value">{{item.totalBalanceLabel}}节 ›</text>
+      </button>
+      <button wx:if="{{hasMore}}" class="button load-more" disabled="{{loadingMore}}" bindtap="onLoadMore">{{loadingMore ? '加载中' : '加载更多'}}</button>
+    </view>
+  </view>
+</super-admin-page-shell>

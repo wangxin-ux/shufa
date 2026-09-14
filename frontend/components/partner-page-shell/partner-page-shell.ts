@@ -1,0 +1,52 @@
+import { navigatePartnerBack } from '../../utils/partner-navigation';
+
+Component({
+  options: { multipleSlots: true },
+  properties: {
+    markTitle: { type: String, value: '' },
+    markIcon: { type: String, value: '' },
+    markIconHasDisc: { type: Boolean, value: false },
+    markIconOffsetY: { type: Number, value: 0 },
+    showBack: { type: Boolean, value: false },
+    fixedHeader: { type: Boolean, value: false },
+    surfacePage: { type: Boolean, value: false },
+    plainGradient: { type: Boolean, value: false },
+    plainMark: { type: Boolean, value: false },
+  },
+  data: {
+    headerTopPx: 0,
+    headerHeightPx: 88,
+    headerRightPx: 16,
+  },
+  lifetimes: {
+    attached() {
+      const windowInfo = wx.getWindowInfo();
+      const statusBarHeight = windowInfo.statusBarHeight ?? 20;
+      let headerTopPx = statusBarHeight + 8;
+      let headerHeightPx = 52;
+      let headerRightPx = 16;
+      try {
+        const capsule = wx.getMenuButtonBoundingClientRect();
+        if (capsule.height > 0) {
+          headerTopPx = capsule.top;
+          headerHeightPx = capsule.height + 16;
+          headerRightPx = windowInfo.windowWidth - capsule.left + 8;
+        }
+      } catch {
+        // The status bar estimate keeps direct-open pages usable.
+      }
+      this.setData({ headerTopPx, headerHeightPx, headerRightPx });
+    },
+  },
+  methods: {
+    onBackTap() {
+      navigatePartnerBack(
+        {
+          navigateBack: (options) => wx.navigateBack(options),
+          reLaunch: (options) => wx.reLaunch(options),
+        },
+        getCurrentPages().length,
+      );
+    },
+  },
+});

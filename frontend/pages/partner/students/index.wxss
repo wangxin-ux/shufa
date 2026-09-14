@@ -1,0 +1,15 @@
+@import "../../../styles/partner-workspace.wxss";
+
+.student-card {
+  position: relative;
+  min-height: 250rpx;
+  padding-bottom: 64rpx;
+}
+
+.student-card__command {
+  position: absolute;
+  right: 24rpx;
+  bottom: 20rpx;
+  font-size: 21rpx;
+  color: var(--partner-orange);
+}

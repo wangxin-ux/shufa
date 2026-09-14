@@ -1,0 +1,37 @@
+<partner-page-shell
+  markTitle="我的"
+  markIcon="/pages/partner/assets/profile-mark-glyph.png"
+  showBack="{{true}}"
+  surfacePage="{{true}}"
+  plainMark="{{true}}"
+>
+  <view class="profile-page">
+    <view wx:if="{{viewState === 'loading'}}" class="partner-state"><text class="partner-state__title">正在加载合作方资料</text></view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="partner-state"><text class="partner-state__title">无访问权限</text><text class="partner-state__message">{{errorMessage}}</text></view>
+    <view wx:elif="{{viewState === 'error'}}" class="partner-state"><text class="partner-state__title">合作方资料加载失败</text><text class="partner-state__message">{{errorMessage}}</text><button class="partner-command" bindtap="onRetry">重试</button></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="partner-state"><text class="partner-state__title">暂无合作方资料</text><text class="partner-state__message">请联系管理员核对账号与校区绑定</text></view>
+
+    <block wx:else>
+      <view class="profile-hero">
+        <view class="profile-card"><text class="profile-card__name">{{displayName}}</text><text class="profile-card__campus">{{campusName}}</text><text class="profile-card__role">{{identityLabel}}</text></view>
+        <image class="profile-hero__character" src="/pages/partner/assets/profile-top-character.png" mode="widthFix" aria-hidden="true" />
+      </view>
+
+      <view class="profile-actions-stage">
+        <image class="profile-actions-stage__character" src="/pages/partner/assets/profile-lower-character.png" mode="widthFix" aria-hidden="true" />
+        <view class="profile-actions">
+          <button wx:for="{{actions}}" wx:key="key" class="profile-action" data-key="{{item.key}}" bindtap="onActionTap" hover-class="profile-control--hover"><view class="profile-action__bullet" aria-hidden="true"></view><text class="profile-action__label">{{item.label}}</text><text class="profile-action__command">查看</text></button>
+        </view>
+        <view class="profile-details">
+          <view class="profile-detail"><text class="profile-detail__label">校区资料</text><text class="profile-detail__value">{{campusCodeLabel}}</text></view>
+          <view class="profile-detail"><text class="profile-detail__label">联系电话</text><text class="profile-detail__value">{{contactPhoneLabel}}</text></view>
+          <view class="profile-detail"><text class="profile-detail__label">校区地址</text><text class="profile-detail__value">{{addressLabel}}</text></view>
+          <view class="profile-detail"><text class="profile-detail__label">课时预警阈值</text><text class="profile-detail__value">{{warningThresholdLabel}}</text></view>
+        </view>
+        <view class="profile-session">
+          <session-logout id="sessionLogout" />
+        </view>
+      </view>
+    </block>
+  </view>
+</partner-page-shell>

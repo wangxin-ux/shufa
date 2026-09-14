@@ -1,0 +1,185 @@
+<teacher-page-shell
+  markTitle="收益"
+  markIcon="/pages/teacher/assets/icon-student-record.png"
+  tone="yellow"
+  showBack="{{true}}"
+>
+  <view class="earnings-page">
+    <teacher-workspace-banner
+      class="earnings-page__overview"
+      title="我的收益"
+      detail="内部预计 · 人工审核与线下打款"
+    />
+
+    <view wx:if="{{viewState === 'loading'}}" class="page-state">
+      <text class="page-state__title">正在加载收益</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state">
+      <text class="page-state__title">收益加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-command" bindtap="onRetry" hover-class="control--hover">重试</button>
+    </view>
+
+    <block wx:else>
+      <view class="summary-panel" aria-label="内部预计收益概览">
+        <view
+          wx:for="{{summaryItems}}"
+          wx:key="key"
+          class="summary-item summary-item--{{item.key}}"
+        >
+          <text class="summary-item__label">{{item.label}}</text>
+          <text class="summary-item__value">{{item.value}}</text>
+        </view>
+      </view>
+
+      <view class="status-strip" aria-label="收益资金状态">
+        <view wx:for="{{statusItems}}" wx:key="key" class="status-strip__item">
+          <text class="status-strip__label">{{item.label}}</text>
+          <text class="status-strip__value">{{item.value}}</text>
+        </view>
+      </view>
+
+      <view class="rule-panel">
+        <view class="section-heading">
+          <text class="section-heading__title">当前计费规则</text>
+          <text class="section-heading__tag">内部预计</text>
+        </view>
+        <view class="rule-panel__main">
+          <text class="rule-panel__basis">{{rule.basisLabel}}</text>
+          <text class="rule-panel__amount">{{rule.unitAmount}}</text>
+        </view>
+        <view class="rule-panel__meta">
+          <text>{{rule.settlementLabel}}</text>
+          <text wx:if="{{rule.configured}}">{{rule.scopeLabel}} · {{rule.effectiveFrom}} 生效</text>
+        </view>
+      </view>
+
+      <view class="earnings-toolbar">
+        <view class="segment" role="tablist" aria-label="收益记录类型">
+          <button
+            class="segment__item {{selectedTab === 'earnings' ? 'segment__item--active' : ''}}"
+            data-tab="earnings"
+            bindtap="onTabTap"
+            hover-class="control--hover"
+          >收益明细</button>
+          <button
+            class="segment__item {{selectedTab === 'withdrawals' ? 'segment__item--active' : ''}}"
+            data-tab="withdrawals"
+            bindtap="onTabTap"
+            hover-class="control--hover"
+          >提现记录</button>
+        </view>
+        <button
+          class="withdraw-command"
+          disabled="{{submitting || !canWithdraw}}"
+          bindtap="onOpenWithdrawal"
+          hover-class="control--hover"
+        >申请提现</button>
+      </view>
+
+      <text wx:if="{{listError}}" class="list-error">{{listError}}</text>
+
+      <view wx:if="{{selectedTab === 'earnings'}}" class="financial-list">
+        <view wx:if="{{earnings.length === 0}}" class="list-empty">
+          <text class="list-empty__title">暂无收益明细</text>
+          <text class="list-empty__message">完成课次后由系统记录内部预计收益</text>
+        </view>
+        <view wx:for="{{earnings}}" wx:key="id" class="financial-row">
+          <view class="financial-row__head">
+            <view class="financial-row__identity">
+              <text class="financial-row__course">{{item.courseName}}</text>
+              <text class="financial-row__kind">{{item.entryTypeLabel}}</text>
+            </view>
+            <text class="financial-row__amount">{{item.amount}}</text>
+          </view>
+          <view class="financial-row__meta">
+            <text>{{item.timeLabel}}</text>
+            <text class="status-chip status-chip--{{item.statusTone}}">{{item.statusLabel}}</text>
+          </view>
+          <text class="financial-row__basis">{{item.basisLabel}} · {{item.basisDetail}}</text>
+          <text wx:if="{{item.reason}}" class="financial-row__reason">{{item.reason}}</text>
+        </view>
+        <button
+          wx:if="{{earningsHasMore}}"
+          class="page-command load-more"
+          disabled="{{loadingMore}}"
+          bindtap="onLoadMore"
+        >{{loadingMore ? '加载中' : '加载更多'}}</button>
+      </view>
+
+      <view wx:else class="financial-list">
+        <view wx:if="{{withdrawals.length === 0 && !loadingMore}}" class="list-empty">
+          <text class="list-empty__title">暂无提现记录</text>
+          <text class="list-empty__message">审核通过后由工作人员线下人工打款</text>
+        </view>
+        <view wx:for="{{withdrawals}}" wx:key="id" class="financial-row">
+          <view class="financial-row__head">
+            <view class="financial-row__identity">
+              <text class="financial-row__course">提现申请</text>
+              <text class="financial-row__kind">{{item.requestNo}}</text>
+            </view>
+            <text class="financial-row__amount">{{item.amount}}</text>
+          </view>
+          <view class="financial-row__meta">
+            <text>{{item.requestedAt}}</text>
+            <text class="status-chip status-chip--{{item.statusTone}}">{{item.statusLabel}}</text>
+          </view>
+          <text wx:if="{{item.reason}}" class="financial-row__reason">{{item.reason}}</text>
+          <button
+            wx:if="{{item.canCancel}}"
+            class="cancel-command"
+            data-id="{{item.id}}"
+            data-version="{{item.version}}"
+            disabled="{{submitting}}"
+            bindtap="onCancelWithdrawal"
+            hover-class="control--hover"
+          >取消申请</button>
+        </view>
+        <button
+          wx:if="{{withdrawalsHasMore}}"
+          class="page-command load-more"
+          disabled="{{loadingMore}}"
+          bindtap="onLoadMore"
+        >{{loadingMore ? '加载中' : '加载更多'}}</button>
+      </view>
+    </block>
+  </view>
+
+  <view wx:if="{{showWithdrawalModal}}" class="modal-layer" catchtouchmove="noop">
+    <view class="modal-backdrop" bindtap="onCloseWithdrawal"></view>
+    <view class="withdrawal-dialog" role="dialog" aria-label="申请提现">
+      <text class="withdrawal-dialog__title">申请提现</text>
+      <text class="withdrawal-dialog__note">提交后由超级管理员审核并线下人工打款</text>
+      <view class="amount-field">
+        <text class="amount-field__currency">¥</text>
+        <input
+          class="amount-field__input"
+          type="digit"
+          value="{{amountYuan}}"
+          placeholder="请输入金额"
+          maxlength="12"
+          bindinput="onAmountInput"
+          focus="{{true}}"
+        />
+      </view>
+      <text wx:if="{{amountError}}" class="withdrawal-dialog__error">{{amountError}}</text>
+      <view class="withdrawal-dialog__commands">
+        <button
+          class="dialog-command dialog-command--secondary"
+          disabled="{{submitting}}"
+          bindtap="onCloseWithdrawal"
+        >取消</button>
+        <button
+          class="dialog-command dialog-command--primary"
+          disabled="{{submitting || !amountYuan}}"
+          loading="{{submitting}}"
+          bindtap="onSubmitWithdrawal"
+        >{{submitting ? '提交中' : '确认申请'}}</button>
+      </view>
+    </view>
+  </view>
+</teacher-page-shell>

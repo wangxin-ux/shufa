@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "teacher-page-shell": "/components/teacher-page-shell/teacher-page-shell",
+    "teacher-action-row": "/components/teacher-action-row/teacher-action-row",
+    "session-logout": "/components/session-logout/session-logout"
+  },
+  "enablePullDownRefresh": true
+}

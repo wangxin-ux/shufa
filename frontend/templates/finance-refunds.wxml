@@ -1,0 +1,87 @@
+<view class="refund">
+  <view class="refund__wave" aria-hidden="true"></view>
+  <view class="refund__header" style="padding-top: {{headerTop}}px; padding-right: {{headerRight}}px;">
+    <button class="refund__back" bindtap="onBack" aria-label="返回上一页">‹</button>
+    <view class="refund__mark"><text class="refund__mark-icon">¥</text><text class="refund__mark-title">{{role === 'FINANCE' ? '财务' : '审批'}}</text></view>
+  </view>
+  <view class="refund__body workspace">
+    <view class="workspace__head"><view><text class="workspace__title">{{title}}</text><text class="workspace__subtitle">{{receiptLabel || (reviewKind === 'CORRECTION' ? '总部 · 收款账面纠错' : '总部 · 退课退费')}}</text></view></view>
+    <view wx:if="{{role === 'SUPER_ADMIN'}}" class="roster-tabs refund__review-tabs">
+      <button wx:for="{{reviewKinds}}" wx:key="code" class="roster-tab {{reviewKind === item.code ? 'roster-tab--active' : ''}}" data-kind="{{item.code}}" bindtap="onReviewKind">{{item.name}}</button>
+    </view>
+    <view wx:if="{{authorized}}" class="toolbar">
+      <picker range="{{statuses}}" range-key="name" value="{{statusIndex}}" bindchange="onStatus"><view class="select">{{statuses[statusIndex].name}}</view></picker>
+      <button wx:if="{{role === 'FINANCE' && receiptId}}" class="button" bindtap="onCreate">申请退费</button>
+    </view>
+    <view wx:if="{{viewState === 'loading'}}" class="state"><text class="state__title">正在加载{{reviewKind === 'CORRECTION' ? '纠错' : '退费'}}记录</text></view>
+    <view wx:elif="{{viewState === 'error'}}" class="state"><text class="state__title">暂时无法加载</text><text class="state__message">{{errorMessage}}</text><button class="button" bindtap="onRetry">重试</button></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="state"><text class="state__title">暂无{{reviewKind === 'CORRECTION' ? '纠错' : '退费'}}记录</text></view>
+    <view wx:else class="list">
+      <button wx:for="{{rows}}" wx:key="id" class="row" data-id="{{item.id}}" bindtap="onDetail">
+        <view wx:if="{{reviewKind === 'CORRECTION'}}" class="row__main"><text class="row__title">{{item.studentName}} · {{item.typeLabel}}</text><text class="row__meta">{{item.campusName}} · 原收款 ¥ {{item.amountLabel}}</text><text class="row__meta">账面影响 ¥ {{item.effectLabel}}</text><text class="row__meta">{{item.createdLabel}}</text></view>
+        <view wx:else class="row__main"><text class="row__title">{{item.studentName}} · ¥ {{item.amountLabel}}</text><text class="row__meta">{{item.campusName}}</text><text class="row__meta">退购买 {{item.mainLabel}} 节 · 退赠送 {{item.giftLabel}} 节</text><text class="row__meta">{{item.createdLabel}}</text></view>
+        <text class="status">{{item.statusLabel}}</text>
+      </button>
+      <button wx:if="{{hasMore}}" class="button" bindtap="onMore">加载更多</button>
+    </view>
+  </view>
+  <view wx:if="{{detail}}" class="refund__mask" bindtap="onClose">
+    <view class="refund__sheet" catchtap="stopTap">
+      <view class="refund__sheet-head"><text class="form__label">{{detailKind === 'CORRECTION' ? '收款纠错详情' : '退费详情'}}</text><button class="button button--ghost" bindtap="onClose" aria-label="关闭详情">×</button></view>
+      <scroll-view scroll-y class="refund__scroll">
+        <view class="workspace__head"><view><text class="workspace__title">{{detail.studentName}}</text><text class="workspace__subtitle">{{detail.campusName}} · {{detail.statusLabel}}</text></view></view>
+        <view wx:if="{{detailKind === 'CORRECTION'}}" class="list">
+          <view class="notice">账面纠错，不代表退款</view>
+          <view class="row"><view class="row__main"><text class="row__title">原记录 · ¥ {{detail.original.amountLabel}}</text><text class="row__meta">{{detail.original.studentName}} · {{detail.original.campusName}}</text><text class="row__meta">{{detail.original.receivedOn}} · {{detail.original.channel}}</text><text class="row__meta">{{detail.original.package.name}} · 购买 {{detail.original.mainLabel}} 节 · 赠送 {{detail.original.giftLabel}} 节</text></view></view>
+          <view wx:if="{{detail.proposedReplacement}}" class="row"><view class="row__main"><text class="row__title">拟替代记录 · ¥ {{detail.proposedReplacement.amountLabel}}</text><text class="row__meta">{{detail.proposedReplacement.studentName}} · {{detail.proposedReplacement.campusName}}</text><text class="row__meta">{{detail.proposedReplacement.receivedOn}} · {{detail.proposedReplacement.channel}}</text><text class="row__meta">{{detail.proposedReplacement.package.name}} · 购买 {{detail.proposedReplacement.mainLabel}} 节 · 赠送 {{detail.proposedReplacement.giftLabel}} 节</text></view></view>
+          <view class="row"><view class="row__main"><text class="row__title">{{detail.typeLabel}} · 账面影响 ¥ {{detail.effectLabel}}</text><text class="row__meta">{{detail.reason}}</text></view></view>
+        </view>
+        <view wx:else class="list">
+          <view class="row"><view class="row__main"><text class="row__title">申请退款 ¥ {{detail.amountLabel}}</text><text class="row__meta">原始单价参考 ¥ {{detail.referenceLabel}}</text><text class="row__meta">退购买 {{detail.mainLabel}} 节 · 退赠送 {{detail.giftLabel}} 节</text></view></view>
+          <view class="row"><view class="row__main"><text class="row__title">申请原因</text><text class="row__meta">{{detail.reason}}</text></view></view>
+          <view wx:if="{{detail.payment}}" class="row"><view class="row__main"><text class="row__title">实际退款 {{detail.paymentLabel}}</text><text class="row__meta">{{detail.payment.externalReference}}</text></view></view>
+        </view>
+        <view class="toolbar">
+          <button wx:if="{{detailKind === 'REFUND' && detail.payment}}" class="button button--ghost" bindtap="onProof">查看退款凭证</button>
+          <button wx:if="{{detailKind === 'CORRECTION' && detail.original.proofAvailable}}" class="button button--ghost" data-kind="original" bindtap="onCorrectionProof">查看原凭证</button>
+          <button wx:if="{{detailKind === 'CORRECTION' && detail.proposedReplacement && detail.proposedReplacement.proofAvailable}}" class="button button--ghost" data-kind="replacement" bindtap="onCorrectionProof">查看替代凭证</button>
+          <button wx:for="{{primaryActions}}" wx:key="code" class="button" data-action="{{item.code}}" bindtap="onAction">{{item.name}}</button>
+          <button wx:if="{{secondaryActions.length}}" class="button button--ghost refund__more" bindtap="onMoreActions" aria-label="更多处理">···</button>
+        </view>
+        <button class="button button--ghost" bindtap="onHistory" aria-expanded="{{showHistory}}">{{showHistory ? '收起处理记录' : '查看处理记录'}}</button>
+        <view wx:if="{{showHistory}}" class="list">
+          <view wx:for="{{detail.events}}" wx:key="id" class="row"><view class="row__main"><text class="row__title">{{item.actionLabel}} · {{item.actorName}}</text><text class="row__meta">{{item.reason}}</text><text class="row__meta">{{item.timeLabel}}</text></view></view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+  <view wx:if="{{formMode}}" class="refund__mask refund__form-mask" bindtap="onFormBack">
+    <view class="refund__sheet" catchtap="stopTap">
+      <view class="refund__sheet-head"><text class="form__label">{{formMode === 'create' ? '申请退课退费' : actionLabel}}</text><button class="button button--ghost" disabled="{{submitting}}" bindtap="onFormBack" aria-label="关闭表单">×</button></view>
+      <scroll-view scroll-y class="refund__scroll">
+        <view class="form refund__form">
+          <block wx:if="{{formMode === 'create'}}">
+            <text class="row__meta">{{receiptLabel}}</text>
+            <text class="form__label">退购买课时（节）</text><input class="field" type="digit" value="{{mainLessons}}" data-field="mainLessons" bindinput="onInput" disabled="{{submitting}}" maxlength="10" />
+            <text class="form__label">退赠送课时（节）</text><input class="field" type="digit" value="{{giftLessons}}" data-field="giftLessons" bindinput="onInput" disabled="{{submitting}}" maxlength="10" />
+            <button class="button button--ghost" bindtap="onQuote" loading="{{quoting}}" disabled="{{submitting || quoting}}">核算参考金额</button>
+            <text wx:if="{{quote}}" class="row__meta">参考 ¥ {{referenceLabel}} · 当前金额上限 ¥ {{maximumLabel}}</text>
+            <text class="form__label">申请退款（元）</text><input class="field" type="digit" value="{{amount}}" data-field="amount" bindinput="onInput" disabled="{{submitting || !quote}}" maxlength="11" />
+          </block>
+          <block wx:elif="{{actionCode === 'RECORD_PAYMENT'}}">
+            <text class="row__title">已批准退款 ¥ {{detail.amountLabel}}</text>
+            <text class="form__label">实际退款日（北京时间）</text><picker mode="date" value="{{paidDate}}" data-field="paidDate" bindchange="onInput" disabled="{{submitting}}"><view class="select">{{paidDate}}</view></picker>
+            <text class="form__label">实际退款时间（时:分:秒）</text><input class="field" value="{{paidTime}}" data-field="paidTime" bindinput="onInput" maxlength="8" disabled="{{submitting}}" />
+            <text class="form__label">退款流水标识</text><input class="field" value="{{externalReference}}" data-field="externalReference" bindinput="onInput" maxlength="100" disabled="{{submitting}}" />
+            <text class="form__label">实际退款凭证</text><button class="button button--ghost" bindtap="onChooseProof" disabled="{{submitting}}">{{proofPath ? '更换凭证' : '选择凭证'}}</button>
+            <image wx:if="{{proofPath}}" class="refund__proof" src="{{proofPath}}" mode="aspectFit" />
+          </block>
+          <text class="form__label">{{formMode === 'create' ? '退费原因与金额说明' : '处理说明'}}</text>
+          <textarea class="field refund__note" value="{{reason}}" data-field="reason" bindinput="onInput" maxlength="500" disabled="{{submitting}}" />
+          <text wx:if="{{formError}}" class="notice">{{formError}}</text>
+          <button class="button" bindtap="onSubmit" loading="{{submitting}}" disabled="{{submitting || quoting || (formMode === 'create' && !quote)}}">{{submitting ? '正在提交' : formMode === 'create' ? '提交申请' : actionLabel}}</button>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+</view>

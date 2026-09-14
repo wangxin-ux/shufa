@@ -1,0 +1,135 @@
+/* 家长端设计令牌：色值于 2026-08-27 从甲方画板实际取样（见 docs/ui/parent-ui-source.md）。
+   页面与组件只引用令牌，不各自写死色值。 */
+page {
+  /* 颜色（原 UI 取样） */
+  --parent-yellow: #f6d468;        /* 课时页原稿黄；首页在页面级覆盖为金黄渐变 */
+  --parent-yellow-card: #f6d468;   /* 表单卡/流水卡黄 */
+  --parent-yellow-bright: #ffd75e; /* 购买/赠送课时双卡黄 */
+  --parent-orange: #fe8419;        /* 主按钮、课时大卡、学生卡橙 */
+  --parent-orange-deep: #fe8419;   /* 立即续费按钮（课时页 PSD 橙） */
+  --parent-ink: #2c453f;           /* 深色文字（墨绿黑） */
+  --parent-success: #23b574;       /* 已批准绿 */
+  --parent-danger: #e5484d;        /* 错误/驳回红（原 UI 未出现，预留） */
+  --parent-date-red: #8b0000;      /* 首页日期块暗红 */
+  --parent-cream: #feffd7;         /* 首页日期菱形米白底 */
+  --parent-on-color: #ffffff;      /* 彩色底上的文字 */
+  --parent-text-muted: rgba(36, 59, 54, 0.55); /* 弱化说明文字 */
+  --parent-frosted: rgba(170, 170, 170, 0.8); /* 首页快捷栏 PSD 灰透底 */
+  --role-home-yellow-gradient: linear-gradient(180deg, #ebac0f 0%, #f8c948 48%, #ebac11 100%);
+
+  /* 跨角色视觉基线：以已验收家长端为准，教师/管理员及后续角色复用。 */
+  --role-back-size: 88rpx;
+  --role-back-background: rgba(255, 255, 255, 0.92);
+  --role-back-shadow: 0 12rpx 30rpx rgba(66, 48, 15, 0.16);
+  --role-back-icon-size: 68rpx;
+  --role-back-icon-offset-y: -6rpx;
+  --role-home-glass-height: 176rpx;
+  --role-home-glass-background: rgba(255, 255, 255, 0.9);
+  --role-home-glass-radius: 32rpx;
+  --role-home-glass-shadow: 0 8rpx 6rpx 1rpx rgba(24, 18, 14, 0.33);
+  --role-home-glass-left: 47rpx;
+  --role-home-glass-right: 49rpx;
+  --role-home-nav-background: rgba(170, 170, 170, 0.8);
+  --role-home-nav-shadow: 0 3rpx 6rpx 1rpx rgba(24, 18, 14, 0.28);
+  --role-home-nav-item-width: 80rpx;
+  --role-home-nav-active-size: 136rpx;
+  --role-home-nav-active-background: rgba(255, 255, 255, 0.8);
+  --role-home-nav-active-shadow: 0 8rpx 6rpx 1rpx rgba(24, 18, 14, 0.33);
+  --role-home-nav-width: 367rpx;
+  --role-home-nav-capsule-width: 248rpx;
+  --role-home-nav-capsule-height: 100rpx;
+  --role-home-nav-ink: var(--parent-ink);
+  --role-home-more-height: 44rpx;
+  --role-home-more-padding-x: 20rpx;
+  --role-home-more-border: 2rpx solid rgba(255, 255, 255, 0.9);
+  --role-home-more-font-size: 20rpx;
+  --role-page-mark-size: 92rpx;
+  --role-page-mark-icon-size: 32rpx;
+  --role-page-mark-title-font-size: 18rpx;
+  --role-page-mark-title-gap: 0rpx;
+  --role-page-mark-background: #ffffff;
+  --role-page-mark-shadow: var(--role-back-shadow);
+  --role-page-mark-ink: var(--parent-ink);
+  --role-profile-mark-width: 72rpx;
+  --role-profile-mark-height: 86rpx;
+  --role-profile-mark-icon-size: 38rpx;
+  --role-profile-mark-font-size: 18rpx;
+
+  /* 字体（按 PSD 图层分级）：ParentDisplay 为 OFL 字体子集，加载失败时安全回退。 */
+  --parent-font-display: "ParentDisplay", "Microsoft YaHei", sans-serif;
+  --parent-font-body: "DengXian", "等线", "Microsoft YaHei", sans-serif;
+  --parent-font-nav: "Microsoft YaHei", sans-serif;
+
+  /* 尺寸 */
+  --parent-card-radius: 32rpx;
+  --parent-page-gap: 40rpx;
+  --parent-touch-min: 88rpx;       /* 最小触摸区域约 44pt */
+  --parent-shadow: 0 12rpx 30rpx rgba(66, 48, 15, 0.16);
+
+  /* 教师端令牌独立命名，保留家长端现有视觉不变。 */
+  --teacher-yellow: #ffd75e;
+  --teacher-yellow-soft: #f6d468;
+  --teacher-orange: #fe8419;
+  --teacher-ink: #243b36;
+  --teacher-muted: rgba(36, 59, 54, 0.62);
+  --teacher-surface: #ffffff;
+  --teacher-line: rgba(36, 59, 54, 0.14);
+  --teacher-success: #238760;
+  --teacher-danger: #c93f48;
+  --teacher-font-display: var(--parent-font-display);
+  --teacher-font-body: var(--parent-font-body);
+  --teacher-page-gap: 32rpx;
+  --teacher-card-radius: 16rpx;
+  --teacher-touch-min: 88rpx;
+  --teacher-shadow: 0 10rpx 24rpx rgba(66, 48, 15, 0.14);
+
+  /* 分校区管理员端令牌取自管理员 PSD 首页，不继承其他角色端色板。 */
+  --campus-manager-yellow-top: #e8b739;
+  --campus-manager-yellow-mid: #f1c755;
+  --campus-manager-yellow-bottom: #e4af26;
+  --campus-manager-orange: #ff7447;
+  --campus-manager-red: #990a04;
+  --campus-manager-ink: #201d17;
+  --campus-manager-muted: rgba(32, 29, 23, 0.54);
+  --campus-manager-surface: #ffffff;
+  --campus-manager-glass: rgba(250, 248, 237, 0.78);
+  --campus-manager-frosted: rgba(142, 139, 128, 0.68);
+  --campus-manager-font-display: var(--parent-font-display);
+  --campus-manager-font-body: var(--parent-font-body);
+  --campus-manager-page-gap: 32rpx;
+  --campus-manager-touch-min: 88rpx;
+  --campus-manager-shadow: 0 12rpx 22rpx rgba(63, 46, 15, 0.24);
+
+  /* 合作方端独立取自合作方 PSD；只复用跨角色公共控件几何。 */
+  --partner-yellow-top: #e8b637;
+  --partner-yellow-mid: #f0c754;
+  --partner-yellow-bottom: #e6b330;
+  --partner-gradient: linear-gradient(180deg, var(--partner-yellow-top) 0%, var(--partner-yellow-mid) 48%, var(--partner-yellow-bottom) 100%);
+  --partner-orange: #ff7447;
+  --partner-red: #990a04;
+  --partner-ink: #201d17;
+  --partner-muted: rgba(32, 29, 23, 0.54);
+  --partner-surface: #ffffff;
+  --partner-font-display: var(--parent-font-display);
+  --partner-font-body: var(--parent-font-body);
+  --partner-page-gap: 32rpx;
+  --partner-touch-min: 88rpx;
+  --partner-shadow: 0 12rpx 22rpx rgba(63, 46, 15, 0.24);
+
+  /* 总端取自总端 PSD，公共返回、磨砂统计和导航几何沿用三端基线。 */
+  --super-admin-yellow-top: #e8b739;
+  --super-admin-yellow-mid: #f2c94e;
+  --super-admin-yellow-bottom: #e4af26;
+  --super-admin-yellow: #f6d468;
+  --super-admin-gradient: linear-gradient(180deg, var(--super-admin-yellow-top) 0%, var(--super-admin-yellow-mid) 48%, var(--super-admin-yellow-bottom) 100%);
+  --super-admin-accent: #f07d2b;
+  --super-admin-danger: #930b06;
+  --super-admin-ink: #201d17;
+  --super-admin-muted: rgba(32, 29, 23, 0.56);
+  --super-admin-surface: #fffdf7;
+  --super-admin-font-display: var(--parent-font-display);
+  --super-admin-font-body: var(--parent-font-body);
+  --super-admin-page-gap: 32rpx;
+  --super-admin-touch-min: 88rpx;
+  --super-admin-shadow: 0 12rpx 22rpx rgba(63, 46, 15, 0.22);
+}

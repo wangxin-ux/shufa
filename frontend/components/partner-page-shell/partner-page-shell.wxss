@@ -1,0 +1,185 @@
+.shell {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: var(--partner-gradient);
+  color: var(--partner-ink);
+  font-family: var(--partner-font-body);
+}
+
+.shell--surface {
+  background: var(--partner-surface);
+}
+
+.shell__wave {
+  position: absolute;
+  top: -290rpx;
+  left: -12%;
+  width: 124%;
+  height: 480rpx;
+  border-radius: 0 0 52% 46%;
+  background: var(--partner-surface);
+  box-shadow: 0 7rpx 16rpx rgba(84, 59, 13, 0.18);
+  pointer-events: none;
+}
+
+.shell__header,
+.shell__body {
+  position: relative;
+  z-index: 1;
+}
+
+.shell__header--fixed {
+  z-index: 31;
+}
+
+.shell__header-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  min-height: 150rpx !important;
+  box-sizing: border-box;
+  padding-left: 24rpx;
+}
+
+.shell__header-inner--surface {
+  align-items: center;
+  min-height: var(--partner-header-height) !important;
+}
+
+.shell__leading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+}
+
+.shell__header-inner--surface .shell__leading {
+  align-items: center;
+}
+
+.shell__leading--fixed {
+  position: fixed;
+  left: 24rpx;
+  z-index: 32;
+}
+
+.shell__mark {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: var(--role-page-mark-size);
+  min-width: var(--role-page-mark-size);
+  height: var(--role-page-mark-size);
+  border-radius: 50%;
+  background: var(--role-page-mark-background);
+  box-shadow: var(--role-page-mark-shadow);
+}
+
+.shell__mark-disc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--role-page-mark-icon-size);
+  height: var(--role-page-mark-icon-size);
+}
+
+.shell__mark-icon {
+  flex: none;
+  pointer-events: none;
+}
+
+.shell__mark-icon--glyph {
+  width: var(--role-page-mark-icon-size);
+  height: var(--role-page-mark-icon-size);
+}
+
+.shell__mark-icon--framed {
+  width: var(--role-page-mark-icon-size);
+  height: var(--role-page-mark-icon-size);
+}
+
+.shell__mark--plain {
+  justify-content: center;
+  width: var(--role-profile-mark-width);
+  min-width: var(--role-profile-mark-width);
+  height: var(--role-profile-mark-height);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.shell__mark-disc--plain {
+  width: var(--role-profile-mark-icon-size);
+  height: var(--role-profile-mark-icon-size);
+  overflow: visible;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.shell__mark-icon--plain {
+  width: var(--role-profile-mark-icon-size);
+  height: var(--role-profile-mark-icon-size);
+}
+
+.shell__mark--plain .shell__mark-title {
+  margin-top: 0;
+  font-family: var(--partner-font-body);
+  font-size: var(--role-profile-mark-font-size);
+  line-height: 1.2;
+}
+
+.shell__mark-title {
+  max-width: 72rpx;
+  margin-top: var(--role-page-mark-title-gap);
+  font-family: var(--partner-font-body);
+  font-size: var(--role-page-mark-title-font-size);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--role-page-mark-ink);
+  text-align: center;
+}
+
+.shell__back {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--role-back-size);
+  height: var(--role-back-size);
+  margin: 2rpx 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--role-back-background);
+  box-shadow: var(--role-back-shadow);
+  line-height: 1;
+}
+
+.shell__header-inner--surface .shell__back {
+  margin-top: 0;
+}
+
+.shell__back::after {
+  border: 0;
+}
+
+.shell__back--hover {
+  opacity: 0.72;
+}
+
+.shell__back-icon {
+  margin-top: var(--role-back-icon-offset-y);
+  font-size: var(--role-back-icon-size);
+  line-height: 1;
+  color: var(--parent-ink);
+}
+
+.shell__body {
+  box-sizing: border-box;
+  padding: 0 var(--partner-page-gap) 42rpx;
+}

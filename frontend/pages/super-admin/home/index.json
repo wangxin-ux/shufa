@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "super-admin-page-shell": "/components/super-admin-page-shell/super-admin-page-shell",
+    "super-admin-stat-strip": "/components/super-admin-stat-strip/super-admin-stat-strip"
+  },
+  "enablePullDownRefresh": true
+}

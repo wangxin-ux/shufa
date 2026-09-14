@@ -1,0 +1,223 @@
+.student-form-page {
+  padding: 24rpx 0 64rpx;
+}
+
+.student-form-page__heading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 172rpx;
+  padding: 24rpx 30rpx;
+  box-sizing: border-box;
+  border-radius: 16rpx;
+  background: var(--campus-manager-orange);
+  box-shadow: var(--campus-manager-shadow);
+}
+
+.student-form-page__title {
+  font-family: var(--campus-manager-font-display);
+  font-size: 50rpx;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #ffffff;
+}
+
+.student-form-page__detail {
+  margin-top: 11rpx;
+  font-size: 23rpx;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.student-form {
+  margin-top: 26rpx;
+  padding: 30rpx 28rpx 34rpx;
+  box-sizing: border-box;
+  border: 2rpx solid rgba(255, 255, 255, 0.62);
+  border-radius: 16rpx;
+  background: var(--campus-manager-glass);
+  box-shadow: 0 9rpx 20rpx rgba(63, 46, 15, 0.15);
+}
+
+.student-form__field {
+  display: flex;
+  flex-direction: column;
+  margin-top: 28rpx;
+}
+
+.student-form__field:first-child {
+  margin-top: 0;
+}
+
+.student-form__label {
+  font-family: var(--campus-manager-font-display);
+  font-size: 29rpx;
+  font-weight: 700;
+}
+
+.student-form__input,
+.student-form__picker {
+  width: 100%;
+  min-height: var(--campus-manager-touch-min);
+  margin-top: 12rpx;
+  padding: 0 22rpx;
+  box-sizing: border-box;
+  border: 2rpx solid rgba(32, 29, 23, 0.14);
+  border-radius: 14rpx;
+  background: rgba(255, 255, 255, 0.76);
+  font-size: 27rpx;
+  color: var(--campus-manager-ink);
+}
+
+.student-form__input {
+  height: var(--campus-manager-touch-min);
+}
+
+.student-form__picker {
+  display: flex;
+  align-items: center;
+}
+
+.student-form__picker-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.student-form__picker-row .student-form__picker {
+  flex: 1;
+  min-width: 0;
+}
+
+.student-form__picker-value {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.student-form__picker-value--muted,
+.student-form__hint {
+  color: var(--campus-manager-muted);
+}
+
+.student-form__clear {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--campus-manager-touch-min);
+  height: var(--campus-manager-touch-min);
+  margin: 12rpx 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.72);
+  font-size: 38rpx;
+  line-height: 1;
+  color: var(--campus-manager-muted);
+}
+
+.student-form__clear::after,
+.student-form__retry::after,
+.student-form__submit::after {
+  border: 0;
+}
+
+.student-form__hint {
+  margin-top: 10rpx;
+  overflow-wrap: anywhere;
+  font-size: 22rpx;
+}
+
+.student-form__option-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+  margin-top: 10rpx;
+}
+
+.student-form__retry {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 64rpx;
+  margin: 0;
+  padding: 0 18rpx;
+  border: 0;
+  border-radius: 14rpx;
+  background: var(--campus-manager-orange);
+  font-size: 21rpx;
+  color: #ffffff;
+}
+
+.student-form__error {
+  display: block;
+  margin-top: 26rpx;
+  overflow-wrap: anywhere;
+  font-size: 24rpx;
+  color: #9b1919;
+}
+
+.student-form__submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--campus-manager-touch-min);
+  margin: 34rpx 0 0;
+  padding: 0 26rpx;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 16rpx;
+  background: var(--campus-manager-orange);
+  box-shadow: 0 8rpx 16rpx rgba(130, 61, 24, 0.22);
+  font-family: var(--campus-manager-font-display);
+  font-size: 31rpx;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #ffffff;
+}
+
+.student-form__submit[disabled] {
+  opacity: 0.58;
+}
+
+.page-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 390rpx;
+  margin-top: 26rpx;
+  padding: 34rpx;
+  box-sizing: border-box;
+  border-radius: 16rpx;
+  background: var(--campus-manager-glass);
+}
+
+.page-state__title {
+  font-family: var(--campus-manager-font-display);
+  font-size: 42rpx;
+  font-weight: 700;
+}
+
+.page-state__message {
+  margin-top: 15rpx;
+  overflow-wrap: anywhere;
+  font-size: 25rpx;
+  color: var(--campus-manager-muted);
+}
+
+.control--hover {
+  opacity: 0.72;
+}
+
+@media (min-width: 420px) {
+  .student-form {
+    padding-right: 34rpx;
+    padding-left: 34rpx;
+  }
+}

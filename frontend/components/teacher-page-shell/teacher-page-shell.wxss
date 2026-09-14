@@ -1,0 +1,96 @@
+.shell {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  box-sizing: border-box;
+  color: var(--teacher-ink);
+  font-family: var(--teacher-font-body);
+}
+
+.shell--yellow {
+  background: var(--teacher-yellow-soft);
+}
+
+.shell--home {
+  background: var(--role-home-yellow-gradient);
+}
+
+.shell--white {
+  background: var(--teacher-surface);
+}
+
+.shell__wave {
+  position: absolute;
+  top: -520rpx;
+  left: -50%;
+  width: 200%;
+  height: 700rpx;
+  border-radius: 50%;
+  background: var(--teacher-surface);
+}
+
+.shell__header,
+.shell__body {
+  position: relative;
+  z-index: 1;
+}
+
+.shell__header--fixed {
+  z-index: 31;
+}
+
+.shell__header-inner {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  box-sizing: border-box;
+  padding-left: 24rpx;
+}
+
+.shell__leading {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.shell__leading--fixed {
+  position: fixed;
+  left: 24rpx;
+  z-index: 32;
+}
+
+.shell__back {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--role-back-size);
+  height: var(--role-back-size);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--role-back-background);
+  box-shadow: var(--role-back-shadow);
+  line-height: 1;
+}
+
+.shell__back::after {
+  border: 0;
+}
+
+.shell__back--hover {
+  opacity: 0.72;
+}
+
+.shell__back-icon {
+  margin-top: var(--role-back-icon-offset-y);
+  font-size: var(--role-back-icon-size);
+  line-height: 1;
+  color: var(--parent-ink);
+}
+
+.shell__body {
+  padding: 0 var(--teacher-page-gap) 48rpx;
+}

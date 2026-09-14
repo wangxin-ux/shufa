@@ -1,0 +1,461 @@
+.leave-page {
+  padding: 52rpx 0 80rpx;
+}
+
+.leave-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--campus-manager-touch-min);
+  margin: 0;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 16rpx;
+  font-size: 24rpx;
+  line-height: 1.2;
+}
+
+.leave-control::after,
+.leave-record::after {
+  border: 0;
+}
+
+.approval-card {
+  position: relative;
+  width: calc(100% - 34rpx);
+  min-height: 757rpx;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 32rpx;
+  background: #ffd75e;
+  box-shadow: 0 13rpx 24rpx rgba(24, 18, 14, 0.19);
+}
+
+.approval-card__title {
+  position: relative;
+  z-index: 3;
+  display: block;
+  max-width: 430rpx;
+  padding: 25rpx 0 0 20rpx;
+  overflow-wrap: anywhere;
+  font-family: var(--campus-manager-font-display);
+  font-size: 62rpx;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #16130d;
+}
+
+.approval-card__rule {
+  position: absolute;
+  top: 50rpx;
+  right: 28rpx;
+  z-index: 3;
+  width: 180rpx;
+  font-size: 20rpx;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: right;
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.approval-card__fields {
+  position: relative;
+  z-index: 1;
+  width: 590rpx;
+  margin: 48rpx 0 0 31rpx;
+}
+
+.approval-field {
+  margin-top: 20rpx;
+}
+
+.approval-field:first-child {
+  margin-top: 0;
+}
+
+.approval-field__label {
+  display: block;
+  margin-bottom: 10rpx;
+  font-size: 24rpx;
+  font-weight: 700;
+  line-height: 1.2;
+  color: rgba(36, 59, 54, 0.58);
+}
+
+.approval-field__control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 88rpx;
+  padding: 14rpx 34rpx 14rpx 24rpx;
+  box-sizing: border-box;
+  border: 3rpx solid rgba(48, 70, 65, 0.08);
+  border-radius: 20rpx;
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.approval-field__control--reason {
+  align-items: flex-start;
+  min-height: 142rpx;
+}
+
+.approval-field__value {
+  display: -webkit-box;
+  max-width: 235rpx;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+  font-size: 25rpx;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #243b36;
+}
+
+.approval-field__value--lesson {
+  max-width: 235rpx;
+}
+
+.approval-field__value--reason {
+  max-width: 235rpx;
+  -webkit-line-clamp: 3;
+}
+
+.approval-field__chevron {
+  position: absolute;
+  top: 13rpx;
+  right: 20rpx;
+  font-size: 42rpx;
+  font-weight: 700;
+  line-height: 1;
+  color: #243b36;
+}
+
+.approval-card__character {
+  position: absolute;
+  top: 135rpx;
+  left: 259rpx;
+  z-index: 2;
+  width: 557rpx;
+  pointer-events: none;
+}
+
+.approval-card__actions {
+  position: absolute;
+  bottom: 64rpx;
+  left: 37rpx;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.approval-card__approve {
+  min-width: 302rpx;
+  min-height: 88rpx;
+  padding: 0 26rpx;
+  border-radius: 32rpx;
+  background: #fe8419;
+  box-shadow: 0 10rpx 18rpx rgba(90, 48, 7, 0.18);
+  font-family: var(--campus-manager-font-display);
+  font-size: 31rpx;
+  font-weight: 700;
+  color: #17130c;
+}
+
+.approval-card__reject {
+  min-width: 124rpx;
+  min-height: 88rpx;
+  padding: 0 20rpx;
+  border: 2rpx solid rgba(153, 10, 4, 0.26);
+  border-radius: 28rpx;
+  background: rgba(255, 255, 255, 0.88);
+  font-family: var(--campus-manager-font-display);
+  font-size: 31rpx;
+  font-weight: 700;
+  color: var(--campus-manager-red);
+}
+
+.reject-panel {
+  width: calc(100% - 34rpx);
+  margin: 28rpx auto 0;
+  padding: 27rpx;
+  box-sizing: border-box;
+  border: 2rpx solid rgba(153, 10, 4, 0.18);
+  border-radius: 24rpx;
+  background: #fffaf0;
+  box-shadow: 0 10rpx 20rpx rgba(63, 46, 15, 0.14);
+}
+
+.reject-panel__head,
+.leave-records__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.reject-panel__copy,
+.leave-records__heading-copy,
+.leave-record__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.reject-panel__title {
+  overflow-wrap: anywhere;
+  font-family: var(--campus-manager-font-display);
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.reject-panel__hint {
+  margin-top: 6rpx;
+  font-size: 21rpx;
+  color: var(--campus-manager-muted);
+}
+
+.reject-panel__close {
+  flex: none;
+  width: var(--campus-manager-touch-min);
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(32, 29, 23, 0.08);
+  font-size: 36rpx;
+}
+
+.reject-panel__input {
+  width: 100%;
+  min-height: 170rpx;
+  margin-top: 20rpx;
+  padding: 18rpx 20rpx;
+  box-sizing: border-box;
+  border: 2rpx solid rgba(32, 29, 23, 0.14);
+  border-radius: 18rpx;
+  background: #ffffff;
+  font-size: 25rpx;
+  line-height: 1.55;
+}
+
+.reject-panel__error {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 23rpx;
+  color: var(--campus-manager-red);
+}
+
+.reject-panel__submit,
+.page-state__retry,
+.load-more {
+  background: #fe8419;
+  color: #ffffff;
+}
+
+.reject-panel__submit {
+  width: 100%;
+  margin-top: 20rpx;
+  font-weight: 700;
+}
+
+.leave-records {
+  width: calc(100% - 28rpx);
+  margin: 62rpx auto 0;
+}
+
+.leave-records__head {
+  align-items: flex-end;
+  padding: 0 18rpx;
+}
+
+.leave-records__title {
+  font-family: var(--campus-manager-font-display);
+  font-size: 56rpx;
+  font-weight: 700;
+  line-height: 1.08;
+  color: #1f1a10;
+}
+
+.leave-records__summary {
+  margin-top: 8rpx;
+  font-size: 21rpx;
+  color: var(--campus-manager-muted);
+}
+
+.leave-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10rpx;
+  margin-top: 24rpx;
+  padding: 7rpx;
+  border-radius: 20rpx;
+  background: rgba(246, 212, 105, 0.46);
+}
+
+.leave-tab {
+  min-height: 72rpx;
+  background: transparent;
+  color: var(--campus-manager-muted);
+}
+
+.leave-tab--active {
+  background: #ffffff;
+  box-shadow: 0 6rpx 13rpx rgba(63, 46, 15, 0.12);
+  font-weight: 700;
+  color: var(--campus-manager-ink);
+}
+
+.leave-list {
+  display: flex;
+  flex-direction: column;
+  gap: 22rpx;
+  margin-top: 22rpx;
+}
+
+.leave-record {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  width: 100%;
+  min-height: 160rpx;
+  margin: 0;
+  padding: 24rpx 30rpx;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 24rpx;
+  background: #f6d469;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.leave-record--selected {
+  box-shadow: inset 0 0 0 4rpx rgba(254, 132, 25, 0.72);
+}
+
+.leave-record__student {
+  overflow-wrap: anywhere;
+  font-family: var(--campus-manager-font-display);
+  font-size: 34rpx;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #243b36;
+}
+
+.leave-record__lesson,
+.leave-record__reason,
+.leave-record__review {
+  margin-top: 7rpx;
+  overflow-wrap: anywhere;
+  font-size: 21rpx;
+  line-height: 1.35;
+  color: rgba(36, 59, 54, 0.72);
+}
+
+.leave-record__reason {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.leave-record__review {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.leave-record__aside {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10rpx;
+  max-width: 142rpx;
+}
+
+.leave-record__status {
+  overflow-wrap: anywhere;
+  font-family: var(--campus-manager-font-display);
+  font-size: 28rpx;
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: right;
+  color: #9a3c20;
+}
+
+.leave-record__status--APPROVED {
+  color: #23b574;
+}
+
+.leave-record__status--REJECTED {
+  color: var(--campus-manager-red);
+}
+
+.leave-record__command {
+  font-size: 18rpx;
+  color: rgba(36, 59, 54, 0.58);
+}
+
+.page-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 390rpx;
+  width: calc(100% - 34rpx);
+  margin: 0 auto;
+  padding: 34rpx;
+  box-sizing: border-box;
+  border-radius: 24rpx;
+  background: #fffaf0;
+}
+
+.page-state--records {
+  width: 100%;
+  min-height: 280rpx;
+  margin-top: 22rpx;
+  background: rgba(246, 212, 105, 0.34);
+}
+
+.page-state__title {
+  font-family: var(--campus-manager-font-display);
+  font-size: 42rpx;
+  font-weight: 700;
+}
+
+.page-state__message {
+  margin-top: 14rpx;
+  overflow-wrap: anywhere;
+  font-size: 25rpx;
+  color: var(--campus-manager-muted);
+}
+
+.page-state__retry,
+.load-more {
+  margin-top: 24rpx;
+}
+
+.load-more {
+  align-self: center;
+  min-width: 220rpx;
+}
+
+.leave-control[disabled] {
+  opacity: 0.58;
+}
+
+.control--hover,
+.leave-record--hover {
+  opacity: 0.72;
+}
+
+@media (max-width: 380px) {
+  .approval-card__rule {
+    width: 160rpx;
+  }
+
+}

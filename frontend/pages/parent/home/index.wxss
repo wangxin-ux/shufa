@@ -1,0 +1,243 @@
+parent-page-shell {
+  --parent-yellow: var(--role-home-yellow-gradient);
+}
+
+.home {
+  padding-bottom: 48rpx;
+}
+
+.tap-hover {
+  opacity: 0.7;
+}
+
+/* ---------- 近期课程 ---------- */
+.course {
+  margin-top: 106rpx;
+}
+
+.course__head {
+  display: flex;
+  align-items: center;
+  margin-left: 9rpx;
+}
+
+.course__title {
+  font-size: 64rpx;
+  font-family: var(--parent-font-display);
+  font-weight: 700;
+  color: var(--parent-on-color);
+}
+
+.course__more,
+.quickbar__more {
+  min-height: var(--role-home-more-height);
+  padding: 0 var(--role-home-more-padding-x);
+  border: var(--role-home-more-border);
+  border-radius: 999rpx;
+  font-size: var(--role-home-more-font-size);
+  line-height: var(--role-home-more-height);
+  color: var(--parent-on-color);
+}
+
+.course__more {
+  margin-left: 24rpx;
+}
+
+.course__body {
+  display: flex;
+  align-items: center;
+  margin-top: 42rpx;
+}
+
+.course__date {
+  position: relative;
+  z-index: 2;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 190rpx;
+  margin-left: 8rpx;
+}
+
+.course__day {
+  font-size: 150rpx;
+  font-family: var(--parent-font-display);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--parent-date-red);
+}
+
+.course__weekday {
+  margin-top: 8rpx;
+  font-size: 28rpx;
+  font-family: var(--parent-font-display);
+  font-weight: 600;
+  color: var(--parent-date-red);
+}
+
+.course__divider {
+  flex: none;
+  width: 5rpx;
+  height: 130rpx;
+  margin: 0 30rpx;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 2rpx;
+}
+
+.course__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.course__campus {
+  font-size: 26rpx;
+  color: var(--parent-on-color);
+}
+
+.course__name {
+  margin-top: 8rpx;
+  font-size: 82rpx;
+  font-family: var(--parent-font-display);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--parent-on-color);
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.course__time {
+  margin-top: 8rpx;
+  font-size: 26rpx;
+  color: var(--parent-on-color);
+}
+
+/* ---------- 学员 + 人物 + 统计 ---------- */
+.stage {
+  position: relative;
+  margin-top: 8rpx;
+  height: 720rpx;
+}
+
+.stage__mascot {
+  position: absolute;
+  top: -144rpx;
+  right: -40rpx;
+  width: 750rpx;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.stage__student {
+  position: absolute;
+  left: 0;
+  bottom: 189rpx;
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  min-height: var(--parent-touch-min);
+}
+
+.stage__student-name {
+  max-width: 480rpx;
+  font-size: 64rpx;
+  font-family: var(--parent-font-display);
+  font-weight: 800;
+  color: #000000;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stage__student-age {
+  flex: none;
+  margin-left: 12rpx;
+  font-size: 42rpx;
+  font-family: var(--parent-font-display);
+  font-weight: 700;
+  color: #000000;
+}
+
+.stage__metrics {
+  position: absolute;
+  left: 7rpx;
+  right: 9rpx;
+  bottom: 24rpx;
+  z-index: 3;
+}
+
+/* ---------- 快捷入口 ---------- */
+.quickbar {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  align-items: flex-start;
+  margin-top: 27rpx;
+}
+
+.quickbar__capsule {
+  flex: none;
+  display: flex;
+  align-items: center;
+  background: var(--role-home-nav-background);
+  border-radius: 999rpx;
+  box-shadow: var(--role-home-nav-shadow);
+  margin-top: 17rpx;
+  padding: 6rpx 4rpx;
+}
+
+.quickbar__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--role-home-nav-item-width);
+  min-height: var(--parent-touch-min);
+  padding: 4rpx;
+  box-sizing: border-box;
+}
+
+.quickbar__icon {
+  width: 38rpx;
+  height: 38rpx;
+}
+
+.quickbar__label {
+  margin-top: 4rpx;
+  font-size: 16rpx;
+  color: var(--role-home-nav-ink);
+}
+
+.quickbar__remind {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: var(--role-home-nav-active-size);
+  height: var(--role-home-nav-active-size);
+  margin-left: -17rpx;
+  margin-top: 0;
+  border-radius: 50%;
+  background: var(--role-home-nav-active-background);
+  box-shadow: var(--role-home-nav-active-shadow);
+  z-index: 2;
+}
+
+.quickbar__remind-icon {
+  width: 64rpx;
+  height: 64rpx;
+}
+
+.quickbar__remind-label {
+  font-size: 16rpx;
+  font-weight: 600;
+  color: var(--role-home-nav-ink);
+}
+
+.quickbar__more {
+  flex: none;
+  margin-left: auto;
+}

@@ -1,0 +1,115 @@
+@import "../../../styles/partner-workspace.wxss";
+
+.attendance-overview {
+  display: grid;
+  grid-template-columns: 230rpx minmax(0, 1fr);
+  gap: 14rpx;
+  margin-top: 24rpx;
+}
+
+.attendance-overview__rate,
+.attendance-overview__counts {
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 8rpx 18rpx rgba(63, 46, 15, 0.14);
+}
+
+.attendance-overview__rate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 224rpx;
+  padding: 18rpx;
+  box-sizing: border-box;
+}
+
+.attendance-overview__rate-value {
+  max-width: 100%;
+  overflow: hidden;
+  font-family: var(--partner-font-display);
+  font-size: 58rpx;
+  font-weight: 700;
+  color: var(--partner-red);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attendance-overview__rate-label,
+.attendance-overview__count-label {
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  color: var(--partner-muted);
+}
+
+.attendance-overview__counts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: hidden;
+}
+
+.attendance-overview__count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 112rpx;
+  border-right: 2rpx solid rgba(32, 29, 23, 0.09);
+  border-bottom: 2rpx solid rgba(32, 29, 23, 0.09);
+}
+
+.attendance-overview__count:nth-child(2n) {
+  border-right: 0;
+}
+
+.attendance-overview__count:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.attendance-overview__count-value {
+  max-width: 100%;
+  overflow: hidden;
+  font-family: var(--partner-font-display);
+  font-size: 34rpx;
+  font-weight: 700;
+  color: var(--partner-ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attendance-card__status {
+  flex: none;
+  min-width: 78rpx;
+  padding: 8rpx 15rpx;
+  box-sizing: border-box;
+  border-radius: 8rpx;
+  font-size: 21rpx;
+  text-align: center;
+}
+
+.attendance-card__status--success {
+  background: rgba(35, 135, 96, 0.14);
+  color: #216a4e;
+}
+
+.attendance-card__status--warning {
+  background: rgba(229, 160, 36, 0.16);
+  color: #845b0f;
+}
+
+.attendance-card__status--danger {
+  background: rgba(165, 39, 32, 0.12);
+  color: #8b201b;
+}
+
+@media (max-width: 380px) {
+  .attendance-overview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .attendance-overview__rate {
+    min-height: 160rpx;
+  }
+}

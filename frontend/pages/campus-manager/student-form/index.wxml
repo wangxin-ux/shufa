@@ -1,0 +1,83 @@
+<campus-manager-page-shell
+  markTitle="新增"
+  markIcon="/pages/campus-manager/assets/icon-student-create.png"
+  showBack="{{true}}"
+>
+  <view class="student-form-page">
+    <view class="student-form-page__heading">
+      <text class="student-form-page__title">新增学员</text>
+      <text class="student-form-page__detail">信息将在当前校区范围内生效</text>
+    </view>
+
+    <view wx:if="{{optionsState === 'forbidden'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">无操作权限</text>
+      <text class="page-state__message">{{optionsError}}</text>
+    </view>
+
+    <view wx:else class="student-form">
+      <label class="student-form__field">
+        <text class="student-form__label">学员姓名</text>
+        <input
+          class="student-form__input"
+          value="{{displayName}}"
+          placeholder="请输入学员姓名"
+          maxlength="100"
+          bindinput="onNameInput"
+        />
+      </label>
+
+      <view class="student-form__field">
+        <text class="student-form__label">出生日期（选填）</text>
+        <view class="student-form__picker-row">
+          <picker
+            class="student-form__picker"
+            mode="date"
+            value="{{birthDate}}"
+            end="{{maxBirthDate}}"
+            bindchange="onBirthDateChange"
+          >
+            <text class="student-form__picker-value {{birthDate ? '' : 'student-form__picker-value--muted'}}">
+              {{birthDate || '请选择出生日期'}}
+            </text>
+          </picker>
+          <button
+            wx:if="{{birthDate}}"
+            class="student-form__clear"
+            aria-label="清除出生日期"
+            bindtap="onClearBirthDate"
+            hover-class="control--hover"
+          >×</button>
+        </view>
+      </view>
+
+      <view class="student-form__field">
+        <text class="student-form__label">班级（选填）</text>
+        <picker
+          class="student-form__picker"
+          range="{{classOptions}}"
+          range-key="label"
+          value="{{classIndex}}"
+          disabled="{{optionsState === 'loading' || optionsState === 'error'}}"
+          bindchange="onClassChange"
+        >
+          <text class="student-form__picker-value">{{selectedClassLabel}}</text>
+        </picker>
+        <text wx:if="{{optionsState === 'loading'}}" class="student-form__hint">正在加载本校区班级</text>
+        <text wx:elif="{{optionsState === 'empty'}}" class="student-form__hint">当前没有可选班级，可先暂不分班</text>
+        <view wx:elif="{{optionsState === 'error'}}" class="student-form__option-error">
+          <text class="student-form__hint">{{optionsError}}</text>
+          <button class="student-form__retry" bindtap="onRetryOptions" hover-class="control--hover">重试班级</button>
+        </view>
+      </view>
+
+      <text wx:if="{{formError}}" class="student-form__error" aria-live="polite">{{formError}}</text>
+
+      <button
+        class="student-form__submit"
+        disabled="{{submitting}}"
+        bindtap="onSubmit"
+        hover-class="control--hover"
+      >{{submitting ? '正在新增' : '确认新增'}}</button>
+    </view>
+  </view>
+</campus-manager-page-shell>

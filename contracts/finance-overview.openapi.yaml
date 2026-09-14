@@ -1,0 +1,445 @@
+# Headquarters FINANCE-only read models. These routes never grant management review or payout actions.
+hours:
+  get:
+    operationId: listFinanceStudentHours
+    summary: List student package consumption and balances
+    tags: [Finance]
+    description: Single headquarters FINANCE and FINANCE_REPORT_READ required. Inclusive Asia/Shanghai dates filter lesson completion time. Remaining balances are rewound to the inclusive `to` cutoff; list pagination does not narrow the full filtered summary. Each row exposes its own package validity dates; `asOf` is only the balance reporting cutoff and is not a shared package expiry date. Historical packages without a reliable issuance/order snapshot expose a null unit price and PENDING_CHECK.
+    parameters:
+      - { $ref: '#/parameters/CampusIds' }
+      - { $ref: '#/parameters/From' }
+      - { $ref: '#/parameters/To' }
+      - { $ref: '#/parameters/Keyword' }
+      - { $ref: '#/parameters/Page' }
+      - { $ref: '#/parameters/PageSize' }
+    responses:
+      '200':
+        description: Paginated package rows with a full filtered summary.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/HoursEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+orders:
+  get:
+    operationId: listFinanceOversightOrders
+    summary: Read platform orders and payment-proof availability
+    tags: [Finance]
+    description: Single headquarters FINANCE and FINANCE_OVERSIGHT_READ required. This is a read-only view of existing enrollment and group-buying orders; review, void, payment and refund actions remain outside this route.
+    parameters:
+      - { $ref: '#/parameters/CampusIds' }
+      - { $ref: '#/parameters/From' }
+      - { $ref: '#/parameters/To' }
+      - { $ref: '#/parameters/Keyword' }
+      - { $ref: '#/parameters/OrderStatus' }
+      - { $ref: '#/parameters/Page' }
+      - { $ref: '#/parameters/PageSize' }
+    responses:
+      '200':
+        description: Paginated order facts without parent phone or proof bytes.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/OrdersEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+orderProof:
+  get:
+    operationId: readFinanceOversightOrderProof
+    summary: Read the latest payment proof for one order
+    tags: [Finance]
+    description: Single headquarters FINANCE and FINANCE_OVERSIGHT_READ required. The order is authorized before private bytes are read. Responses are private and not cacheable.
+    parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      '200':
+        description: Latest payment-proof image bytes.
+        headers:
+          Cache-Control:
+            schema: { type: string, const: 'private, no-store' }
+        content:
+          image/png:
+            schema: { type: string, format: binary }
+          image/jpeg:
+            schema: { type: string, format: binary }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+earnings:
+  get:
+    operationId: readFinanceOversightEarnings
+    summary: Read campus lesson revenue and existing earnings
+    tags: [Finance]
+    description: Single headquarters FINANCE and FINANCE_OVERSIGHT_READ required. Gross lesson revenue comes from immutable partner-rule snapshots, teacher and partner earnings come from existing signed ledgers, and rejected entries are excluded. Platform retained means gross lesson revenue minus partner earnings; it is not net profit.
+    parameters:
+      - { $ref: '#/parameters/CampusIds' }
+      - { $ref: '#/parameters/From' }
+      - { $ref: '#/parameters/To' }
+      - { $ref: '#/parameters/Region' }
+    responses:
+      '200':
+        description: Full matching campus rows and totals.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/EarningsEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+payouts:
+  get:
+    operationId: listFinanceOversightPayouts
+    summary: Read parent refund and teacher withdrawal records
+    tags: [Finance]
+    description: Single headquarters FINANCE and FINANCE_OVERSIGHT_READ required. Parent rows are existing finance refunds and group-buying refund transactions; teacher rows are existing withdrawals. No parent withdrawal or partner payout model exists, so partnerPayouts is explicitly NOT_IMPLEMENTED and no synthetic records are returned.
+    parameters:
+      - { $ref: '#/parameters/CampusIds' }
+      - { $ref: '#/parameters/From' }
+      - { $ref: '#/parameters/To' }
+      - { $ref: '#/parameters/PayoutStatus' }
+      - { $ref: '#/parameters/PayoutCategory' }
+      - { $ref: '#/parameters/Page' }
+      - { $ref: '#/parameters/PageSize' }
+    responses:
+      '200':
+        description: Paginated existing payout/refund records and truthful source coverage.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/PayoutsEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+cashFlow:
+  get:
+    operationId: listFinanceOversightCashFlow
+    summary: Read receipt and payout cash-flow facts
+    tags: [Finance]
+    description: Single headquarters FINANCE and FINANCE_OVERSIGHT_READ required. Includes confirmed finance receipts, successful group payments/refunds, completed finance refunds and paid teacher withdrawals. No payment-fee fact exists; feeFen is null and feeStatus is NOT_RECORDED rather than a fabricated zero.
+    parameters:
+      - { $ref: '#/parameters/CampusIds' }
+      - { $ref: '#/parameters/From' }
+      - { $ref: '#/parameters/To' }
+      - { $ref: '#/parameters/Page' }
+      - { $ref: '#/parameters/PageSize' }
+    responses:
+      '200':
+        description: Paginated cash-flow facts with a full filtered summary.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/CashFlowEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+profitability:
+  get:
+    operationId: readFinanceOversightProfitability
+    summary: Read known campus revenue and cost contribution
+    tags: [Finance]
+    description: Single headquarters FINANCE and FINANCE_OVERSIGHT_READ required. Supports inclusive Asia/Shanghai date, address-region, single-campus and comma-separated multi-campus filters. Known contribution subtracts existing teacher earnings, partner earnings and actual refunds from internal lesson revenue. Fees and complete operating costs are not recorded, so this is not a profit statement and netProfitFen remains null.
+    parameters:
+      - { $ref: '#/parameters/CampusIds' }
+      - { $ref: '#/parameters/From' }
+      - { $ref: '#/parameters/To' }
+      - { $ref: '#/parameters/Region' }
+    responses:
+      '200':
+        description: Full matching campus contribution rows with explicit data gaps.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/ProfitabilityEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+export:
+  get:
+    operationId: exportFinanceOversight
+    summary: Export audited cash-flow or known-contribution facts
+    tags: [Finance]
+    description: Single headquarters FINANCE and FINANCE_OVERSIGHT_EXPORT required. Every successful export creates a headquarters-scoped audit record. Workbooks omit phone, account and secret fields and retain the same missing-fee limitations as the read endpoints.
+    parameters:
+      - name: kind
+        in: path
+        required: true
+        schema: { type: string, enum: [cash-flow, profitability] }
+      - { $ref: '#/parameters/CampusIds' }
+      - { $ref: '#/parameters/From' }
+      - { $ref: '#/parameters/To' }
+      - { $ref: '#/parameters/Region' }
+    responses:
+      '200':
+        description: Excel workbook with matching rows.
+        content:
+          application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+            schema: { type: string, format: binary }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+
+parameters:
+  CampusIds:
+    name: campusIds
+    in: query
+    description: One or more comma-separated campus UUIDs. Omitted means every campus in headquarters scope.
+    schema:
+      type: string
+      pattern: '^[0-9a-fA-F-]{36}(,[0-9a-fA-F-]{36})*$'
+  From:
+    name: from
+    in: query
+    description: Inclusive Asia/Shanghai calendar date.
+    schema: { type: string, format: date }
+  To:
+    name: to
+    in: query
+    description: Inclusive Asia/Shanghai calendar date; cannot precede from.
+    schema: { type: string, format: date }
+  Keyword:
+    name: keyword
+    in: query
+    schema: { type: string, maxLength: 100 }
+  Region:
+    name: region
+    in: query
+    description: Case-insensitive substring of the currently maintained campus address.
+    schema: { type: string, maxLength: 100 }
+  OrderStatus:
+    name: status
+    in: query
+    schema:
+      type: string
+      enum: [AWAITING_PROOF, AWAITING_PAYMENT, PENDING_REVIEW, PAID, REJECTED, EFFECTIVE, REFUNDING, REFUNDED, CANCELLED, VOIDED]
+  PayoutStatus:
+    name: status
+    in: query
+    schema: { type: string, maxLength: 40 }
+  PayoutCategory:
+    name: category
+    in: query
+    schema:
+      type: string
+      enum: [ALL, PARENT_REFUND, PARTNER_PAYOUT, TEACHER_WITHDRAWAL]
+  Page:
+    name: page
+    in: query
+    schema: { type: integer, minimum: 1, maximum: 1000000, default: 1 }
+  PageSize:
+    name: pageSize
+    in: query
+    schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+
+schemas:
+  HoursEnvelope:
+    type: object
+    required: [data]
+    properties:
+      data:
+        allOf:
+          - { $ref: '#/schemas/Page' }
+          - type: object
+            required: [items, asOf, summary]
+            properties:
+              items: { type: array, items: { $ref: '#/schemas/HoursRow' } }
+              asOf: { type: string, format: date-time }
+              summary: { $ref: '#/schemas/HoursSummary' }
+  OrdersEnvelope:
+    type: object
+    required: [data]
+    properties:
+      data:
+        allOf:
+          - { $ref: '#/schemas/Page' }
+          - type: object
+            required: [items]
+            properties:
+              items: { type: array, items: { $ref: '#/schemas/OrderRow' } }
+  EarningsEnvelope:
+    type: object
+    required: [data]
+    properties:
+      data:
+        type: object
+        required: [reportingTimeZone, rows, summary]
+        properties:
+          reportingTimeZone: { type: string, const: Asia/Shanghai }
+          rows: { type: array, items: { $ref: '#/schemas/EarningRow' } }
+          summary: { $ref: '#/schemas/EarningSummary' }
+  PayoutsEnvelope:
+    type: object
+    required: [data]
+    properties:
+      data:
+        allOf:
+          - { $ref: '#/schemas/Page' }
+          - type: object
+            required: [items, coverage]
+            properties:
+              items: { type: array, items: { $ref: '#/schemas/PayoutRow' } }
+              coverage:
+                type: object
+                additionalProperties: false
+                required: [parentRefunds, teacherWithdrawals, partnerPayouts]
+                properties:
+                  parentRefunds: { type: string, const: AVAILABLE }
+                  teacherWithdrawals: { type: string, const: AVAILABLE }
+                  partnerPayouts: { type: string, const: NOT_IMPLEMENTED }
+  CashFlowEnvelope:
+    type: object
+    required: [data]
+    properties:
+      data:
+        allOf:
+          - { $ref: '#/schemas/Page' }
+          - type: object
+            required: [items, summary, feeStatus]
+            properties:
+              items: { type: array, items: { $ref: '#/schemas/CashFlowRow' } }
+              summary: { $ref: '#/schemas/CashFlowSummary' }
+              feeStatus: { type: string, const: NOT_RECORDED }
+  ProfitabilityEnvelope:
+    type: object
+    required: [data]
+    properties:
+      data:
+        type: object
+        required: [reportingTimeZone, rows, summary, feeStatus]
+        properties:
+          reportingTimeZone: { type: string, const: Asia/Shanghai }
+          rows: { type: array, items: { $ref: '#/schemas/ProfitabilityRow' } }
+          summary: { $ref: '#/schemas/ProfitabilitySummary' }
+          feeStatus: { type: string, const: NOT_RECORDED }
+  Page:
+    type: object
+    required: [total, page, pageSize]
+    properties:
+      total: { type: integer, minimum: 0 }
+      page: { type: integer, minimum: 1 }
+      pageSize: { type: integer, minimum: 1, maximum: 50 }
+  HoursRow:
+    type: object
+    additionalProperties: false
+    required: [id, campusId, campusName, studentId, studentName, packageName, validFrom, expiresAt, consumedMainUnits, consumedGiftUnits, unitPriceFen, priceStatus, mainRemainingUnits, giftRemainingUnits, totalRemainingUnits, mainReservedUnits, giftReservedUnits]
+    properties:
+      id: { type: string, format: uuid }
+      campusId: { type: string, format: uuid }
+      campusName: { type: string }
+      studentId: { type: string, format: uuid }
+      studentName: { type: string }
+      packageName: { type: string }
+      validFrom: { type: string, format: date-time }
+      expiresAt: { type: [string, 'null'], format: date-time }
+      consumedMainUnits: { type: integer }
+      consumedGiftUnits: { type: integer }
+      unitPriceFen: { type: [integer, 'null'], description: Rounded display price in fen per 100 lesson units. }
+      priceStatus: { type: string, enum: [KNOWN, PENDING_CHECK] }
+      mainRemainingUnits: { type: integer }
+      giftRemainingUnits: { type: integer }
+      totalRemainingUnits: { type: integer }
+      mainReservedUnits: { type: integer, description: Current reserved units; not reconstructed historically. }
+      giftReservedUnits: { type: integer, description: Current reserved units; not reconstructed historically. }
+  HoursSummary:
+    type: object
+    additionalProperties: false
+    required: [studentCount, consumedMainUnits, consumedGiftUnits, remainingUnits]
+    properties:
+      studentCount: { type: integer, minimum: 0 }
+      consumedMainUnits: { type: integer }
+      consumedGiftUnits: { type: integer }
+      remainingUnits: { type: integer }
+  OrderRow:
+    type: object
+    additionalProperties: false
+    required: [id, orderNo, source, campusId, campusName, studentId, studentName, productName, amountFen, status, proofAvailable, proofSubmittedAt, reviewedAt, createdAt]
+    properties:
+      id: { type: string, format: uuid }
+      orderNo: { type: string }
+      source: { type: string, enum: [ENROLLMENT, GROUP_BUYING] }
+      campusId: { type: string, format: uuid }
+      campusName: { type: string }
+      studentId: { type: string, format: uuid }
+      studentName: { type: string }
+      productName: { type: string }
+      amountFen: { type: integer, minimum: 0 }
+      status: { type: string }
+      proofAvailable: { type: boolean }
+      proofSubmittedAt: { type: [string, 'null'], format: date-time }
+      reviewedAt: { type: [string, 'null'], format: date-time }
+      createdAt: { type: string, format: date-time }
+  EarningRow:
+    allOf:
+      - { $ref: '#/schemas/EarningSummary' }
+      - type: object
+        required: [campusId, campusName, regionLabel]
+        properties:
+          campusId: { type: string, format: uuid }
+          campusName: { type: string }
+          regionLabel: { type: string }
+  EarningSummary:
+    type: object
+    required: [grossLessonRevenueFen, teacherEarningFen, partnerEarningFen, platformRetainedFen, knownContributionFen]
+    properties:
+      grossLessonRevenueFen: { type: integer }
+      teacherEarningFen: { type: integer }
+      partnerEarningFen: { type: integer }
+      platformRetainedFen: { type: integer }
+      knownContributionFen: { type: integer }
+  PayoutRow:
+    type: object
+    additionalProperties: false
+    required: [id, category, referenceNo, campusId, campusName, subjectName, amountFen, status, requestedAt, paidAt, proofAvailable]
+    properties:
+      id: { type: string }
+      category: { type: string, enum: [PARENT_REFUND, TEACHER_WITHDRAWAL] }
+      referenceNo: { type: string }
+      campusId: { type: string, format: uuid }
+      campusName: { type: string }
+      subjectName: { type: string }
+      amountFen: { type: integer, minimum: 0 }
+      status: { type: string }
+      requestedAt: { type: string, format: date-time }
+      paidAt: { type: [string, 'null'], format: date-time }
+      proofAvailable: { type: boolean }
+  CashFlowRow:
+    type: object
+    additionalProperties: false
+    required: [id, direction, type, campusId, campusName, subjectName, amountFen, occurredAt, status]
+    properties:
+      id: { type: string }
+      direction: { type: string, enum: [INFLOW, OUTFLOW] }
+      type: { type: string }
+      campusId: { type: string, format: uuid }
+      campusName: { type: string }
+      subjectName: { type: string }
+      amountFen: { type: integer, minimum: 0 }
+      occurredAt: { type: string, format: date-time }
+      status: { type: string }
+  CashFlowSummary:
+    type: object
+    additionalProperties: false
+    required: [inflowFen, outflowFen, feeFen]
+    properties:
+      inflowFen: { type: integer, minimum: 0 }
+      outflowFen: { type: integer, minimum: 0 }
+      feeFen: { type: [integer, 'null'] }
+  ProfitabilityRow:
+    allOf:
+      - { $ref: '#/schemas/ProfitabilitySummary' }
+      - type: object
+        required: [campusId, campusName, regionLabel]
+        properties:
+          campusId: { type: string, format: uuid }
+          campusName: { type: string }
+          regionLabel: { type: string }
+  ProfitabilitySummary:
+    type: object
+    required: [grossLessonRevenueFen, teacherEarningFen, partnerEarningFen, refundFen, knownContributionFen, feeFen, netProfitFen]
+    properties:
+      grossLessonRevenueFen: { type: integer }
+      teacherEarningFen: { type: integer }
+      partnerEarningFen: { type: integer }
+      refundFen: { type: integer, minimum: 0 }
+      knownContributionFen: { type: integer }
+      feeFen: { type: [integer, 'null'] }
+      netProfitFen: { type: [integer, 'null'] }
