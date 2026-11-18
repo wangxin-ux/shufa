@@ -15,10 +15,13 @@ import {
 import { AccessTokenGuard } from '../auth/access-token.guard';
 import {
   PartnerPageQueryDto,
+  PartnerLessonQueryDto,
   PartnerPeriodQueryDto,
   PartnerSearchQueryDto,
+  PartnerStudentQueryDto,
 } from './dto/partner-query.dto';
 import { PartnerReadService } from './partner-read.service';
+import { PartnerStudentGrowthService } from './partner-student-growth.service';
 import { PartnerEarningQueryService } from '../partner-earning/partner-earning-query.service';
 import {
   PartnerEarningPeriodQueryDto,
@@ -31,6 +34,7 @@ export class PartnerController {
   constructor(
     private readonly readService: PartnerReadService,
     private readonly earningQueryService: PartnerEarningQueryService,
+    private readonly growthService: PartnerStudentGrowthService,
   ) {}
 
   @Get('dashboard')
@@ -49,7 +53,7 @@ export class PartnerController {
   @RequirePermissions('PARTNER_STUDENT_READ')
   listStudents(
     @CurrentUser() user: AuthenticatedUser,
-    @Query() query: PartnerSearchQueryDto,
+    @Query() query: PartnerStudentQueryDto,
   ) {
     return this.readService.listStudents(user, query);
   }
@@ -61,6 +65,16 @@ export class PartnerController {
     @Param('studentId', new ParseUUIDPipe({ version: '4' })) studentId: string,
   ) {
     return this.readService.getStudent(user, studentId);
+  }
+
+  @Get('students/:studentId/growth')
+  @RequirePermissions('PARTNER_STUDENT_READ')
+  getStudentGrowth(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('studentId', new ParseUUIDPipe({ version: '4' })) studentId: string,
+    @Query() query: PartnerPageQueryDto,
+  ) {
+    return this.growthService.getGrowth(user, studentId, query);
   }
 
   @Get('operations-summary')
@@ -103,7 +117,7 @@ export class PartnerController {
   @RequirePermissions('PARTNER_LEDGER_READ')
   getLessonAccount(
     @CurrentUser() user: AuthenticatedUser,
-    @Query() query: PartnerPageQueryDto,
+    @Query() query: PartnerLessonQueryDto,
   ) {
     return this.readService.getLessonAccount(user, query);
   }

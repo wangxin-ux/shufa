@@ -1,0 +1,19 @@
+@import "../../../styles/super-admin-workspace.wxss";
+@import "../runtime/free-campaign-navigation.wxss";
+.free-review-detail .workspace__head { min-height: 120rpx; }
+.free-review-detail .workspace__title { font-size: 34rpx; }
+.free-review-detail__message { display: block; margin: 16rpx 0; font-size: 24rpx; line-height: 1.6; overflow-wrap: anywhere; }
+.free-review-detail__facts { padding: 12rpx 0; }
+.free-review-detail__name { display: block; margin-bottom: 16rpx; font-size: 30rpx; font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; }
+.free-review-detail__fact { display: grid; grid-template-columns: 170rpx minmax(0, 1fr); gap: 14rpx; padding: 18rpx 0; border-bottom: 1rpx solid rgba(31,56,46,.16); font-size: 24rpx; line-height: 1.6; }
+.free-review-detail__fact text { min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.free-review-detail__fact text:first-child { color: var(--super-admin-muted); }
+.free-review-detail__decision { padding: 24rpx 0; }
+.free-review-detail__content { padding: 24rpx 0; }
+.free-review-detail__image { display: block; width: 100%; height: auto; margin-top: 14rpx; background: #fff; }
+.free-review-detail__image--cover { aspect-ratio: 2 / 3; }
+.free-review-detail__image--share { aspect-ratio: 4 / 3; }
+.free-review-detail__content-text { display: block; margin-top: 14rpx; font-size: 24rpx; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-all; }
+.free-review-detail .textarea { height: auto; min-height: 180rpx; padding-bottom: 18rpx; }
+.free-review-detail .actions .button { flex: 1 1 180rpx; min-width: 0; min-height: 76rpx; padding: 12rpx 18rpx; }
+@media(max-width:380px) { .free-review-detail__fact { grid-template-columns: 150rpx minmax(0, 1fr); } }

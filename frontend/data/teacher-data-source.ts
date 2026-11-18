@@ -1,36 +1,6 @@
-import {
-  AttendanceDraft,
-  CompleteLessonDraft,
-  CompleteLessonResult,
-  DatePageQuery,
-  FeedbackDraft,
-  FeedbackImage,
-  FeedbackImageUploadDraft,
-  LessonSessionQuery,
-  Page,
-  ReverseLessonDraft,
-  StudentFeedback,
-  TeacherDashboard,
-  TeacherEarningEntry,
-  TeacherEarningQuery,
-  TeacherEarningRuleView,
-  TeacherEarningSummary,
-  TeacherLedgerRecord,
-  TeacherLessonDetail,
-  TeacherLessonSession,
-  TeacherProfile,
-  TeacherStudent,
-  TeacherStudentDetail,
-  TeacherStudentQuery,
-  TeacherWithdrawal,
-  TeacherWithdrawalQuery,
-  TeachingRecord,
-} from '../types/teacher';
-import {
-  GroupPage,
-  GroupPromotionCampaignQuery,
-  GroupPromotionCampaignView,
-} from '../types/group-buying';
+import type * as T from '../types/teacher';
+import type * as G from '../types/group-buying';
+import type * as R from '../types/teacher-rankings';
 
 export class TeacherDataSourceError extends Error {
   constructor(
@@ -45,52 +15,54 @@ export class TeacherDataSourceError extends Error {
 }
 
 export interface TeacherDataSource {
-  getDashboard(): Promise<TeacherDashboard>;
-  getProfile(): Promise<TeacherProfile>;
+  getRankings(query: R.TeacherRankingQuery): Promise<R.TeacherRankingPage>;
+
+  getDashboard(): Promise<T.TeacherDashboard>;
+  getProfile(): Promise<T.TeacherProfile>;
   listGroupPromotionCampaigns(
-    query: GroupPromotionCampaignQuery,
-  ): Promise<GroupPage<GroupPromotionCampaignView>>;
-  getGroupPromotionCampaign(id: string): Promise<GroupPromotionCampaignView>;
+    query: G.GroupPromotionCampaignQuery,
+  ): Promise<G.GroupPage<G.GroupPromotionCampaignView>>;
+  getGroupPromotionCampaign(id: string): Promise<G.GroupPromotionCampaignView>;
   listLessonSessions(
-    query: LessonSessionQuery,
-  ): Promise<Page<TeacherLessonSession>>;
-  getLessonSession(id: string): Promise<TeacherLessonDetail>;
-  listStudents(query: TeacherStudentQuery): Promise<Page<TeacherStudent>>;
-  getStudent(id: string): Promise<TeacherStudentDetail>;
+    query: T.LessonSessionQuery,
+  ): Promise<T.Page<T.TeacherLessonSession>>;
+  getLessonSession(id: string): Promise<T.TeacherLessonDetail>;
+  listStudents(query: T.TeacherStudentQuery): Promise<T.Page<T.TeacherStudent>>;
+  getStudent(id: string, query?: T.TeacherStudentDetailQuery): Promise<T.TeacherStudentDetail>;
   saveAttendance(
-    input: AttendanceDraft,
+    input: T.AttendanceDraft,
     idempotencyKey: string,
-  ): Promise<TeacherLessonDetail>;
+  ): Promise<T.TeacherLessonDetail>;
   completeLesson(
-    input: CompleteLessonDraft,
+    input: T.CompleteLessonDraft,
     idempotencyKey: string,
-  ): Promise<CompleteLessonResult>;
+  ): Promise<T.CompleteLessonResult>;
   reverseLesson(
-    input: ReverseLessonDraft,
+    input: T.ReverseLessonDraft,
     idempotencyKey: string,
-  ): Promise<CompleteLessonResult>;
+  ): Promise<T.CompleteLessonResult>;
   saveFeedback(
-    input: FeedbackDraft,
+    input: T.FeedbackDraft,
     idempotencyKey: string,
-  ): Promise<StudentFeedback>;
-  uploadFeedbackImage(input: FeedbackImageUploadDraft): Promise<FeedbackImage>;
-  listTeachingRecords(query: DatePageQuery): Promise<Page<TeachingRecord>>;
+  ): Promise<T.StudentFeedback>;
+  uploadFeedbackImage(input: T.FeedbackImageUploadDraft): Promise<T.FeedbackImage>;
+  listTeachingRecords(query: T.DatePageQuery): Promise<T.Page<T.TeachingRecord>>;
   listLessonLedger(
-    query: DatePageQuery,
-  ): Promise<Page<TeacherLedgerRecord>>;
-  getEarningSummary(): Promise<TeacherEarningSummary>;
-  getCurrentEarningRule(): Promise<TeacherEarningRuleView | null>;
-  getEarnings(query: TeacherEarningQuery): Promise<Page<TeacherEarningEntry>>;
+    query: T.DatePageQuery,
+  ): Promise<T.Page<T.TeacherLedgerRecord>>;
+  getEarningSummary(): Promise<T.TeacherEarningSummary>;
+  getCurrentEarningRule(): Promise<T.TeacherEarningRuleView | null>;
+  getEarnings(query: T.TeacherEarningQuery): Promise<T.Page<T.TeacherEarningEntry>>;
   getWithdrawals(
-    query: TeacherWithdrawalQuery,
-  ): Promise<Page<TeacherWithdrawal>>;
+    query: T.TeacherWithdrawalQuery,
+  ): Promise<T.Page<T.TeacherWithdrawal>>;
   createWithdrawal(
     amountFen: number,
     idempotencyKey: string,
-  ): Promise<TeacherWithdrawal>;
+  ): Promise<T.TeacherWithdrawal>;
   cancelWithdrawal(
     id: string,
     expectedVersion: number,
     idempotencyKey: string,
-  ): Promise<TeacherWithdrawal>;
+  ): Promise<T.TeacherWithdrawal>;
 }

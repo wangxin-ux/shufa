@@ -530,7 +530,9 @@ export class FinanceCorrectionService {
     ) {
       this.invalid('Replacement package validity is invalid');
     }
-    await tx.$queryRaw`SELECT "id" FROM "Student" WHERE "id" = ${input.studentId}::uuid FOR UPDATE`;
+    // Eligibility only; a shared lock also blocks transfers/deactivation without
+    // inverting the teaching transaction's student -> package lock order.
+    await tx.$queryRaw`SELECT "id" FROM "Student" WHERE "id" = ${input.studentId}::uuid FOR SHARE`;
     const student = await tx.student.findFirst({
       where: {
         id: input.studentId,

@@ -15,15 +15,17 @@ import {
   PartnerPeriodQuery,
   PartnerSearchQuery,
   PartnerStudent,
+  PartnerStudentQuery,
   PartnerStudentDetail,
+  PartnerStudentGrowth,
   PartnerTeacher,
   PartnerWarning,
 } from '../types/partner';
 import { loadRequestState, RequestState } from '../utils/request-state';
 import {
   GroupPage,
-  GroupPromotionCampaignQuery,
-  GroupPromotionCampaignView,
+  PartnerCampaignQuery,
+  PartnerCampaignView,
 } from '../types/group-buying';
 
 export class PartnerService {
@@ -41,8 +43,8 @@ export class PartnerService {
   }
 
   loadGroupPromotionCampaigns(
-    query: GroupPromotionCampaignQuery,
-  ): Promise<RequestState<GroupPage<GroupPromotionCampaignView>>> {
+    query: PartnerCampaignQuery,
+  ): Promise<RequestState<GroupPage<PartnerCampaignView>>> {
     return loadRequestState(
       () => this.dataSource.listGroupPromotionCampaigns(query),
       (data) => data.data.length === 0,
@@ -51,14 +53,14 @@ export class PartnerService {
 
   loadGroupPromotionCampaign(
     id: string,
-  ): Promise<RequestState<GroupPromotionCampaignView>> {
+  ): Promise<RequestState<PartnerCampaignView>> {
     return loadRequestState(() =>
       this.dataSource.getGroupPromotionCampaign(id),
     );
   }
 
   loadStudents(
-    query: PartnerSearchQuery,
+    query: PartnerStudentQuery,
   ): Promise<RequestState<PartnerPage<PartnerStudent>>> {
     return loadRequestState(
       () => this.dataSource.listStudents(query),
@@ -70,6 +72,13 @@ export class PartnerService {
     studentId: string,
   ): Promise<RequestState<PartnerStudentDetail>> {
     return loadRequestState(() => this.dataSource.getStudent(studentId));
+  }
+
+  loadStudentGrowth(
+    studentId: string,
+    query: PartnerPageQuery,
+  ): Promise<RequestState<PartnerStudentGrowth>> {
+    return loadRequestState(() => this.dataSource.getStudentGrowth(studentId, query));
   }
 
   loadOperationsSummary(

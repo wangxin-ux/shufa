@@ -19,6 +19,8 @@ import { IdempotencyKey } from '../../common/idempotency/idempotency-key.decorat
 import { AccessTokenGuard } from '../auth/access-token.guard';
 import {
   ParentCampusesQueryDto,
+  ParentCourseCatalogQueryDto,
+  ParentHoursQueryDto,
   ParentLeaveRequestDto,
   ParentProfileUpdateDto,
   ParentStudentQueryDto,
@@ -32,6 +34,12 @@ export class ParentPortalController {
     private readonly parentScopeService: ParentScopeService,
     private readonly parentPortalService: ParentPortalService,
   ) {}
+
+  @Get('course-catalog')
+  @RequirePermissions('PARENT_COURSE_PRODUCT_READ')
+  listCourseCatalog(@Query() query: ParentCourseCatalogQueryDto) {
+    return this.parentPortalService.listCourseCatalog(query);
+  }
 
   @Get('campuses')
   @RequirePermissions('PARENT_CAMPUS_DIRECTORY_READ')
@@ -55,11 +63,12 @@ export class ParentPortalController {
   @RequirePermissions('PARENT_HOURS_READ')
   async getHours(
     @CurrentUser() user: AuthenticatedUser,
-    @Query() query: ParentStudentQueryDto,
+    @Query() query: ParentHoursQueryDto,
   ) {
     return this.parentPortalService.getHours(
       this.parentScopeService.resolve(user),
       query.studentId,
+      query,
     );
   }
 

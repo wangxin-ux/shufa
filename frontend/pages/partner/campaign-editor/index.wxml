@@ -1,0 +1,242 @@
+<partner-approved-role-badge id="partner-identity-badge" blocked="{{viewState === 'forbidden'}}" />
+<view class="editor">
+  <view class="editor__header-space" style="height: calc({{headerTopPx}}px + 106rpx);" aria-hidden="true"></view>
+  <view class="editor__header" style="padding-top: {{headerTopPx}}px; padding-right: {{headerRightPx}}px;">
+    <button class="editor__back" aria-label="返回上一页" bindtap="onBack" disabled="{{imageChoosing || savingAll || saving || freeSaving || submitting}}" hover-class="editor__pressed">‹</button>
+    <image class="editor__icon" src="/pages/partner/assets/profile-mark-glyph.png" mode="aspectFit" aria-hidden="true" />
+    <text class="editor__role">活动草稿</text>
+  </view>
+  <view class="editor__body">
+    <text class="editor__title">{{draftId ? '编辑活动' : '创建活动'}}</text>
+    <view wx:if="{{viewState === 'loading'}}" class="editor__state"><text>正在读取草稿</text></view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="editor__state">
+      <text class="editor__message" aria-live="polite">{{message}}</text>
+      <button class="editor__primary" bindtap="onLogin">重新登录</button>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="editor__state">
+      <text class="editor__message" aria-live="polite">{{message}}</text>
+      <button class="editor__primary" bindtap="onRetry">重试</button>
+    </view>
+    <block wx:else>
+      <view class="editor__tabs editor__mode-tabs" role="tablist">
+        <button id="campaign-edit-tab" class="editor__tab {{editorTab === 'edit' ? 'editor__tab--active' : ''}}" data-tab="edit" bindtap="onEditorTab" role="tab" aria-selected="{{editorTab === 'edit'}}" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading || createUncertain}}">编辑</button>
+        <button id="campaign-preview-tab" class="editor__tab {{editorTab === 'preview' ? 'editor__tab--active' : ''}}" data-tab="preview" bindtap="onEditorTab" role="tab" aria-selected="{{editorTab === 'preview'}}" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading || createUncertain}}">预览</button>
+      </view>
+      <view wx:if="{{form.campaignType !== 'FREE_REGISTRATION' && freeDirty}}" id="campaign-free-unsaved" class="editor__feedback" aria-live="polite">
+        <text class="editor__message">免费报名配置有未保存的修改，请切回免费报名后保存</text>
+      </view>
+      <view wx:if="{{editorTab === 'preview'}}" id="campaign-draft-preview" class="editor__preview">
+        <view class="editor__identity"><text>草稿预览</text><text>{{dirty || contentDirty || imageDirty || registrationDirty || freeDirty ? '有未保存修改' : draftId ? '已保存草稿' : '未保存'}}</text></view>
+        <text class="editor__preview-title">{{form.title || '未填写活动名称'}}</text>
+        <text wx:if="{{!form.campaignType}}" class="editor__preview-type">未选类型</text>
+        <block wx:for="{{types}}" wx:key="value">
+          <text wx:if="{{form.campaignType === item.value}}" class="editor__preview-type">{{item.label}}</text>
+        </block>
+        <view class="editor__preview-section">
+          <text class="editor__preview-label">转发描述</text>
+          <text id="campaign-preview-description" class="editor__preview-description" selectable="{{true}}">{{form.shareDescription || '未填写'}}</text>
+        </view>
+        <block wx:for="{{imageSlots}}" wx:key="key">
+        <view wx:if="{{imagePreviews[item.key]}}" class="editor__preview-section">
+          <text class="editor__preview-label">{{item.label}}</text>
+          <view class="editor__image-frame editor__image-frame--{{item.key}}">
+            <image class="editor__image" src="{{imagePreviews[item.key]}}" mode="aspectFit" data-slot="{{item.key}}" bindtap="onImagePreview" />
+          </view>
+        </view>
+        </block>
+        <view class="editor__preview-section">
+          <text class="editor__preview-label">活动正文</text>
+          <text id="campaign-preview-content" class="editor__preview-description" selectable="{{true}}">{{content || '未填写'}}</text>
+        </view>
+        <view class="editor__preview-section">
+          <text class="editor__preview-label">联系电话</text>
+          <text class="editor__preview-description" selectable="{{true}}">{{form.contactPhone || '未填写'}}</text>
+        </view>
+        <block wx:if="{{form.campaignType === 'FREE_REGISTRATION'}}">
+          <view class="editor__preview-section">
+            <text class="editor__preview-label">开始时间</text>
+            <text class="editor__preview-description">{{freeTimes.startsAt.date || '未选日期'}} {{freeTimes.startsAt.time || '未选时间'}}</text>
+            <text class="editor__preview-label editor__preview-label--next">结束时间</text>
+            <text class="editor__preview-description">{{freeTimes.endsAt.date || '未选日期'}} {{freeTimes.endsAt.time || '未选时间'}}</text>
+            <text class="editor__timezone">{{campusTimezone ? '校区时区：' + campusTimezone : '按校区当地时间'}}</text>
+          </view>
+          <view class="editor__preview-section">
+            <text class="editor__preview-label">报名名额</text>
+            <text class="editor__preview-description">{{freeForm.capacityMode === 'UNLIMITED' ? '不限名额' : freeForm.capacityMode === 'LIMITED' ? (freeForm.maxRegistrations ? freeForm.maxRegistrations + '人' : '未填写名额') : '未选择'}}</text>
+          </view>
+        </block>
+        <view class="editor__preview-section">
+          <view class="editor__identity"><text>报名表单草稿</text><text>未启用</text></view>
+          <campaign-registration-form id="campaign-form-preview" questions="{{registrationQuestions}}" preview="{{true}}" />
+        </view>
+        <button id="campaign-preview-edit" class="editor__secondary" data-tab="edit" bindtap="onEditorTab">返回编辑</button>
+      </view>
+      <view wx:else class="editor__stage">
+      <image class="editor__character" src="/pages/partner/assets/lesson-account-top-character.png" mode="aspectFit" aria-hidden="true" />
+      <view id="campaign-editor-form" class="editor__panel">
+      <view class="editor__character-clip" aria-hidden="true">
+        <image class="editor__character editor__character--muted" src="/pages/partner/assets/lesson-account-top-character.png" mode="aspectFit" />
+      </view>
+      <view class="editor__panel-content">
+      <view class="editor__identity"><text>基础信息</text><text>{{draftId ? '草稿' : '未保存'}}</text></view>
+      <view class="editor__form">
+        <view class="editor__field">
+          <view class="editor__label-row"><text class="editor__label">活动名称</text><text class="editor__count">{{titleCount}}/40</text></view>
+          <input id="campaign-title" class="editor__input" value="{{form.title}}" maxlength="-1" data-field="title" bindinput="onInput" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading || createUncertain}}" placeholder="活动名称" cursor-spacing="36" />
+        </view>
+        <view class="editor__field">
+          <text class="editor__label">转发描述</text>
+          <textarea id="campaign-description" class="editor__description" value="{{form.shareDescription}}" maxlength="-1" data-field="shareDescription" bindinput="onInput" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading || createUncertain}}" placeholder="转发描述" auto-height="{{true}}" cursor-spacing="36" />
+        </view>
+        <view class="editor__field">
+          <text class="editor__label">活动类型</text>
+          <radio-group id="campaign-type" class="editor__types" bindchange="onTypeChange">
+            <label class="editor__type"><radio value="" checked="{{!form.campaignType}}" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading || createUncertain}}" color="#f86114" /><text>暂不选择</text></label>
+            <label wx:for="{{types}}" wx:key="value" class="editor__type"><radio value="{{item.value}}" checked="{{form.campaignType === item.value}}" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading || createUncertain}}" color="#f86114" /><text>{{item.label}}</text></label>
+          </radio-group>
+        </view>
+        <view class="editor__field">
+          <text class="editor__label">联系电话</text>
+          <input id="campaign-phone" class="editor__input" type="text" value="{{form.contactPhone}}" maxlength="-1" data-field="contactPhone" bindinput="onInput" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading || createUncertain}}" placeholder="联系电话" cursor-spacing="36" />
+        </view>
+        <view class="editor__image-grid">
+        <view wx:for="{{imageSlots}}" wx:key="key" id="campaign-image-{{item.key}}" class="editor__image-slot">
+          <text class="editor__label">{{item.label}}</text>
+          <view wx:if="{{imagePreviews[item.key]}}" class="editor__image-frame editor__image-frame--{{item.key}}">
+            <image class="editor__image" src="{{imagePreviews[item.key]}}" mode="aspectFit" data-slot="{{item.key}}" bindtap="onImagePreview" />
+          </view>
+          <view class="editor__image-actions">
+            <button id="campaign-image-choose-{{item.key}}" class="editor__secondary {{imagePreviews[item.key] ? '' : 'editor__image-empty'}}" data-slot="{{item.key}}" bindtap="onImageChoose" aria-label="{{imagePreviews[item.key] ? '更换' : '选择'}}{{item.label}}" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading || createUncertain}}">
+              <text wx:if="{{imagePreviews[item.key]}}">更换图片</text>
+              <text wx:else class="editor__image-plus" aria-hidden="true">+</text>
+            </button>
+            <button wx:if="{{imagePreviews[item.key]}}" id="campaign-image-crop-{{item.key}}" class="editor__clear-time" data-slot="{{item.key}}" bindtap="onImageCrop" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading || createUncertain}}">裁切</button>
+            <button wx:if="{{imagePreviews[item.key]}}" class="editor__clear-time" data-slot="{{item.key}}" bindtap="onImageClear" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading || createUncertain}}">移除</button>
+          </view>
+          <text class="editor__image-size">{{item.size}}</text>
+        </view>
+        </view>
+        <view class="editor__field">
+          <view class="editor__label-row"><text class="editor__label">活动正文</text><text class="editor__count">{{contentCount}}/10000</text></view>
+          <textarea id="campaign-content" class="editor__description editor__content" value="{{content}}" maxlength="-1" bindinput="onContentInput" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading || createUncertain}}" placeholder="活动正文" auto-height="{{true}}" cursor-spacing="36" />
+        </view>
+      </view>
+      <view id="campaign-registration-form" class="editor__free">
+        <view class="editor__identity"><text>报名表单草稿</text><text>未启用</text></view>
+        <campaign-registration-form id="campaign-form-editor" questions="{{registrationQuestions}}"
+          disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading || createUncertain}}"
+          bindchange="onRegistrationFormChange" />
+      </view>
+      <view class="editor__feedback" aria-live="polite">
+        <text wx:if="{{reading}}">正在读取最新版本</text>
+        <text wx:elif="{{message}}" class="editor__message">{{message}}</text>
+        <text wx:elif="{{dirty || contentDirty || imageDirty || registrationDirty}}">有未保存的修改</text>
+      </view>
+      <button wx:if="{{needsVersionRefresh}}" id="campaign-reload" class="editor__secondary" disabled="{{savingAll || reading || saving || freeSaving || submitting}}" bindtap="onReload">读取最新版本</button>
+      <button wx:if="{{submitRefreshNeeded}}" id="free-submission-refresh" class="editor__secondary" disabled="{{savingAll || reading || saving || freeSaving || submitting}}" bindtap="onSubmissionRefresh">读取最新审核状态</button>
+      <button wx:if="{{form.campaignType !== 'FREE_REGISTRATION'}}" id="campaign-save" class="editor__primary" disabled="{{imageChoosing || savingAll || saving || freeSaving || submitting || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading || needsVersionRefresh}}" loading="{{savingAll}}" bindtap="onSaveAll" hover-class="editor__pressed">{{savingAll ? '正在保存' : createUncertain || contentSaveUnknown || registrationSaveUnknown || imageSaveUnknown ? '重试原保存' : '保存草稿'}}</button>
+      <view wx:if="{{form.campaignType === 'FREE_REGISTRATION'}}" id="free-campaign-partition" class="editor__free">
+        <view class="editor__identity"><text>免费报名登记</text><text>0元 · 不赠课</text></view>
+        <view wx:if="{{!freeReady && !!draftId && needsVersionRefresh}}" class="editor__feedback"><text>请读取免费配置</text>
+          <button class="editor__secondary" disabled="{{savingAll || reading || saving || freeSaving || submitting}}" bindtap="onReload">读取最新版本</button>
+        </view>
+        <block wx:else>
+          <view class="editor__form">
+            <text class="editor__timezone">{{campusTimezone ? '校区时区：' + campusTimezone : '按校区当地时间'}}</text>
+            <view class="editor__field">
+              <view class="editor__label-row">
+                <text class="editor__label">开始时间</text>
+                <button wx:if="{{freeTimes.startsAt.date || freeTimes.startsAt.time || freeForm.startsAt}}" class="editor__clear-time" data-field="startsAt" bindtap="onFreeTimeClear" aria-label="清空开始时间" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading}}">清空</button>
+              </view>
+              <view class="editor__time-controls">
+                <picker id="free-start-date" class="editor__picker" mode="date" start="0001-01-01" end="9999-12-31" value="{{freeTimes.startsAt.date}}" data-field="startsAt" data-part="date" bindchange="onFreeTimeChange" aria-label="开始日期" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading}}">
+                  <view class="editor__picker-value {{!freeTimes.startsAt.date ? 'editor__picker-value--empty' : ''}}"><text>{{freeTimes.startsAt.date || '选择日期'}}</text><text aria-hidden="true">›</text></view>
+                </picker>
+                <picker id="free-start-time" class="editor__picker" mode="time" value="{{freeTimes.startsAt.time}}" data-field="startsAt" data-part="time" bindchange="onFreeTimeChange" aria-label="开始时间" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading}}">
+                  <view class="editor__picker-value {{!freeTimes.startsAt.time ? 'editor__picker-value--empty' : ''}}"><text>{{freeTimes.startsAt.time || '选择时间'}}</text><text aria-hidden="true">›</text></view>
+                </picker>
+              </view>
+              <text wx:if="{{startsLabel}}" class="editor__timezone">已保存：{{startsLabel}}</text>
+            </view>
+            <view class="editor__field">
+              <view class="editor__label-row">
+                <text class="editor__label">结束时间</text>
+                <button wx:if="{{freeTimes.endsAt.date || freeTimes.endsAt.time || freeForm.endsAt}}" class="editor__clear-time" data-field="endsAt" bindtap="onFreeTimeClear" aria-label="清空结束时间" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading}}">清空</button>
+              </view>
+              <view class="editor__time-controls">
+                <picker id="free-end-date" class="editor__picker" mode="date" start="0001-01-01" end="9999-12-31" value="{{freeTimes.endsAt.date}}" data-field="endsAt" data-part="date" bindchange="onFreeTimeChange" aria-label="结束日期" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading}}">
+                  <view class="editor__picker-value {{!freeTimes.endsAt.date ? 'editor__picker-value--empty' : ''}}"><text>{{freeTimes.endsAt.date || '选择日期'}}</text><text aria-hidden="true">›</text></view>
+                </picker>
+                <picker id="free-end-time" class="editor__picker" mode="time" value="{{freeTimes.endsAt.time}}" data-field="endsAt" data-part="time" bindchange="onFreeTimeChange" aria-label="结束时间" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading}}">
+                  <view class="editor__picker-value {{!freeTimes.endsAt.time ? 'editor__picker-value--empty' : ''}}"><text>{{freeTimes.endsAt.time || '选择时间'}}</text><text aria-hidden="true">›</text></view>
+                </picker>
+              </view>
+              <text wx:if="{{endsLabel}}" class="editor__timezone">已保存：{{endsLabel}}</text>
+            </view>
+            <view class="editor__field">
+              <text class="editor__label">报名名额</text>
+              <radio-group bindchange="onCapacityChange" class="editor__types">
+                <label class="editor__type"><radio value="" checked="{{!freeForm.capacityMode}}" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading}}" color="#f86114" /><text>暂不选择</text></label>
+                <label class="editor__type"><radio value="UNLIMITED" checked="{{freeForm.capacityMode === 'UNLIMITED'}}" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading}}" color="#f86114" /><text>不限名额</text></label>
+                <label class="editor__type"><radio value="LIMITED" checked="{{freeForm.capacityMode === 'LIMITED'}}" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading}}" color="#f86114" /><text>限定名额</text></label>
+              </radio-group>
+              <input wx:if="{{freeForm.capacityMode === 'LIMITED'}}" id="free-capacity" class="editor__input editor__capacity" type="number" value="{{freeForm.maxRegistrations}}" maxlength="-1" data-field="maxRegistrations" bindinput="onFreeInput" placeholder="正整数，最多2147483647" cursor-spacing="36" disabled="{{imageChoosing || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitUncertain || submitRefreshNeeded || reading}}" />
+            </view>
+          </view>
+          <view class="editor__feedback" aria-live="polite">
+            <text wx:if="{{freeMessage}}" class="editor__message">{{freeMessage}}</text>
+            <text wx:elif="{{freeDirty}}">免费配置有未保存的修改</text>
+          </view>
+          <button id="free-save" class="editor__secondary" bindtap="onSaveAll" loading="{{savingAll}}" disabled="{{imageChoosing || savingAll || saving || freeSaving || submitting || submitUncertain || submitRefreshNeeded || reading || needsVersionRefresh}}">{{savingAll ? '正在保存全部草稿' : createUncertain || contentSaveUnknown || registrationSaveUnknown || imageSaveUnknown ? '重试原保存' : freeSaveUnknown ? '重试原配置保存' : '保存全部草稿'}}</button>
+          <button id="free-submit" class="editor__primary" bindtap="onSubmit" loading="{{submitting}}" disabled="{{imageChoosing || imageDirty || imageSaveUnknown || savingAll || saving || freeSaving || submitting || contentSaveUnknown || registrationSaveUnknown || freeSaveUnknown || submitRefreshNeeded || reading || dirty || contentDirty || registrationDirty || freeDirty || needsVersionRefresh || !draftId || !freeReady || lifecycle === 'CLOSED' || (hasPendingReview && !submitUncertain)}}">{{submitUncertain ? '重试原送审' : hasPendingReview ? '等待审核' : '提交审核'}}</button>
+        </block>
+      </view>
+      <view wx:if="{{hasFreeCampaign || (freeReady && form.campaignType === 'FREE_REGISTRATION')}}" id="free-campaign-management" class="editor__free">
+          <view class="editor__identity"><text>审核与报名</text><text wx:if="{{lifecycle === 'CLOSED'}}">活动已关闭</text></view>
+          <text wx:if="{{form.campaignType !== 'FREE_REGISTRATION' && freeMessage}}" class="editor__feedback editor__message" aria-live="polite">{{freeMessage}}</text>
+          <text wx:if="{{publishedPath && shareImageMessage}}" class="editor__feedback" aria-live="polite">{{shareImageMessage}}</text>
+          <button wx:if="{{canSharePublished}}" id="free-copy-path" class="editor__secondary editor__copy" bindtap="onCopyPath">复制家长报名路径</button>
+          <button wx:if="{{canSharePublished}}" id="free-share" class="editor__secondary" open-type="share">发送给好友</button>
+          <view class="editor__tabs" role="tablist">
+            <button class="editor__tab {{freeTab === 'history' ? 'editor__tab--active' : ''}}" data-tab="history" bindtap="onFreeTab" role="tab" aria-selected="{{freeTab === 'history'}}">审核历史</button>
+            <button class="editor__tab {{freeTab === 'registrations' ? 'editor__tab--active' : ''}}" data-tab="registrations" bindtap="onFreeTab" role="tab" aria-selected="{{freeTab === 'registrations'}}">报名名单</button>
+          </view>
+          <view wx:if="{{listLoading}}" class="editor__feedback">正在读取列表</view>
+          <view wx:if="{{listError}}" class="editor__feedback">
+            <text class="editor__message">{{listError}}</text><button class="editor__secondary" bindtap="onListRetry">重试</button>
+          </view>
+          <block wx:if="{{freeTab === 'history'}}">
+            <view wx:if="{{!history.length && !listLoading && !listError}}" class="editor__feedback">暂无审核记录</view>
+            <view wx:for="{{history}}" wx:key="versionId" class="editor__record">
+              <view class="editor__record-heading"><text>第{{item.sequence}}版 · {{item.title}}</text><text>{{item.statusLabel}}</text></view>
+              <text>送审：{{item.submittedLabel}}（{{campusTimezone}}）</text>
+              <text wx:if="{{item.reviewedLabel}}">审核：{{item.reviewedLabel}}</text>
+              <text wx:if="{{item.reviewReason}}" class="editor__message">{{item.reviewReason}}</text>
+            </view>
+            <button wx:if="{{historyHasMore}}" id="free-history-more" class="editor__secondary" bindtap="onListMore" disabled="{{listLoading || listError}}">加载更多</button>
+          </block>
+          <block wx:else>
+            <view class="editor__form">
+              <text class="editor__label">报名状态</text>
+              <picker id="free-registration-filter" mode="selector" range="{{registrationFilters}}" range-key="label" value="{{registrationFilterIndex}}" bindchange="onRegistrationFilterChange" aria-label="报名状态" disabled="{{submitRefreshNeeded}}">
+                <view class="editor__picker-value"><text>{{registrationFilters[registrationFilterIndex].label}}</text><text aria-hidden="true">›</text></view>
+              </picker>
+            </view>
+            <text wx:if="{{!listLoading && !listError}}" id="free-registration-count" class="editor__feedback">{{registrationCountLabel}}</text>
+            <view wx:if="{{!registrations.length && !listLoading && !listError}}" class="editor__feedback">暂无报名记录</view>
+            <view wx:for="{{registrations}}" wx:key="registrationId" class="editor__record">
+              <view class="editor__record-heading"><text>{{item.studentLabel}}</text><text>{{item.statusLabel}}</text></view>
+              <text>报名：{{item.registeredLabel}}（{{campusTimezone}}）</text>
+              <text wx:if="{{item.cancelledLabel}}">撤销：{{item.cancelledLabel}}</text>
+            </view>
+            <button wx:if="{{registrationHasMore}}" id="free-registration-more" class="editor__secondary" bindtap="onListMore" disabled="{{listLoading || listError}}">加载更多</button>
+          </block>
+      </view>
+      </view>
+      </view>
+      </view>
+    </block>
+  </view>
+  <campaign-image-crop wx:if="{{imageCropSource}}" id="campaign-crop" src="{{imageCropSource}}" image-slot="{{imageCropSlot}}"
+    bindconfirm="onImageCropConfirm" bindcancel="onImageCropCancel" />
+</view>

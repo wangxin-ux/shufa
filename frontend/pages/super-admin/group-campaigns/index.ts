@@ -205,5 +205,7 @@ Page({
     });
   },
   onOrders() { wx.navigateTo({ url: '/pages/super-admin/group-orders/index' }); },
+  onFreeCampaignReviews() { wx.navigateTo({ url: '/pages/super-admin/campaign-reviews/index' }); },
+  onProducts() { wx.navigateTo({ url: '/pages/super-admin/course-products/index' }); },
   onRetry() { void this.load(); },
 });

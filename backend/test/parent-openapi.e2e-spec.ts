@@ -24,6 +24,7 @@ interface OpenApiDocument {
 }
 
 const parentOperations = {
+  '/parents/me/course-catalog': ['get'],
   '/parents/me/campuses': ['get'],
   '/parents/me/home': ['get'],
   '/parents/me/hours': ['get'],
@@ -41,6 +42,17 @@ function loadContract(): OpenApiDocument {
 describe('parent OpenAPI contract', () => {
   const document = loadContract();
 
+  it('requires original grant facts, all-history subjects and pagination for parent hours', () => {
+    expect(document.components.schemas.ParentHoursView.required).toEqual(expect.arrayContaining([
+      'grantedMainUnits', 'grantedGiftUnits', 'courseNames', 'meta',
+    ]));
+    expect(document.paths['/parents/me/hours'].get.parameters).toEqual(expect.arrayContaining([
+      { $ref: '#/components/parameters/Page' },
+      { $ref: '#/components/parameters/PageSize' },
+      expect.objectContaining({ name: 'courseName', in: 'query' }),
+      expect.objectContaining({ name: 'direction', in: 'query' }),
+    ]));
+  });
   it.each(Object.entries(parentOperations))(
     'declares the parent operation for %s',
     (route, methods) => {

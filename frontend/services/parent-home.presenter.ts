@@ -22,6 +22,7 @@ export interface ParentHomePageModel {
 
 export type ParentHomeAction =
   | { type: 'navigate'; url: string }
+  | { type: 'sheet'; sheet: 'teachers' | 'reminders' }
   | { type: 'unavailable'; message: string };
 
 const WEEKDAY_LABELS: Record<string, string> = {
@@ -95,6 +96,12 @@ export function buildParentHomePageModel(summary: ParentHomeSummary): ParentHome
 }
 
 export function resolveParentHomeAction(key: string): ParentHomeAction {
+  if (key === 'team') {
+    return { type: 'sheet', sheet: 'teachers' };
+  }
+  if (key === 'reminders') {
+    return { type: 'sheet', sheet: 'reminders' };
+  }
   if (key === 'leave') {
     return { type: 'navigate', url: '/pages/parent/leave/index' };
   }

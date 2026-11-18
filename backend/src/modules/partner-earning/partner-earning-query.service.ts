@@ -30,31 +30,26 @@ export class PartnerEarningQueryService {
       campusId: scope.campusId,
       ...periodWhere,
     };
-    const [total, pending, available, reversals] = await Promise.all([
-      this.prisma.partnerEarningEntry.aggregate({
-        where,
-        _sum: { amountFen: true },
-      }),
-      this.prisma.partnerEarningEntry.aggregate({
-        where: { ...where, status: 'PENDING_REVIEW' },
-        _sum: { amountFen: true },
-      }),
-      this.prisma.partnerEarningEntry.aggregate({
-        where: { ...where, status: 'AVAILABLE' },
-        _sum: { amountFen: true },
-      }),
-      this.prisma.partnerEarningEntry.aggregate({
-        where: { ...where, entryType: 'REVERSAL' },
-        _sum: { amountFen: true },
-      }),
-    ]);
-    return {
-      estimatedTotalFen: total._sum.amountFen ?? 0,
-      pendingReviewFen: pending._sum.amountFen ?? 0,
-      availableFen: available._sum.amountFen ?? 0,
-      reversedNetFen: reversals._sum.amountFen ?? 0,
+    const groups = await this.prisma.partnerEarningEntry.groupBy({
+      by: ['status', 'entryType'],
+      where,
+      _sum: { amountFen: true },
+    });
+    const summary = {
+      estimatedTotalFen: 0,
+      pendingReviewFen: 0,
+      availableFen: 0,
+      reversedNetFen: 0,
       currency: 'CNY' as const,
     };
+    for (const group of groups) {
+      const amount = group._sum.amountFen ?? 0;
+      if (group.status !== 'REJECTED') summary.estimatedTotalFen += amount;
+      if (group.status === 'PENDING_REVIEW') summary.pendingReviewFen += amount;
+      if (group.status === 'AVAILABLE') summary.availableFen += amount;
+      if (group.entryType === 'REVERSAL') summary.reversedNetFen += amount;
+    }
+    return summary;
   }
 
   async getCurrentRule(actor: AuthenticatedUser) {
@@ -98,9 +93,10 @@ export class PartnerEarningQueryService {
     campusId?: string,
     periodQuery?: PartnerEarningPeriodQueryDto,
   ) {
-    const periodWhere = campusId && periodQuery
-      ? await this.periodWhere(campusId, periodQuery)
-      : {};
+    const periodWhere =
+      campusId && periodQuery
+        ? await this.periodWhere(campusId, periodQuery)
+        : {};
     const where: Prisma.PartnerEarningEntryWhereInput = {
       ...(campusId ? { campusId } : {}),
       ...(query.status ? { status: query.status } : {}),
@@ -190,10 +186,7 @@ function toPartnerEarningEntryView(entry: EntryWithViewRelations) {
     shareBasisPoints: integerFromSnapshot(snapshot, 'shareBasisPoints'),
     actualAttendeeCount: entry.earningBasis.actualAttendeeCount,
     countedAttendeeCount: entry.earningBasis.countedAttendeeCount,
-    perAttendeeAmountFen: integerFromSnapshot(
-      snapshot,
-      'perAttendeeAmountFen',
-    ),
+    perAttendeeAmountFen: integerFromSnapshot(snapshot, 'perAttendeeAmountFen'),
     reviewableAt: entry.reviewableAt.toISOString(),
     reviewedAt: entry.reviewedAt?.toISOString() ?? null,
     reviewReason: entry.reviewReason,

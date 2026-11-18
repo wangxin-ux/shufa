@@ -1,5 +1,8 @@
 <view class="shell shell--{{bg}}" style="background: {{backgroundColor}};">
-  <view wx:if="{{showWave && bg === 'yellow'}}" class="shell__wave" aria-hidden="true"></view>
+  <block wx:if="{{showWave && bg === 'yellow'}}">
+    <image wx:if="{{waveSrc}}" class="shell__wave shell__wave--asset" src="{{waveSrc}}" mode="scaleToFill" aria-hidden="true" />
+    <view wx:else class="shell__wave" aria-hidden="true"></view>
+  </block>
   <view class="shell__header {{fixedHeader ? 'shell__header--fixed' : ''}}" style="padding-top: {{headerTopPx}}px;">
     <view
       class="shell__header-inner"

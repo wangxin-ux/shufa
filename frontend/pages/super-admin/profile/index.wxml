@@ -38,6 +38,14 @@
           aria-hidden="true"
         />
         <view class="profile__menu-card">
+          <button class="profile__menu-row" data-url="/pages/super-admin/partner-withdrawals/index" bindtap="onNavigate">
+            <view class="profile__menu-main"><view class="profile__menu-bullet"></view><text class="profile__menu-label">合作方提现</text></view>
+            <text class="profile__menu-command">处理</text>
+          </button>
+          <button class="profile__menu-row" data-url="/pages/super-admin/partner-applications/index" bindtap="onNavigate">
+            <view class="profile__menu-main"><view class="profile__menu-bullet"></view><text class="profile__menu-label">入驻审核</text></view>
+            <text class="profile__menu-command">审核</text>
+          </button>
           <button class="profile__menu-row" data-url="/pages/super-admin/staff-accounts/index" bindtap="onNavigate">
             <view class="profile__menu-main"><view class="profile__menu-bullet"></view><text class="profile__menu-label">账号管理</text></view>
             <text class="profile__menu-command">管理</text>

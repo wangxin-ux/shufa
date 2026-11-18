@@ -102,9 +102,7 @@ const BASIS_LABELS: Record<TeacherEarningRuleView['basisType'], string> = {
   PER_PRESENT_ATTENDEE: '按实际到课人数',
 };
 
-export function formatTeacherEarningAmount(amountFen: number): string {
-  return formatFenAmount(amountFen);
-}
+export const formatTeacherEarningAmount = formatFenAmount;
 
 export function getTeacherEarningStatusPresentation(
   status: TeacherEarningStatus,
@@ -135,7 +133,7 @@ export function buildTeacherEarningRuleModel(
   return {
     configured: true,
     basisLabel: BASIS_LABELS[rule.basisType],
-    unitAmount: formatTeacherEarningAmount(rule.unitAmountFen),
+    unitAmount: formatFenAmount(rule.unitAmountFen),
     settlementLabel:
       rule.settlementDelayDays === 0
         ? '完成后可审核'
@@ -148,73 +146,54 @@ export function buildTeacherEarningRuleModel(
 export function buildTeacherEarningSummaryModel(
   summary: TeacherEarningSummary,
 ): TeacherEarningSummaryItemModel[] {
-  return [
-    {
-      key: 'today',
-      label: '今日收益',
-      value: formatTeacherEarningAmount(summary.todayEstimatedFen),
-    },
-    {
-      key: 'week',
-      label: '本周收益',
-      value: formatTeacherEarningAmount(summary.weekEstimatedFen),
-    },
-    {
-      key: 'month',
-      label: '本月收益',
-      value: formatTeacherEarningAmount(summary.monthEstimatedFen),
-    },
-    {
-      key: 'estimated',
-      label: '累计收益',
-      value: formatTeacherEarningAmount(summary.estimatedTotalFen),
-    },
-  ];
+  return ([
+    ['today', '今日收益', summary.todayEstimatedFen],
+    ['week', '本周收益', summary.weekEstimatedFen],
+    ['month', '本月收益', summary.monthEstimatedFen],
+    ['estimated', '累计收益', summary.estimatedTotalFen],
+  ] as const).map(([key, label, amount]) => ({
+    key, label, value: formatFenAmount(amount),
+  }));
 }
 
 export function buildTeacherEarningStatusModel(
   summary: TeacherEarningSummary,
 ): TeacherEarningStatusItemModel[] {
-  return [
-    {
-      key: 'pending',
-      label: '待审核',
-      value: formatTeacherEarningAmount(summary.pendingReviewFen),
-    },
-    {
-      key: 'available',
-      label: '可提现',
-      value: formatTeacherEarningAmount(summary.availableFen),
-    },
-    {
-      key: 'withdrawing',
-      label: '提现中',
-      value: formatTeacherEarningAmount(summary.withdrawingFen),
-    },
-  ];
+  return ([
+    ['pending', '待审核', summary.pendingReviewFen],
+    ['available', '可提现', summary.availableFen],
+    ['withdrawing', '提现中', summary.withdrawingFen],
+  ] as const).map(([key, label, amount]) => ({
+    key, label, value: formatFenAmount(amount),
+  }));
+}
+
+function isKnownInteger(value: unknown, minimum: number): value is number {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= minimum;
 }
 
 export function buildTeacherEarningEntryModel(
   entry: TeacherEarningEntry,
 ): TeacherEarningEntryModel {
   const status = getTeacherEarningStatusPresentation(entry.status);
-  const basisLabel = BASIS_LABELS[entry.basisType];
+  const basis = entry.basisType;
+  const unitAmount = isKnownInteger(entry.unitAmountFen, 1)
+    ? formatFenAmount(entry.unitAmountFen) : '待核对';
   const basisDetail =
-    entry.basisType === 'PER_LESSON_UNIT'
-      ? `${entry.lessonUnits / 100} 课时 · 单价 ${formatTeacherEarningAmount(
-          entry.unitAmountFen,
-        )}`
-      : entry.basisType === 'PER_PRESENT_ATTENDEE'
-        ? `${entry.attendeeCount} 人到课 · 单价 ${formatTeacherEarningAmount(
-            entry.unitAmountFen,
-          )}`
-        : `单价 ${formatTeacherEarningAmount(entry.unitAmountFen)}`;
+    basis === 'PER_LESSON_UNIT'
+      ? `${isKnownInteger(entry.lessonUnits, 1)
+          ? `${entry.lessonUnits / 100} 课时` : '课时待核对'} · 单价 ${unitAmount}`
+      : basis === 'PER_PRESENT_ATTENDEE'
+        ? `${isKnownInteger(entry.attendeeCount, 0)
+            ? `${entry.attendeeCount} 人到课` : '人数待核对'} · 单价 ${unitAmount}`
+        : `单价 ${unitAmount}`;
   return {
     id: entry.id,
     courseName: entry.courseName,
-    amount: formatTeacherEarningAmount(entry.amountFen),
+    amount: formatFenAmount(entry.amountFen),
     timeLabel: formatDateTimeLabel(entry.lessonStartsAt),
-    basisLabel,
+    basisLabel: typeof basis === 'string' && Object.prototype.hasOwnProperty.call(BASIS_LABELS, basis)
+      ? BASIS_LABELS[basis] : '待核对',
     basisDetail,
     entryTypeLabel: entry.entryType === 'REVERSAL' ? '撤销冲正' : '课次收益',
     statusLabel: status.label,
@@ -230,7 +209,7 @@ export function buildTeacherWithdrawalModel(
   return {
     id: withdrawal.id,
     requestNo: withdrawal.requestNo,
-    amount: formatTeacherEarningAmount(withdrawal.amountFen),
+    amount: formatFenAmount(withdrawal.amountFen),
     requestedAt: formatDateTimeLabel(withdrawal.requestedAt),
     statusLabel: status.label,
     statusTone: status.tone,

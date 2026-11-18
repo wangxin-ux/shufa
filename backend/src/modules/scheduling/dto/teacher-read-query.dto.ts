@@ -53,3 +53,16 @@ export class StudentsQueryDto extends PaginationQueryDto {
   @MaxLength(100)
   query?: string;
 }
+
+export class StudentDetailQueryDto {
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  feedbackPage = 1;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  feedbackPageSize = 10;
+}

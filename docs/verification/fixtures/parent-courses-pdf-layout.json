@@ -1,0 +1,60 @@
+[
+  {
+    "viewState": "ready",
+    "activeCourse": null,
+    "courses": [
+      {
+        "courseName": "专业美术",
+        "priceLabel": "4880¥",
+        "unitsLabel": "48节",
+        "classTypes": [
+          {
+            "name": "学习班",
+            "quotes": [
+              {"productId": "visual-art-regular", "priceLabel": "4880¥", "unitsLabel": "48节", "campus": {"id": "10000000-0000-4000-8000-000000000001", "name": "启明东校区"}},
+              {"productId": "visual-art-west", "priceLabel": "4880¥", "unitsLabel": "48节", "campus": {"id": "10000000-0000-4000-8000-000000000002", "name": "启明西校区"}}
+            ]
+          },
+          {
+            "name": "一对一",
+            "quotes": [
+              {"productId": "visual-art-individual", "priceLabel": "150¥", "unitsLabel": "1节", "campus": {"id": "10000000-0000-4000-8000-000000000001", "name": "启明东校区"}}
+            ]
+          }
+        ]
+      },
+      {
+        "courseName": "硬笔规范字",
+        "priceLabel": "3880¥",
+        "unitsLabel": "48节",
+        "classTypes": [
+          {"name": "常规班", "quotes": [{"productId": "visual-writing", "priceLabel": "3880¥", "unitsLabel": "48节", "campus": {"id": "10000000-0000-4000-8000-000000000001", "name": "启明东校区"}}]}
+        ]
+      },
+      {
+        "courseName": "软笔书法",
+        "priceLabel": "3880¥",
+        "unitsLabel": "48节",
+        "classTypes": [
+          {"name": "常规班", "quotes": [{"productId": "visual-calligraphy", "priceLabel": "3880¥", "unitsLabel": "48节", "campus": {"id": "10000000-0000-4000-8000-000000000001", "name": "启明东校区"}}]}
+        ]
+      },
+      {
+        "courseName": "演讲与口才",
+        "priceLabel": "4980¥",
+        "unitsLabel": "48节",
+        "classTypes": [
+          {"name": "常规班", "quotes": [{"productId": "visual-speaking", "priceLabel": "4980¥", "unitsLabel": "48节", "campus": {"id": "10000000-0000-4000-8000-000000000001", "name": "启明东校区"}}]}
+        ]
+      },
+      {
+        "courseName": "第一乐章",
+        "priceLabel": "4880¥",
+        "unitsLabel": "48节",
+        "classTypes": [
+          {"name": "常规班", "quotes": [{"productId": "visual-music", "priceLabel": "4880¥", "unitsLabel": "48节", "campus": {"id": "10000000-0000-4000-8000-000000000001", "name": "启明东校区"}}]}
+        ]
+      }
+    ]
+  }
+]

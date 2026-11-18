@@ -1,0 +1,10 @@
+{
+  "expectedWidth": 375,
+  "scope": "Synthetic raw GET data through actual Page/presenter; no business writes",
+  "events": [
+    {
+      "label": "local-file-safety-only-no-ide"
+    }
+  ],
+  "failure": null
+}

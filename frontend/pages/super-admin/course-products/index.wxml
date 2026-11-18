@@ -1,0 +1,37 @@
+<super-admin-page-shell show-back mark-title="课程" mark-icon="/pages/super-admin/assets/icon-dashboard.png">
+  <view class="workspace course-products">
+    <view class="workspace__head"><text class="workspace__title">课程产品</text><button wx:if="{{viewState === 'ready' || viewState === 'empty'}}" class="button" bindtap="onCreate" disabled="{{submitting}}">新增产品</button></view>
+    <view wx:if="{{formOpen}}" class="form">
+      <view><text class="form__label">适用校区</text><picker disabled="{{submitting}}" range="{{campuses}}" range-key="name" value="{{campusIndex}}" bindchange="onCampusChange"><view class="select">{{campuses[campusIndex].name || '请选择校区'}}</view></picker></view>
+      <view><text class="form__label">课程名称</text><input class="field" disabled="{{submitting}}" data-field="courseName" value="{{courseName}}" maxlength="200" bindinput="onInput" /></view>
+      <view><text class="form__label">班型</text><input class="field" disabled="{{submitting}}" data-field="classType" value="{{classType}}" maxlength="50" bindinput="onInput" /></view>
+      <view><text class="form__label">课包名称</text><input class="field" disabled="{{submitting}}" data-field="name" value="{{name}}" maxlength="200" bindinput="onInput" /></view>
+      <view><text class="form__label">课程简介</text><textarea class="textarea" disabled="{{submitting}}" data-field="summary" value="{{summary}}" maxlength="1000" bindinput="onInput" /></view>
+      <view class="product-fields">
+        <view><text class="form__label">价格（元）</text><input class="field" disabled="{{submitting}}" type="digit" data-field="priceYuan" value="{{priceYuan}}" bindinput="onInput" /></view>
+        <view><text class="form__label">有效天数</text><input class="field" disabled="{{submitting}}" type="number" data-field="validityDays" value="{{validityDays}}" bindinput="onInput" /></view>
+        <view><text class="form__label">购买课时</text><input class="field" disabled="{{submitting}}" type="digit" data-field="mainLessons" value="{{mainLessons}}" bindinput="onInput" /></view>
+        <view><text class="form__label">赠送课时</text><input class="field" disabled="{{submitting}}" type="digit" data-field="giftLessons" value="{{giftLessons}}" bindinput="onInput" /></view>
+      </view>
+      <view class="actions"><button class="button" disabled="{{submitting}}" loading="{{submitting}}" bindtap="onSubmit">保存草稿</button><button class="button button--ghost" disabled="{{submitting}}" bindtap="onCancelEdit">取消</button></view>
+    </view>
+    <view-state wx:if="{{viewState === 'loading'}}" state="loading" loadingText="正在加载课程产品…" />
+    <view-state wx:elif="{{viewState === 'error' || viewState === 'forbidden'}}" state="error" errorText="{{errorMessage}}" bind:retry="onRetry" />
+    <view-state wx:elif="{{viewState === 'empty'}}" state="empty" emptyText="暂无课程产品" />
+    <view wx:else class="list">
+      <view class="row product-row" wx:for="{{products}}" wx:key="id">
+        <view class="row__main">
+          <text class="row__title">{{item.name}}</text>
+          <text class="row__meta">{{item.campusName}} · {{item.courseName || item.name}} · {{item.classType || '常规班'}}</text>
+          <text class="row__meta">{{item.priceLabel}} · {{item.unitsLabel}} · {{item.validityDays}}天</text>
+          <view class="actions">
+            <button wx:if="{{item.status === 'DRAFT'}}" class="button button--ghost" disabled="{{submitting}}" data-id="{{item.id}}" bindtap="onEdit">编辑</button>
+            <button wx:if="{{item.status === 'DRAFT'}}" class="button" disabled="{{submitting}}" data-id="{{item.id}}" data-action="activate" bindtap="onTransition">上架</button>
+            <button wx:if="{{item.status !== 'RETIRED'}}" class="button button--danger" disabled="{{submitting}}" data-id="{{item.id}}" data-action="retire" bindtap="onTransition">下架</button>
+          </view>
+        </view>
+        <text class="status {{item.status === 'ACTIVE' ? 'status--success' : ''}}">{{item.statusLabel}}</text>
+      </view>
+    </view>
+  </view>
+</super-admin-page-shell>

@@ -11,6 +11,10 @@ import { PAYMENT_ADAPTER } from '../../infrastructure/payment/payment.constants'
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import type { JoinExistingTeamDto, JoinGroupDto } from './dto/group-buying.dto';
 import { loadGroupJoinView } from './group-buying-query.service';
+import {
+  createPaymentBusinessNo,
+  resolveGroupPaymentPayer,
+} from './group-buying-payment.utils';
 
 const CREATE_TEAM_ROUTE = '/parents/me/group-teams';
 const joinTeamRoute = (teamId: string) =>
@@ -171,7 +175,12 @@ export class GroupBuyingCommandService {
     studentId: string,
   ) {
     const orderNo = createBusinessNo('GROUP');
-    const outTradeNo = createBusinessNo('GPAY');
+    const outTradeNo = createPaymentBusinessNo();
+    const payerOpenId = await resolveGroupPaymentPayer(
+      transaction,
+      scope.userId,
+      this.paymentAdapter.mode,
+    );
     const order = await transaction.enrollmentOrder.create({
       data: {
         orderNo,
@@ -211,7 +220,8 @@ export class GroupBuyingCommandService {
       outTradeNo,
       amountFen: campaign.priceFen,
       description: campaign.title,
-      payerOpenId: scope.userId,
+      payerOpenId,
+      expiresAt: member.reservationExpiresAt,
     });
     return loadGroupJoinView(
       transaction,

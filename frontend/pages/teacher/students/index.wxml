@@ -1,17 +1,12 @@
 <teacher-page-shell
   markTitle="学员"
-  markIcon="/pages/teacher/assets/icon-students.png"
+  markIcon="/pages/teacher/assets/page-mark-pdf.png" markIconSize="44"
   tone="yellow"
   showBack="{{true}}"
 >
   <view class="students-page">
-    <teacher-workspace-banner
-      class="students-page__overview"
-      title="我的学员"
-      detail="当前列表 {{items.length}} 名学员"
-    />
-
-    <view class="student-search">
+    <view class="student-utility"><button bindtap="onToggleSearch" aria-expanded="{{searchOpen}}">{{searchOpen ? '收起筛选' : '筛选'}}</button></view>
+    <view wx:if="{{searchOpen}}" class="student-search">
       <image class="student-search__icon" src="/pages/teacher/assets/icon-student-record.png" mode="aspectFit" />
       <input
         class="student-search__input"
@@ -28,6 +23,7 @@
     <view wx:elif="{{viewState === 'forbidden'}}" class="page-state">
       <text class="page-state__title">无访问权限</text>
       <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-state__retry" bindtap="onLogin">重新登录</button>
     </view>
     <view wx:elif="{{viewState === 'error'}}" class="page-state">
       <text class="page-state__title">学员加载失败</text>
@@ -40,24 +36,25 @@
     </view>
 
     <view wx:else class="student-list">
-      <button class="student-row" wx:for="{{items}}" wx:key="id" data-id="{{item.id}}" bindtap="onStudentTap" hover-class="student-row--hover">
-        <view class="student-row__head">
-          <text class="student-row__name">{{item.displayName}}</text>
-          <text class="student-row__count">负责学员</text>
+      <view wx:if="{{refreshError || loadMoreError}}" class="page-state__message">
+        <text>{{refreshError || loadMoreError}}</text>
+        <button class="page-state__retry" bindtap="onRetry">重试</button>
+      </view>
+      <view wx:for="{{items}}" wx:key="id" class="student-row-group">
+        <button class="student-row" data-id="{{item.id}}" bindtap="onStudentToggle" aria-expanded="{{expandedId === item.id}}" hover-class="student-row--hover">
+          <text class="student-row__name {{item.displayName.length > 3 ? 'student-row__name--compact' : ''}}">{{item.displayName}}</text>
+          <view class="student-row__facts"><text class="student-row__class">{{item.classLabel}}</text><text class="student-row__next">{{expandedId === item.id && archive ? '剩余 ' + archive.remainingTotalLabel : '查看课时 ›'}}</text></view>
+        </button>
+        <view wx:if="{{expandedId === item.id}}" class="student-preview">
+          <text wx:if="{{archiveState === 'loading'}}" class="student-preview__message">正在加载档案</text>
+          <view wx:elif="{{archiveState === 'error'}}" class="student-preview__message"><text>{{archiveError}}</text><button bindtap="onRetryPreview">重试</button></view>
+          <block wx:elif="{{archive}}">
+            <view class="student-preview__main"><image wx:if="{{archive.photoUrl && !archivePhotoFailed}}" class="student-preview__photo" src="{{archive.photoUrl}}" mode="aspectFill" binderror="onPreviewPhotoError" /><view wx:else class="student-preview__photo student-preview__photo--empty">暂无照片</view>
+              <view class="student-preview__facts"><text>报名 {{archive.originalMainLabel}} {{archive.receivedLabel}}</text><text>剩余 {{archive.remainingTotalLabel}}</text><text>出勤率 {{archive.attendanceRateLabel}}</text><button class="student-preview__more" data-id="{{item.id}}" bindtap="onStudentTap">点击查看更多</button></view></view>
+            <view wx:if="{{searchOpen}}"><text class="student-preview__meta">{{archive.balanceAsOfLabel}} · {{item.nextLessonShortLabel}}</text><text class="student-preview__meta">最近反馈 {{item.latestFeedbackLabel}}</text></view>
+          </block>
         </view>
-        <text class="student-row__classes">{{item.classLabel}}</text>
-        <view class="student-row__meta">
-          <view class="student-row__meta-item">
-            <text class="student-row__meta-label">下一课</text>
-            <text class="student-row__meta-value">{{item.nextLessonLabel}}</text>
-          </view>
-          <view class="student-row__meta-item">
-            <text class="student-row__meta-label">最近反馈</text>
-            <text class="student-row__meta-value">{{item.latestFeedbackLabel}}</text>
-          </view>
-        </view>
-        <text class="student-row__link">查看教学详情 ›</text>
-      </button>
+      </view>
 
       <button
         wx:if="{{hasMore}}"

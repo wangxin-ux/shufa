@@ -1,0 +1,46 @@
+<super-admin-page-shell show-back mark-title="入驻" mark-icon="/pages/super-admin/assets/profile-mark-glyph.png">
+  <view class="workspace review">
+    <text class="review__title">入驻审核</text>
+    <view wx:if="{{!detail}}" class="toolbar">
+      <picker range="{{statuses}}" range-key="label" value="{{statusIndex}}" bindchange="onStatus"><view class="select">{{statuses[statusIndex].label}}</view></picker>
+      <input class="field review__search" value="{{keyword}}" maxlength="200" bindinput="onKeywordInput" bindconfirm="onSearch" confirm-type="search" placeholder="机构名称" />
+      <button class="button" disabled="{{loading}}" bindtap="onSearch">查询</button>
+    </view>
+    <text wx:if="{{message}}" class="review__message" aria-live="polite">{{message}}</text>
+    <text wx:if="{{viewState === 'loading'}}" class="review__message">正在读取申请</text>
+    <view wx:if="{{viewState === 'forbidden'}}" class="state"><button class="button" bindtap="onLogin">重新登录</button></view>
+    <button wx:elif="{{viewState === 'error' || message}}" class="button" disabled="{{loading || submitting}}" bindtap="onRetry">重读状态</button>
+    <text wx:if="{{viewState === 'empty'}}" class="review__message">暂无匹配的入驻申请</text>
+    <block wx:if="{{detail}}">
+      <button class="review__back" disabled="{{submitting || uncertain}}" bindtap="onClose">返回列表</button>
+      <view class="review__facts">
+        <text class="review__name">{{detail.basicInformation.institutionName}}</text>
+        <text>送审版本 {{detail.submissionVersion}}</text><text>送审时间（北京时间）{{submittedLabel}}</text>
+        <text>{{detail.status === 'SUBMITTED' ? '待审核' : detail.status === 'REJECTED' ? '已驳回' : detail.status === 'DRAFT' ? '补交中' : '已通过'}}</text>
+        <text>{{detail.basicInformation.province}} / {{detail.basicInformation.city}} / {{detail.basicInformation.district}}</text>
+        <text>{{detail.basicInformation.detailedAddress}}</text><text>{{detail.basicInformation.contactPhone}}</text>
+      </view>
+      <view wx:if="{{detail.review}}" class="review__facts"><text>审核时间（北京时间）{{reviewedLabel}}</text><text>{{detail.review.reason}}</text></view>
+      <view class="review__section">
+        <text class="review__label">私有材料</text>
+        <button wx:for="{{detailMaterials}}" wx:key="storedFileId" class="review__file" data-id="{{item.storedFileId}}" disabled="{{privateLoading || submitting}}" bindtap="onPreview">{{item.label}}</button>
+      </view>
+      <view class="review__section">
+        <button class="button" disabled="{{privateLoading || submitting}}" bindtap="onBank">{{bankInformation ? '收起对公账户' : '查看对公账户'}}</button>
+        <view wx:if="{{bankInformation}}" class="review__facts"><text>{{bankInformation.bankName}}</text><text>{{bankInformation.accountHolder}}</text><text>{{bankInformation.accountNumber}}</text></view>
+      </view>
+      <view wx:if="{{canReject}}" class="review__section">
+        <button class="button" disabled="{{loading || privateLoading || submitting || (uncertain && uncertainAction !== 'APPROVED')}}" loading="{{submitting && uncertainAction === 'APPROVED'}}" bindtap="onApprove">{{submitting && uncertainAction === 'APPROVED' ? '正在批准' : uncertain && uncertainAction === 'APPROVED' ? '重试批准' : '批准入驻'}}</button>
+        <text class="review__label">驳回原因</text>
+        <textarea class="textarea" maxlength="1000" value="{{reason}}" bindinput="onReasonInput" disabled="{{submitting || uncertain}}" placeholder="请填写需要补充或修改的内容" cursor-spacing="32" />
+        <button class="button review__reject" disabled="{{loading || privateLoading || submitting || (uncertain && uncertainAction !== 'REJECTED')}}" loading="{{submitting && uncertainAction === 'REJECTED'}}" bindtap="onReject">{{submitting && uncertainAction === 'REJECTED' ? '正在驳回' : uncertain && uncertainAction === 'REJECTED' ? '重试驳回' : '驳回补交'}}</button>
+      </view>
+    </block>
+    <block wx:else>
+      <button wx:for="{{rows}}" wx:key="applicationId" class="review__row" data-aid="{{item.applicationId}}" data-sid="{{item.submissionId}}" disabled="{{loading}}" bindtap="onOpen">
+        <text class="review__name">{{item.institutionName}}</text><text>{{item.statusLabel}}</text><text>送审时间（北京时间）{{item.submittedLabel}}</text>
+      </button>
+      <button wx:if="{{more}}" class="button" disabled="{{loading}}" bindtap="onMore">更多申请</button>
+    </block>
+  </view>
+</super-admin-page-shell>

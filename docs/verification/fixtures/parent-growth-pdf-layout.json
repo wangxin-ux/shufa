@@ -1,0 +1,22 @@
+[
+  {
+    "student": { "id": "visual-student", "name": "陈晨", "age": 9, "profileVersion": 1, "photo": null },
+    "records": [
+      {
+        "lessonSessionId": "visual-lesson",
+        "studentId": "visual-student",
+        "courseName": "专业美术B",
+        "campusName": "京南一品校区",
+        "teacherName": "赵老师",
+        "startsAt": "2026-09-24T01:00:00Z",
+        "lessonStatus": "COMPLETED",
+        "attendanceStatus": "PRESENT",
+        "feedback": "本节课陈晨同学表现很棒，课堂上专注认真，能够跟着老师思路，大胆表达自己的绘画想法。画面构图饱满，色彩搭配富有想象力，敢于尝试不同笔触，看得出用心投入。遇到难点时愿意耐心调整，动手能力很不错。如果后续作画时可以再多留意细节，把线条收拾得更干净，作品会更加出彩。继续保持这份对美术的热爱，期待下次更精彩的作品！",
+        "feedbackImages": [],
+        "performanceRating": 7,
+        "canReview": true,
+        "review": null
+      }
+    ]
+  }
+]

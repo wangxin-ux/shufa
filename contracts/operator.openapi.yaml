@@ -1,0 +1,1329 @@
+paths:
+  /operators/me/students/{studentId}/archive:
+    $ref: ./operator-student-archive.openapi.yaml#/archive
+  /operators/me/students/{studentId}/archive/growth:
+    $ref: ./operator-student-archive.openapi.yaml#/growth
+  /operators/me/students/{studentId}/archive/media/{storedFileId}:
+    $ref: ./operator-student-archive.openapi.yaml#/media
+  /operators/me/dashboard:
+    get:
+      operationId: getOperatorDashboard
+      summary: Read the current campus dashboard
+      tags:
+        - Operator
+      responses:
+        '200':
+          description: Campus dashboard data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorDashboardEnvelope'
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+        '500':
+          $ref: ./openapi.yaml#/components/responses/InternalServerError
+  /operators/me/profile:
+    get:
+      operationId: getOperatorProfile
+      summary: Read the current campus manager profile
+      tags:
+        - Operator
+      responses:
+        '200':
+          description: Campus manager profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorProfileEnvelope'
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+        '500':
+          $ref: ./openapi.yaml#/components/responses/InternalServerError
+  /operators/me/students:
+    get:
+      operationId: listOperatorStudents
+      summary: List active students in the current campus
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/Page
+        - $ref: ./openapi.yaml#/components/parameters/PageSize
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        '200':
+          description: Campus student page.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorStudentsPageEnvelope'
+        '400':
+          $ref: ./openapi.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+        '500':
+          $ref: ./openapi.yaml#/components/responses/InternalServerError
+    post:
+      operationId: createOperatorStudent
+      summary: Create a student in the current campus
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorCreateStudentRequest'
+      responses:
+        '200':
+          description: Student created or replayed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorStudentEnvelope'
+        '400':
+          $ref: ./openapi.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+        '404':
+          $ref: ./openapi.yaml#/components/responses/ResourceNotFound
+        '409':
+          $ref: ./openapi.yaml#/components/responses/Conflict
+        '500':
+          $ref: ./openapi.yaml#/components/responses/InternalServerError
+  /operators/me/students/{studentId}:
+    get:
+      operationId: getOperatorStudent
+      summary: Read a student in the current campus
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/StudentId
+      responses:
+        '200':
+          description: Campus student detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorStudentDetailEnvelope'
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+        '404':
+          $ref: ./openapi.yaml#/components/responses/ResourceNotFound
+        '500':
+          $ref: ./openapi.yaml#/components/responses/InternalServerError
+  /operators/me/scheduling-options:
+    get:
+      operationId: getOperatorSchedulingOptions
+      summary: Read active classes and derived teachers for scheduling
+      tags:
+        - Operator
+      responses:
+        '200':
+          description: Current-campus scheduling options.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorSchedulingOptionsEnvelope'
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+        '500':
+          $ref: ./openapi.yaml#/components/responses/InternalServerError
+  /operators/me/lesson-sessions:
+    get:
+      operationId: listOperatorLessonSessions
+      summary: List lesson sessions in the current campus
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/Page
+        - $ref: ./openapi.yaml#/components/parameters/PageSize
+        - $ref: ./openapi.yaml#/components/parameters/FromDateTime
+        - $ref: ./openapi.yaml#/components/parameters/ToDateTime
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: ./openapi.yaml#/components/schemas/LessonSessionStatus
+      responses:
+        '200':
+          description: Campus lesson page.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorLessonSessionsPageEnvelope'
+        '400':
+          $ref: ./openapi.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+        '500':
+          $ref: ./openapi.yaml#/components/responses/InternalServerError
+    post:
+      operationId: createOperatorLessonSession
+      summary: Create one future lesson session in the current campus
+      description: >-
+        Rechecks the selected class after waiting for the shared per-class and
+        per-teacher operator scheduling locks. Noncancelled same-class or
+        same-teacher overlapping lessons return 409 CONFLICT with local
+        details.conflictDates; touching boundaries are allowed. No partial write.
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorCreateLessonSessionRequest'
+      responses:
+        '200':
+          description: Lesson session created or replayed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorLessonSessionEnvelope'
+        '400':
+          $ref: ./openapi.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+        '404':
+          $ref: ./openapi.yaml#/components/responses/ResourceNotFound
+        '409':
+          $ref: ./openapi.yaml#/components/responses/Conflict
+        '500':
+          $ref: ./openapi.yaml#/components/responses/InternalServerError
+  /operators/me/lesson-sessions/{lessonSessionId}:
+    patch:
+      operationId: updateOperatorLessonSession
+      summary: Update one scheduled lesson session
+      description: >-
+        Preserves a linked seriesId and uses the same per-class/per-teacher
+        scheduling locks and noncancelled overlap check as series creation,
+        excluding this lesson. Conflicts return 409 with local conflictDates.
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/LessonSessionId
+        - $ref: ./openapi.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorVersionedUpdateLessonSessionRequest'
+      responses:
+        '200':
+          description: Lesson session updated or replayed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorLessonSessionEnvelope'
+        '400':
+          $ref: ./openapi.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+        '404':
+          $ref: ./openapi.yaml#/components/responses/ResourceNotFound
+        '409':
+          $ref: ./openapi.yaml#/components/responses/Conflict
+        '500':
+          $ref: ./openapi.yaml#/components/responses/InternalServerError
+  /operators/me/lesson-sessions/{lessonSessionId}/cancel:
+    post:
+      operationId: cancelOperatorLessonSession
+      summary: Cancel one scheduled lesson session
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/LessonSessionId
+        - $ref: ./openapi.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorVersionedCancelLessonSessionRequest'
+      responses:
+        '200':
+          description: Lesson session cancelled or replayed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorLessonSessionEnvelope'
+        '400':
+          $ref: ./openapi.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+        '404':
+          $ref: ./openapi.yaml#/components/responses/ResourceNotFound
+        '409':
+          $ref: ./openapi.yaml#/components/responses/Conflict
+        '500':
+          $ref: ./openapi.yaml#/components/responses/InternalServerError
+  /operators/me/leave-requests:
+    get:
+      operationId: listOperatorLeaveRequests
+      summary: List current-campus leave requests
+      description: >-
+        Lists only the authenticated manager's campus. With reviewedOnly=true, includes APPROVED and
+        REJECTED requests ordered by reviewedAt descending (nulls last), then id descending.
+        Otherwise preserves createdAt descending, then id descending. Total and rows use one
+        consistent database snapshot. reviewedOnly and status cannot be supplied together, even when
+        reviewedOnly=false; invalid combinations or boolean values return HTTP 400.
+        Historical PENDING rows remain in the page and total even if membership has ended.
+        Each current list row includes canReview. Only PENDING rows with an active same-campus student
+        and the original active temporary episode (or current regular membership for legacy null
+        episodes) are reviewable. Re-addition never revives an old removed-episode request.
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/Page
+        - $ref: ./openapi.yaml#/components/parameters/PageSize
+        - name: status
+          in: query
+          required: false
+          description: Single-status filter, mutually exclusive with reviewedOnly.
+          schema:
+            $ref: ./openapi.yaml#/components/schemas/ParentLeaveStatus
+        - name: reviewedOnly
+          in: query
+          required: false
+          description: >-
+            True selects all reviewed requests as one globally ordered page. Accepts only true or
+            false and cannot be combined with status. Omit this parameter to use a single-status
+            filter.
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Campus leave request page.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorLeaveRequestsPageEnvelope'
+        '400':
+          $ref: ./openapi.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+        '500':
+          $ref: ./openapi.yaml#/components/responses/InternalServerError
+  /operators/me/leave-requests/{leaveRequestId}/approve:
+    post:
+      operationId: approveOperatorLeaveRequest
+      summary: Approve one pending current-campus leave request
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/IdempotencyKey
+        - name: leaveRequestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorVersionedReviewLeaveRequest'
+      responses:
+        '200':
+          description: Leave request approved or replayed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorLeaveRequestEnvelope'
+        '400':
+          $ref: ./openapi.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+        '404':
+          $ref: ./openapi.yaml#/components/responses/ResourceNotFound
+        '409':
+          $ref: ./openapi.yaml#/components/responses/Conflict
+        '500':
+          $ref: ./openapi.yaml#/components/responses/InternalServerError
+  /operators/me/leave-requests/{leaveRequestId}/reject:
+    post:
+      operationId: rejectOperatorLeaveRequest
+      summary: Reject one pending current-campus leave request
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/IdempotencyKey
+        - name: leaveRequestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorVersionedRejectLeaveRequest'
+      responses:
+        '200':
+          description: Leave request rejected or replayed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorLeaveRequestEnvelope'
+        '400':
+          $ref: ./openapi.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+        '404':
+          $ref: ./openapi.yaml#/components/responses/ResourceNotFound
+        '409':
+          $ref: ./openapi.yaml#/components/responses/Conflict
+        '500':
+          $ref: ./openapi.yaml#/components/responses/InternalServerError
+  /operators/me/warnings:
+    get:
+      operationId: listOperatorWarnings
+      summary: List low-balance students in the current campus
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/Page
+        - $ref: ./openapi.yaml#/components/parameters/PageSize
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        '200':
+          description: Current-campus warning page.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorWarningsPageEnvelope'
+        '400':
+          $ref: ./openapi.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+        '500':
+          $ref: ./openapi.yaml#/components/responses/InternalServerError
+  /operators/me/campus:
+    get:
+      operationId: getOperatorCampus
+      summary: Read editable settings for the current campus
+      tags:
+        - Operator
+      responses:
+        '200':
+          description: Current campus settings.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorCampusEnvelope'
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+        '500':
+          $ref: ./openapi.yaml#/components/responses/InternalServerError
+    patch:
+      operationId: updateOperatorCampus
+      summary: Update editable settings for the current campus
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorVersionedUpdateCampusRequest'
+      responses:
+        '200':
+          description: Current campus settings updated or replayed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorCampusEnvelope'
+        '400':
+          $ref: ./openapi.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+        '409':
+          $ref: ./openapi.yaml#/components/responses/Conflict
+        '500':
+          $ref: ./openapi.yaml#/components/responses/InternalServerError
+  /operators/me/rosters/{kind}/template:
+    get:
+      operationId: downloadOperatorRosterTemplate
+      summary: Download a versioned template without a campus column
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/RosterKind
+      responses:
+        '200':
+          $ref: ./openapi.yaml#/components/responses/XlsxFile
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+  /operators/me/rosters/{kind}/preview:
+    post:
+      operationId: previewOperatorRosterImport
+      summary: Validate a roster in the authenticated manager campus
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/RosterKind
+      requestBody:
+        $ref: ./openapi.yaml#/components/requestBodies/RosterWorkbook
+      responses:
+        '200':
+          $ref: ./openapi.yaml#/components/responses/RosterPreview
+        '400':
+          $ref: ./openapi.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+  /operators/me/rosters/{kind}/import:
+    post:
+      operationId: importOperatorRoster
+      summary: Import valid rows into the authenticated manager campus
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/RosterKind
+      requestBody:
+        $ref: ./openapi.yaml#/components/requestBodies/RosterWorkbook
+      responses:
+        '200':
+          $ref: ./openapi.yaml#/components/responses/RosterImport
+        '400':
+          $ref: ./openapi.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+  /operators/me/rosters/{kind}/entries:
+    post:
+      operationId: createOperatorRosterEntry
+      summary: Quickly create one scoped customer or teacher entry
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/RosterKind
+        - $ref: ./openapi.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: ./openapi.yaml#/components/schemas/CustomerRosterEntryRequest
+                - $ref: ./openapi.yaml#/components/schemas/TeacherRosterEntryRequest
+      responses:
+        '200':
+          $ref: ./openapi.yaml#/components/responses/RosterRow
+        '400':
+          $ref: ./openapi.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+        '409':
+          $ref: ./openapi.yaml#/components/responses/Conflict
+  /operators/me/rosters/{kind}/export:
+    get:
+      operationId: exportOperatorRoster
+      summary: Export the authenticated campus roster with complete phones
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/RosterKind
+        - $ref: ./openapi.yaml#/components/parameters/ConfirmedPhoneExport
+        - name: query
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        '200':
+          $ref: ./openapi.yaml#/components/responses/XlsxFile
+        '400':
+          $ref: ./openapi.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+  /operators/me/rosters/teachers:
+    get:
+      operationId: listOperatorRosterTeachers
+      summary: List teachers in the authenticated manager campus
+      tags:
+        - Operator
+      parameters:
+        - $ref: ./openapi.yaml#/components/parameters/Page
+        - $ref: ./openapi.yaml#/components/parameters/PageSize
+        - name: query
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        '200':
+          $ref: ./openapi.yaml#/components/responses/TeacherRosterPage
+        '400':
+          $ref: ./openapi.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./openapi.yaml#/components/responses/Unauthorized
+        '403':
+          $ref: ./openapi.yaml#/components/responses/Forbidden
+components:
+  schemas:
+    OperatorCampusSummary:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+      additionalProperties: false
+    OperatorLatestLeaveView:
+      type: object
+      required:
+        - id
+        - studentName
+        - courseName
+        - startsAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        studentName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        courseName:
+          type: string
+          minLength: 1
+          maxLength: 200
+        startsAt:
+          type: string
+          format: date-time
+      additionalProperties: false
+    OperatorDashboardView:
+      type: object
+      required:
+        - manager
+        - campus
+        - activeStudentCount
+        - todayLessonCount
+        - pendingLeaveCount
+        - latestPendingLeave
+        - serverTime
+      properties:
+        manager:
+          type: object
+          required:
+            - displayName
+          properties:
+            displayName:
+              type: string
+              minLength: 1
+              maxLength: 100
+          additionalProperties: false
+        campus:
+          $ref: '#/components/schemas/OperatorCampusSummary'
+        activeStudentCount:
+          type: integer
+          minimum: 0
+        todayLessonCount:
+          type: integer
+          minimum: 0
+        pendingLeaveCount:
+          type: integer
+          minimum: 0
+          description: Count of currently reviewable PENDING requests, excluding ended or unavailable relationships. Uses the same statement snapshot as latestPendingLeave.
+        latestPendingLeave:
+          description: Latest currently reviewable request by createdAt descending then id descending, or null. Historical unavailable PENDING records remain in the leave-request list.
+          oneOf:
+            - $ref: '#/components/schemas/OperatorLatestLeaveView'
+            - type: 'null'
+        serverTime:
+          type: string
+          format: date-time
+      additionalProperties: false
+    OperatorProfileView:
+      type: object
+      required:
+        - displayName
+        - roleCode
+        - campusId
+        - campusName
+      properties:
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        roleCode:
+          type: string
+          enum:
+            - OPERATOR
+        campusId:
+          type: string
+          format: uuid
+        campusName:
+          type: string
+          minLength: 1
+          maxLength: 200
+      additionalProperties: false
+    OperatorStudentSummary:
+      type: object
+      required:
+        - id
+        - campusId
+        - displayName
+        - ageYears
+        - classNames
+      properties:
+        id:
+          type: string
+          format: uuid
+        campusId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        ageYears:
+          oneOf:
+            - type: integer
+              minimum: 0
+            - type: 'null'
+        classNames:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 200
+      additionalProperties: false
+    OperatorStudentDetail:
+      type: object
+      required:
+        - id
+        - campusId
+        - displayName
+        - ageYears
+        - classNames
+        - mainAvailableUnits
+        - giftAvailableUnits
+        - availableTotalUnits
+        - mainReservedUnits
+        - giftReservedUnits
+        - reservedTotalUnits
+        - totalBalanceUnits
+        - mainBalanceUnits
+        - giftBalanceUnits
+        - recentAttendanceCount
+        - recentConsumedUnits
+      properties:
+        id:
+          type: string
+          format: uuid
+        campusId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        ageYears:
+          oneOf:
+            - type: integer
+              minimum: 0
+            - type: 'null'
+        classNames:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 200
+        mainAvailableUnits:
+          type: integer
+          minimum: 0
+        giftAvailableUnits:
+          type: integer
+          minimum: 0
+        availableTotalUnits:
+          type: integer
+          minimum: 0
+        mainReservedUnits:
+          type: integer
+          minimum: 0
+        giftReservedUnits:
+          type: integer
+          minimum: 0
+        reservedTotalUnits:
+          type: integer
+          minimum: 0
+        totalBalanceUnits:
+          type: integer
+          minimum: 0
+        mainBalanceUnits:
+          type: integer
+          minimum: 0
+        giftBalanceUnits:
+          type: integer
+          minimum: 0
+        recentAttendanceCount:
+          type: integer
+          minimum: 0
+        recentConsumedUnits:
+          type: integer
+          minimum: 0
+      additionalProperties: false
+    OperatorCreateStudentRequest:
+      type: object
+      required:
+        - displayName
+      properties:
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        birthDate:
+          oneOf:
+            - type: string
+              format: date
+            - type: 'null'
+        classGroupId:
+          oneOf:
+            - type: string
+              format: uuid
+            - type: 'null'
+      additionalProperties: false
+    OperatorSchedulingOption:
+      type: object
+      required:
+        - classGroupId
+        - className
+        - courseName
+        - teacherId
+        - teacherName
+        - defaultLessonUnits
+      properties:
+        classGroupId:
+          type: string
+          format: uuid
+        className:
+          type: string
+          minLength: 1
+          maxLength: 200
+        courseName:
+          type: string
+          minLength: 1
+          maxLength: 200
+        teacherId:
+          type: string
+          format: uuid
+        teacherName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        defaultLessonUnits:
+          type: integer
+          minimum: 1
+      additionalProperties: false
+    OperatorSchedulingOptionsView:
+      type: object
+      required:
+        - classes
+      properties:
+        classes:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperatorSchedulingOption'
+      additionalProperties: false
+    OperatorLessonSessionView:
+      type: object
+      required:
+        - id
+        - campusId
+        - classGroupId
+        - className
+        - courseName
+        - teacherId
+        - teacherName
+        - startsAt
+        - endsAt
+        - kind
+        - lessonUnits
+        - status
+        - version
+      properties:
+        seriesId:
+          type: [string, 'null']
+          format: uuid
+          description: Optional for old successful idempotent receipts; null for ordinary unlinked sessions.
+        id:
+          type: string
+          format: uuid
+        campusId:
+          type: string
+          format: uuid
+        classGroupId:
+          type: string
+          format: uuid
+        className:
+          type: string
+          minLength: 1
+          maxLength: 200
+        courseName:
+          type: string
+          minLength: 1
+          maxLength: 200
+        teacherId:
+          type: string
+          format: uuid
+        teacherName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        kind:
+          $ref: ./openapi.yaml#/components/schemas/LessonKind
+        lessonUnits:
+          type: integer
+          minimum: 1
+        status:
+          $ref: ./openapi.yaml#/components/schemas/LessonSessionStatus
+        version:
+          type: integer
+          minimum: 1
+      additionalProperties: false
+    OperatorCreateLessonSessionRequest:
+      type: object
+      required:
+        - classGroupId
+        - startsAt
+        - endsAt
+        - kind
+      properties:
+        classGroupId:
+          type: string
+          format: uuid
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        kind:
+          $ref: ./openapi.yaml#/components/schemas/LessonKind
+      additionalProperties: false
+    OperatorVersionedUpdateLessonSessionRequest:
+      type: object
+      required:
+        - version
+        - startsAt
+        - endsAt
+        - kind
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        kind:
+          $ref: ./openapi.yaml#/components/schemas/LessonKind
+      additionalProperties: false
+    OperatorVersionedCancelLessonSessionRequest:
+      type: object
+      required:
+        - version
+      properties:
+        version:
+          type: integer
+          minimum: 1
+      additionalProperties: false
+    OperatorLeaveRequestView:
+      type: object
+      required:
+        - id
+        - studentId
+        - studentName
+        - lessonSessionId
+        - courseName
+        - startsAt
+        - reason
+        - status
+        - reviewerName
+        - reviewedAt
+        - reviewReason
+        - version
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        studentName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        lessonSessionId:
+          type: string
+          format: uuid
+        courseName:
+          type: string
+          minLength: 1
+          maxLength: 200
+        startsAt:
+          type: string
+          format: date-time
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+        status:
+          $ref: ./openapi.yaml#/components/schemas/ParentLeaveStatus
+        canReview:
+          type: boolean
+          description: >-
+            Current relationship capability, always included by current list and fresh review responses.
+            False for reviewed rows or unavailable membership. Legacy successful idempotency replay
+            responses may omit this field; clients must treat missing or false as unavailable.
+            This snapshot does not replace the command's current authorization/version checks.
+        reviewerName:
+          oneOf:
+            - type: string
+              minLength: 1
+              maxLength: 100
+            - type: 'null'
+        reviewedAt:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: 'null'
+        reviewReason:
+          oneOf:
+            - type: string
+              maxLength: 500
+            - type: 'null'
+        version:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+      additionalProperties: false
+    OperatorVersionedReviewLeaveRequest:
+      type: object
+      required:
+        - version
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        reviewReason:
+          type: string
+          maxLength: 500
+      additionalProperties: false
+    OperatorVersionedRejectLeaveRequest:
+      type: object
+      required:
+        - version
+        - reviewReason
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        reviewReason:
+          type: string
+          minLength: 1
+          maxLength: 500
+      additionalProperties: false
+    OperatorWarningView:
+      type: object
+      required:
+        - studentId
+        - studentName
+        - classNames
+        - mainBalanceUnits
+        - giftBalanceUnits
+        - totalBalanceUnits
+        - thresholdUnits
+      properties:
+        mainAvailableUnits:
+          type: integer
+          minimum: 0
+        giftAvailableUnits:
+          type: integer
+          minimum: 0
+        availableTotalUnits:
+          type: integer
+          minimum: 0
+        mainReservedUnits:
+          type: integer
+          minimum: 0
+        giftReservedUnits:
+          type: integer
+          minimum: 0
+        reservedTotalUnits:
+          type: integer
+          minimum: 0
+        studentId:
+          type: string
+          format: uuid
+        studentName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        classNames:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 200
+        mainBalanceUnits:
+          type: integer
+          minimum: 0
+        giftBalanceUnits:
+          type: integer
+          minimum: 0
+        totalBalanceUnits:
+          type: integer
+          minimum: 0
+        thresholdUnits:
+          type: integer
+          minimum: 0
+      additionalProperties: false
+    OperatorCampusView:
+      type: object
+      required:
+        - id
+        - code
+        - name
+        - timezone
+        - contactPhone
+        - address
+        - lessonWarningThresholdUnits
+        - version
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+          minLength: 1
+          maxLength: 50
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        timezone:
+          type: string
+          minLength: 1
+          maxLength: 50
+        contactPhone:
+          oneOf:
+            - type: string
+              maxLength: 30
+            - type: 'null'
+        address:
+          oneOf:
+            - type: string
+              maxLength: 300
+            - type: 'null'
+        lessonWarningThresholdUnits:
+          type: integer
+          minimum: 0
+        version:
+          type: integer
+          minimum: 1
+      additionalProperties: false
+    OperatorVersionedUpdateCampusRequest:
+      type: object
+      required:
+        - version
+        - name
+        - contactPhone
+        - address
+        - lessonWarningThresholdUnits
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: .*\S.*
+        contactPhone:
+          oneOf:
+            - type: string
+              maxLength: 30
+              pattern: ^(?:1[3-9][0-9]{9}|0[0-9]{2,3}-?[0-9]{7,8})$
+            - type: 'null'
+        address:
+          oneOf:
+            - type: string
+              maxLength: 300
+            - type: 'null'
+        lessonWarningThresholdUnits:
+          type: integer
+          minimum: 0
+      additionalProperties: false
+    OperatorDashboardEnvelope:
+      allOf:
+        - $ref: ./openapi.yaml#/components/schemas/SuccessEnvelope
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/OperatorDashboardView'
+    OperatorProfileEnvelope:
+      allOf:
+        - $ref: ./openapi.yaml#/components/schemas/SuccessEnvelope
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/OperatorProfileView'
+    OperatorStudentEnvelope:
+      allOf:
+        - $ref: ./openapi.yaml#/components/schemas/SuccessEnvelope
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/OperatorStudentSummary'
+    OperatorStudentDetailEnvelope:
+      allOf:
+        - $ref: ./openapi.yaml#/components/schemas/SuccessEnvelope
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/OperatorStudentDetail'
+    OperatorStudentsPageEnvelope:
+      allOf:
+        - $ref: ./openapi.yaml#/components/schemas/PaginatedSuccessEnvelope
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/OperatorStudentSummary'
+    OperatorSchedulingOptionsEnvelope:
+      allOf:
+        - $ref: ./openapi.yaml#/components/schemas/SuccessEnvelope
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/OperatorSchedulingOptionsView'
+    OperatorLessonSessionEnvelope:
+      allOf:
+        - $ref: ./openapi.yaml#/components/schemas/SuccessEnvelope
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/OperatorLessonSessionView'
+    OperatorLessonSessionsPageEnvelope:
+      allOf:
+        - $ref: ./openapi.yaml#/components/schemas/PaginatedSuccessEnvelope
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/OperatorLessonSessionView'
+    OperatorLeaveRequestEnvelope:
+      allOf:
+        - $ref: ./openapi.yaml#/components/schemas/SuccessEnvelope
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/OperatorLeaveRequestView'
+    OperatorLeaveRequestsPageEnvelope:
+      allOf:
+        - $ref: ./openapi.yaml#/components/schemas/PaginatedSuccessEnvelope
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/OperatorLeaveRequestView'
+    OperatorWarningsPageEnvelope:
+      allOf:
+        - $ref: ./openapi.yaml#/components/schemas/PaginatedSuccessEnvelope
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/OperatorWarningView'
+    OperatorCampusEnvelope:
+      allOf:
+        - $ref: ./openapi.yaml#/components/schemas/SuccessEnvelope
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/OperatorCampusView'

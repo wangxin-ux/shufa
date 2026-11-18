@@ -1,9 +1,21 @@
+@import "../../../styles/parent-pdf.wxss";
+@import "../styles/pdf-typography.wxss";
+
 parent-page-shell {
-  --parent-yellow: var(--role-home-yellow-gradient);
+  --parent-yellow: var(--parent-pdf-home-gradient);
+  --parent-shell-wave-top: 0;
+  --parent-shell-wave-left: 0;
+  --parent-shell-wave-width: 100%;
+  --parent-shell-wave-height: 240rpx;
+  --parent-shell-wave-radius: 0;
+  --parent-shell-wave-transform: none;
+  --parent-shell-wave-origin: center;
+  --parent-shell-wave-filter: drop-shadow(0 5rpx 17rpx rgba(24, 18, 14, 0.28));
+  --parent-metric-label-color: var(--parent-pdf-metric-label);
 }
 
 .home {
-  padding-bottom: 48rpx;
+  padding-bottom: calc(48rpx + env(safe-area-inset-bottom));
 }
 
 .tap-hover {
@@ -24,7 +36,7 @@ parent-page-shell {
 .course__title {
   font-size: 64rpx;
   font-family: var(--parent-font-display);
-  font-weight: 700;
+  font-weight: 400;
   color: var(--parent-on-color);
 }
 
@@ -61,18 +73,18 @@ parent-page-shell {
 }
 
 .course__day {
-  font-size: 150rpx;
+  font-size: 172rpx;
   font-family: var(--parent-font-display);
-  font-weight: 800;
+  font-weight: 400;
   line-height: 1;
   color: var(--parent-date-red);
 }
 
 .course__weekday {
   margin-top: 8rpx;
-  font-size: 28rpx;
+  font-size: 32rpx;
   font-family: var(--parent-font-display);
-  font-weight: 600;
+  font-weight: 400;
   color: var(--parent-date-red);
 }
 
@@ -93,24 +105,42 @@ parent-page-shell {
 }
 
 .course__campus {
-  font-size: 26rpx;
+  font-size: 29rpx;
   color: var(--parent-on-color);
+}
+
+.course__campus-tail {
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .course__name {
   margin-top: 8rpx;
   font-size: 82rpx;
   font-family: var(--parent-font-display);
-  font-weight: 800;
+  font-weight: 400;
   line-height: 1.1;
   color: var(--parent-on-color);
   overflow-wrap: anywhere;
   white-space: normal;
 }
 
+.course__name--short {
+  font-size: 101rpx;
+}
+
+.course__name--long {
+  font-size: 64rpx;
+}
+
+.course__name-tail {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 .course__time {
   margin-top: 8rpx;
-  font-size: 26rpx;
+  font-size: 29rpx;
   color: var(--parent-on-color);
 }
 
@@ -118,12 +148,12 @@ parent-page-shell {
 .stage {
   position: relative;
   margin-top: 8rpx;
-  height: 720rpx;
+  height: 704rpx;
 }
 
 .stage__mascot {
   position: absolute;
-  top: -144rpx;
+  top: -122rpx;
   right: -40rpx;
   width: 750rpx;
   pointer-events: none;
@@ -133,7 +163,7 @@ parent-page-shell {
 .stage__student {
   position: absolute;
   left: 0;
-  bottom: 189rpx;
+  bottom: 202rpx;
   z-index: 2;
   display: flex;
   align-items: baseline;
@@ -144,7 +174,7 @@ parent-page-shell {
   max-width: 480rpx;
   font-size: 64rpx;
   font-family: var(--parent-font-display);
-  font-weight: 800;
+  font-weight: 400;
   color: #000000;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -156,7 +186,7 @@ parent-page-shell {
   margin-left: 12rpx;
   font-size: 42rpx;
   font-family: var(--parent-font-display);
-  font-weight: 700;
+  font-weight: 400;
   color: #000000;
 }
 
@@ -174,7 +204,8 @@ parent-page-shell {
   z-index: 4;
   display: flex;
   align-items: flex-start;
-  margin-top: 27rpx;
+  margin-top: 29rpx;
+  margin-left: 9rpx;
 }
 
 .quickbar__capsule {
@@ -240,4 +271,93 @@ parent-page-shell {
 .quickbar__more {
   flex: none;
   margin-left: auto;
+}
+
+.quickbar__remind--collapsed {
+  margin-left: 0;
+}
+
+.course__empty {
+  display: flex;
+  align-items: center;
+  height: 222rpx;
+  color: #ffffff;
+  font-size: 28rpx;
+}
+
+.home__refresh-error {
+  margin-top: 12rpx;
+  color: #880000;
+  font-size: 22rpx;
+}
+
+.home-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.home-sheet {
+  width: 100%;
+  padding: 32rpx 40rpx calc(32rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  border-radius: 16rpx 16rpx 0 0;
+  background: #ffffff;
+  color: #242424;
+}
+
+.home-sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.home-sheet__title {
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.home-sheet__close {
+  width: 72rpx;
+  height: 72rpx;
+  padding: 0;
+  margin: 0;
+  line-height: 72rpx;
+  font-size: 40rpx;
+  background: transparent;
+}
+
+.home-sheet__close::after {
+  border: 0;
+}
+
+.home-sheet__body {
+  max-height: 52vh;
+}
+
+.home-sheet__row {
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #eeeeee;
+}
+
+.home-sheet__name,
+.home-sheet__detail {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.home-sheet__name {
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.home-sheet__detail,
+.home-sheet__empty {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #666666;
 }

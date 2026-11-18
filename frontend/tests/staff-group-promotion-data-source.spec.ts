@@ -12,6 +12,8 @@ import {
   presentGroupPromotionCampaign,
 } from '../services/group-promotion.presenter';
 import { GroupPromotionCampaignView } from '../types/group-buying';
+import { MockPartnerDataSource } from '../data/mock-partner-data-source';
+import { presentPartnerPromotionCampaign } from '../pages/partner/runtime/group-promotion';
 
 const campaign: GroupPromotionCampaignView = {
   id: 'campaign-1',
@@ -170,5 +172,54 @@ describe('staff group promotion presenter', () => {
     expect(copy).toContain('3 人拼团');
     expect(copy).not.toContain('我正在参加');
     expect(copy).not.toContain('学员');
+  });
+
+  it.each(['ACTIVE', 'CLOSED'] as const)('labels ended %s history from the server flag', (status) => {
+    const view = presentPartnerPromotionCampaign({
+      ...campaign, status, canPromote: false,
+    });
+    expect(view).toMatchObject({ canPromote: false, statusLabel: '已结束' });
+  });
+});
+
+describe('partner campaign history data sources', () => {
+  it('forwards ENDED and preserves the server flag while normalizing URLs', async () => {
+    const requests: Parameters<PartnerHttpRequest>[0][] = [];
+    const ended = { ...campaign, canPromote: false };
+    const source = new ApiPartnerDataSource({
+      baseUrl: 'https://example.test/api',
+      accessToken: 'partner-token',
+      request: (options) => {
+        requests.push(options);
+        options.success({ statusCode: 200, data: requests.length === 1
+          ? { data: [ended], meta: { page: 2, pageSize: 1, total: 2, totalPages: 2 } }
+          : { data: ended },
+        });
+      },
+    });
+    const page = await source.listGroupPromotionCampaigns({ page: 2, pageSize: 1, phase: 'ENDED' });
+    const detail = await source.getGroupPromotionCampaign(campaign.id);
+    expect(requests[0].url).toBe(
+      'https://example.test/api/partners/me/group-campaigns?page=2&pageSize=1&phase=ENDED',
+    );
+    expect(page.data[0]).toMatchObject({ status: 'ACTIVE', canPromote: false });
+    expect(detail).toMatchObject({ canPromote: false });
+    expect(detail.posterImages[0].accessUrl).toContain('https://example.test/api/media/');
+  });
+
+  it('keeps mock phases separate and ended details readable across pagination', async () => {
+    const source = new MockPartnerDataSource();
+    const ongoing = await source.listGroupPromotionCampaigns({ page: 1, pageSize: 1 });
+    const ended = await source.listGroupPromotionCampaigns({ page: 1, pageSize: 1, phase: 'ENDED' });
+    const beyond = await source.listGroupPromotionCampaigns({ page: 2, pageSize: 1, phase: 'ENDED' });
+    expect(ongoing.data).toHaveLength(1);
+    expect(ongoing.data[0].canPromote).toBe(true);
+    expect(ended.data).toHaveLength(1);
+    expect(ended.data[0]).toMatchObject({ status: 'CLOSED', canPromote: false });
+    expect(ended.data[0].id).not.toBe(ongoing.data[0].id);
+    expect(await source.getGroupPromotionCampaign(ended.data[0].id)).toMatchObject({
+      id: ended.data[0].id, canPromote: false,
+    });
+    expect(beyond).toMatchObject({ data: [], meta: { total: 1 } });
   });
 });

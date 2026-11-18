@@ -1,0 +1,78 @@
+<operator-page-shell markTitle="总部" markIcon="/pages/operator/assets/home-mark-glyph.png" showBack="{{false}}" surfacePage="{{true}}">
+  <view class="hq-page">
+    <view class="hq-heading">
+      <button class="hq-back" aria-label="返回上一页" bindtap="onBack" disabled="{{navigating}}"><text aria-hidden="true">‹</text></button>
+      <view class="hq-heading-text"><text class="hq-title">总部概览</text><text class="hq-meta">总部运营 · 只读</text></view>
+      <button class="hq-icon" aria-label="刷新总部概览" bindtap="onRefresh" disabled="{{viewState === 'forbidden'}}"><text aria-hidden="true">↻</text></button>
+    </view>
+    <view wx:if="{{viewState === 'forbidden'}}" class="hq-state" aria-live="polite">
+      <text class="hq-section-title">无法读取总部数据</text><text>{{errorMessage}}</text>
+      <button class="hq-command" bindtap="onLogin" disabled="{{navigating}}">重新登录</button>
+    </view>
+    <block wx:else>
+      <view class="hq-tabs" role="tablist">
+        <button class="hq-tab {{tab === 'all' ? 'hq-tab--active' : ''}}" role="tab" aria-selected="{{tab === 'all'}}" data-tab="all" bindtap="onTab">全部授权汇总</button>
+        <button class="hq-tab {{tab === 'campuses' ? 'hq-tab--active' : ''}}" role="tab" aria-selected="{{tab === 'campuses'}}" data-tab="campuses" bindtap="onTab">授权校区</button>
+      </view>
+      <view wx:if="{{tab === 'campuses'}}">
+        <view class="hq-search">
+          <input class="hq-input" placeholder="搜索校区名称" aria-label="搜索校区名称" value="{{query}}" maxlength="100" bindinput="onQueryInput" bindconfirm="onSearch" confirm-type="search" />
+          <button class="hq-command" bindtap="onSearch" disabled="{{loadingMore}}">搜索</button>
+        </view>
+        <text wx:if="{{directoryPage}}" class="hq-meta">符合条件 {{directoryTotal}} 个 · 已显示 {{campuses.length}} 个</text>
+        <view wx:if="{{directoryState === 'loading'}}" class="hq-state" aria-live="polite"><text>正在读取授权校区</text></view>
+        <view wx:elif="{{directoryState === 'empty'}}" class="hq-state"><text>{{appliedQuery ? '没有符合条件的校区' : '暂无授权校区'}}</text></view>
+        <view class="hq-directory">
+          <button wx:for="{{campuses}}" wx:key="id" class="hq-campus {{selectedCampusId === item.id ? 'hq-campus--selected' : ''}}" data-id="{{item.id}}" bindtap="onCampusTap">
+            <view><text class="hq-campus-name">{{item.name}}</text><text class="hq-meta">{{item.timezone}}</text></view><text aria-hidden="true">›</text>
+          </button>
+        </view>
+        <view wx:if="{{directoryError}}" class="hq-notice" aria-live="polite"><text>{{directoryError}}</text><button class="hq-command" bindtap="onRetryDirectory">重试目录</button></view>
+        <button wx:if="{{hasMore && !directoryError}}" class="hq-command hq-more" bindtap="onLoadMore" loading="{{loadingMore}}" disabled="{{loadingMore}}">{{loadingMore ? '加载中' : '加载更多校区'}}</button>
+        <text wx:if="{{campuses.length && !hasMore}}" class="hq-meta hq-end">已显示全部符合条件的校区</text>
+        <view wx:if="{{selectedCampusId}}" class="hq-section" id="hq-selected-campus">
+          <text class="hq-section-title">{{selectedCampusName}}</text>
+          <view wx:if="{{campusState === 'loading'}}" class="hq-state" aria-live="polite"><text>正在读取校区汇总</text></view>
+          <view wx:elif="{{campusState === 'error'}}" class="hq-notice" aria-live="polite"><text>{{campusError}}</text><button class="hq-command" bindtap="onRetryCampus">重试校区汇总</button></view>
+        </view>
+        <text wx:else class="hq-meta hq-end">尚未选择校区</text>
+      </view>
+      <view wx:if="{{tab === 'all'}}">
+        <view wx:if="{{totalState === 'loading'}}" class="hq-state" aria-live="polite"><text>正在读取全部授权汇总</text></view>
+        <view wx:elif="{{totalState === 'error'}}" class="hq-notice" aria-live="polite"><text>{{totalError}}</text><button class="hq-command" bindtap="onRetryTotal">重试全部汇总</button></view>
+        <text wx:elif="{{totalSummary.campusCount === 0}}" class="hq-meta hq-end">暂无授权校区</text>
+      </view>
+      <block wx:for="{{tab === 'all' ? (totalSummary ? [{ scope: 'all', summary: totalSummary, presentation: totalPresentation }] : []) : (campusSummary ? [{ scope: 'campus', summary: campusSummary, presentation: campusPresentation }] : [])}}" wx:for-item="shown" wx:key="scope">
+        <view class="hq-stats">
+          <view wx:if="{{tab === 'all'}}"><text class="hq-stat">{{shown.summary.campusCount}}</text><text>授权校区</text></view>
+          <view><text class="hq-stat">{{shown.summary.activeStudentCount}}</text><text>有效学员记录</text></view>
+          <view><text class="hq-stat">{{shown.summary.todayLessonCount}}</text><text>今日课次</text></view>
+        </view>
+        <text wx:if="{{tab === 'all'}}" class="hq-meta">学员数按各校区有效学员记录合计，未跨校区去重。</text>
+        <text class="hq-meta">今日课次按各校区当地日期统计。</text>
+        <text wx:if="{{tab === 'campuses'}}" class="hq-meta">校区时区：{{shown.summary.campus.timezone}}</text>
+        <text class="hq-meta">汇总截至 {{shown.presentation.asOf}}</text>
+        <view class="hq-section">
+          <text class="hq-section-title">当前课时</text>
+          <view class="hq-grid hq-grid--head"><text>课时</text><text>主课时</text><text>赠课时</text><text>合计</text></view>
+          <view wx:for="{{shown.presentation.balances}}" wx:key="label" class="hq-grid"><text>{{item.label}}</text><text>{{item.main}}</text><text>{{item.gift}}</text><text>{{item.total}}</text></view>
+        </view>
+        <view class="hq-section">
+          <text class="hq-section-title">收款与退款累计</text>
+          <view wx:for="{{shown.presentation.enrollment}}" wx:key="label" class="hq-pair"><text>{{item.label}}</text><text>{{item.value}}</text></view>
+        </view>
+        <view class="hq-section">
+          <text class="hq-section-title">历史课时变化</text>
+          <view class="hq-grid hq-grid--head"><text>类别</text><text>主课时</text><text>赠课时</text><text>合计</text></view>
+          <view wx:for="{{shown.presentation.activities}}" wx:key="key" class="hq-grid"><text>{{item.label}}</text><text>{{item.main}}</text><text>{{item.gift}}</text><text>{{item.total}}</text></view>
+        </view>
+        <view class="hq-section">
+          <text class="hq-section-title">校区内部收益</text>
+          <view wx:for="{{shown.presentation.earnings}}" wx:key="label" class="hq-pair"><text>{{item.label}}</text><text>{{item.value}}</text></view>
+          <text class="hq-meta">内部收益不是利润或可提现现金，含待审、排除驳回，冲正相抵。</text>
+          <text class="hq-meta">历史来源不完整的项目显示待核对。</text>
+        </view>
+      </block>
+    </block>
+  </view>
+</operator-page-shell>

@@ -1,0 +1,374 @@
+collection:
+  get:
+    operationId: listPartnerCampaignDrafts
+    summary: List private activity drafts in the authenticated partner campus
+    description: >-
+      Requires PARTNER_CAMPAIGN_DRAFT_READ and exactly one campus-scoped PARTNER
+      role. No client-selected campus or owner is accepted. Summaries exclude
+      contact phones and descriptions. Sort by updatedAt descending, then draftId
+      descending; count and rows share a RepeatableRead snapshot. Draft IDs do not
+      identify a published GroupCampaign and cannot be used to share or register.
+      latestSubmission is null before first submission; otherwise expose only
+      the newest immutable submission sequence, sourceDraftVersion, review status
+      and rejection reason. Its sourceDraftVersion may be older than the current
+      private draft version; approval never implies later edits were published.
+      lifecycle is null before a campaign exists, otherwise OPEN or CLOSED.
+      Closure is independent of review status. Read these fields in the same
+      snapshot, in bounded batch queries, without disclosing review actors,
+      private content, campaign IDs or public version IDs.
+      Recheck current active role/campus in a short ReadCommitted transaction
+      outside the data snapshot before returning; a changed campus is 403.
+      Optional campaignType matches the current private draft type before both
+      counting and pagination. Omit it for all types, including unclassified
+      drafts. It never selects the approved version's type or changes campus scope.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+      - name: campaignType
+        in: query
+        required: false
+        description: Exact private draft category; omit for all drafts.
+        schema: { $ref: '#/schemas/CampaignType' }
+    responses:
+      '200':
+        description: Private draft summaries.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/DraftPageEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+  post:
+    operationId: createPartnerCampaignDraft
+    summary: Save a new private activity basic draft without publishing
+    description: >-
+      Requires PARTNER_CAMPAIGN_DRAFT_WRITE and exactly one campus-scoped PARTNER
+      role. Campus and creator are determined by the server. Partial values are
+      allowed: trim outer whitespace and normalize blank or omitted values to null.
+      Name is at most 40 Unicode code points; an emoji code point counts as one,
+      combining marks and joined sequences retain their individual code points.
+      Type is metadata only and confers no price, benefit or registration rule.
+      Description and contact phone are bounded text, not executable content or
+      verified identity. Text must contain valid Unicode scalar values; U+0000
+      and unpaired surrogates are rejected with 400 before database writes.
+      Creation, minimal audit and idempotency receipt are atomic;
+      the same key and normalized request replay without a second draft or audit.
+      A different payload, actor or campus with that key returns 409.
+      No live campaign, public URL, review, order, payment or lesson fact is created.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/BasicInput' }
+    responses:
+      '200':
+        description: Minimal creation receipt, also returned on a replay.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/ReceiptEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '409':
+        description: IDEMPOTENCY_CONFLICT.
+        content:
+          application/json:
+            schema: { $ref: './openapi.yaml#/components/schemas/ErrorEnvelope' }
+detail:
+  parameters:
+    - { $ref: '#/parameters/DraftId' }
+  get:
+    operationId: getPartnerCampaignDraft
+    summary: Read the basic fields of one private activity draft
+    description: >-
+      Requires PARTNER_CAMPAIGN_DRAFT_READ and exactly one campus-scoped PARTNER.
+      Foreign-campus and unknown IDs both return 404. Reading never creates a
+      record or audit. Includes private activityContent and registrationForm separately from basics.
+      No approval, publication, financial or registration fields
+      are exposed. UTC timestamps are ISO 8601; display explicitly in Beijing time.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    responses:
+      '200':
+        description: Owned-campus draft basics.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/DraftEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+basicInformation:
+  parameters:
+    - { $ref: '#/parameters/DraftId' }
+  put:
+    operationId: savePartnerCampaignDraftBasics
+    summary: Replace only an existing private activity draft's basic fields
+    description: >-
+      Requires PARTNER_CAMPAIGN_DRAFT_WRITE and exactly one campus-scoped PARTNER.
+      Same normalization and code-point limits as creation. All four basic fields
+      are replaced; omitted, blank or null fields clear their corresponding value.
+      No other future draft partitions are replaced. Lock the actor User then
+      its UserRole rows then target draft, validate the live role/campus, and save version plus minimal
+      audit atomically. Same normalized fields with current or immediately
+      previous expectedVersion return the same receipt without another audit.
+      Differing stale requests, older versions or changed fields at an exhausted
+      version return 409; an identical current/previous-version retry still succeeds.
+      Foreign-campus and unknown IDs return 404 before any version disclosure.
+      This basic save operation does not submit or publish. Only the separate
+      free-registration configuration and submission operations may freeze a
+      complete FREE_REGISTRATION draft for review; other types remain metadata.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [expectedVersion, basicInformation]
+            additionalProperties: false
+            properties:
+              expectedVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+              basicInformation: { $ref: '#/schemas/BasicInput' }
+    responses:
+      '200':
+        description: Minimal saved or unchanged draft receipt.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/ReceiptEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409':
+        description: CONFLICT; stale or exhausted draft version.
+        content:
+          application/json:
+            schema: { $ref: './openapi.yaml#/components/schemas/ErrorEnvelope' }
+activityContent:
+  parameters:
+    - { $ref: '#/parameters/DraftId' }
+  put:
+    operationId: savePartnerCampaignDraftContent
+    summary: Save only the private activity body for any of the five types
+    description: >-
+      Requires PARTNER_CAMPAIGN_DRAFT_WRITE and exactly one campus-scoped PARTNER.
+      Replace only activityContent. Trim outer whitespace, normalize blank to null,
+      allow at most 10000 Unicode code points, reject U+0000 and unpaired surrogates.
+      Plain text only; clients never execute HTML. No contact, basic, free setting,
+      publication or financial fields are changed. Lock User, UserRole then draft,
+      recheck live role/campus and commit content, version and minimal audit atomically.
+      Identical current or immediately previous expectedVersion returns the same
+      receipt without another write/audit; changed stale or exhausted versions are
+      409 CONFLICT. Foreign-campus and unknown IDs return 404 before version disclosure.
+      Free submission freezes the saved body; later edits never change published content.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [expectedVersion, activityContent]
+            properties:
+              expectedVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+              activityContent: { $ref: '#/schemas/ActivityContent' }
+    responses:
+      '200':
+        description: Minimal saved or unchanged receipt.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/ReceiptEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409':
+        description: CONFLICT; stale or exhausted draft version.
+        content:
+          application/json:
+            schema: { $ref: './openapi.yaml#/components/schemas/ErrorEnvelope' }
+registrationForm:
+  parameters:
+    - { $ref: '#/parameters/DraftId' }
+  put:
+    operationId: savePartnerCampaignDraftRegistrationForm
+    summary: Save a private registration template without activating data collection
+    description: >-
+      Requires PARTNER_CAMPAIGN_DRAFT_WRITE and exactly one campus-scoped PARTNER.
+      Replace only registrationForm, for any of the five activity types.
+      This private template is not frozen, published or consumed by free registration.
+      No answers, identity documents or additional parent personal data are accepted.
+      Trim labels, hints and options; reject U+0000 and unpaired surrogates.
+      IDs are unique in the template. Choice questions require 2 to 20 distinct
+      normalized nonblank options; all other kinds require an empty options array.
+      Lock User, UserRole then draft, recheck current role/campus and commit form,
+      version and minimal audit atomically. Identical current or immediately previous
+      expectedVersion returns the same receipt without another write or audit.
+      Changed stale or exhausted versions return 409 CONFLICT; unknown and foreign
+      campus drafts return 404 before version disclosure. Empty arrays clear the template.
+      Other draft partitions and previously submitted or approved content remain unchanged.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [expectedVersion, registrationForm]
+            properties:
+              expectedVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+              registrationForm: { $ref: '#/schemas/RegistrationForm' }
+    responses:
+      '200':
+        description: Minimal saved or unchanged draft receipt.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/ReceiptEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409':
+        description: CONFLICT; stale or exhausted draft version.
+        content:
+          application/json:
+            schema: { $ref: './openapi.yaml#/components/schemas/ErrorEnvelope' }
+parameters:
+  DraftId:
+    name: draftId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+schemas:
+  RegistrationForm:
+    type: array
+    maxItems: 20
+    items: { $ref: '#/schemas/RegistrationQuestion' }
+    description: Ordered private template only; an empty array is valid.
+  RegistrationQuestion:
+    type: object
+    additionalProperties: false
+    required: [id, kind, label, hint, required, options]
+    properties:
+      id: { type: string, pattern: '^[A-Za-z0-9_-]{1,40}$' }
+      kind:
+        type: string
+        enum: [TEXT, NUMBER, SINGLE_CHOICE, MULTI_CHOICE, AGE, DATE, MOBILE]
+      label: { type: string, minLength: 1, maxLength: 80 }
+      hint: { type: string, maxLength: 200 }
+      required: { type: boolean }
+      options:
+        type: array
+        maxItems: 20
+        uniqueItems: true
+        items: { type: string, minLength: 1, maxLength: 80 }
+  ActivityContent:
+    type: [string, 'null']
+    maxLength: 10000
+    description: Normalized plain-text body, independent of shareDescription; preserve internal line breaks.
+  CampaignType:
+    type: string
+    enum: [REGULAR_GROUP, MULTI_SPEC_GROUP, FLASH_SALE, MULTI_SPEC_REGISTRATION_FEE, FREE_REGISTRATION]
+  BasicInput:
+    type: object
+    additionalProperties: false
+    properties:
+      title: { type: [string, 'null'], maxLength: 40 }
+      campaignType:
+        oneOf:
+          - { $ref: '#/schemas/CampaignType' }
+          - { type: 'null' }
+      shareDescription: { type: [string, 'null'], maxLength: 1000 }
+      contactPhone: { type: [string, 'null'], maxLength: 30 }
+  BasicInformation:
+    allOf:
+      - { $ref: '#/schemas/BasicInput' }
+    required: [title, campaignType, shareDescription, contactPhone]
+  Receipt:
+    allOf:
+      - { $ref: '#/schemas/ReceiptFields' }
+    unevaluatedProperties: false
+  ReceiptFields:
+    type: object
+    required: [draftId, status, version, createdAt, updatedAt]
+    properties:
+      draftId: { type: string, format: uuid }
+      status: { type: string, const: DRAFT }
+      version: { type: integer, minimum: 1, maximum: 2147483647 }
+      createdAt: { type: string, format: date-time }
+      updatedAt: { type: string, format: date-time }
+  Draft:
+    allOf:
+      - { $ref: '#/schemas/ReceiptFields' }
+      - type: object
+        required: [basicInformation, activityContent, registrationForm]
+        properties:
+          basicInformation: { $ref: '#/schemas/BasicInformation' }
+          activityContent: { $ref: '#/schemas/ActivityContent' }
+          registrationForm: { $ref: '#/schemas/RegistrationForm' }
+    unevaluatedProperties: false
+  Summary:
+    allOf:
+      - { $ref: '#/schemas/ReceiptFields' }
+      - type: object
+        required: [title, campaignType, latestSubmission, lifecycle]
+        properties:
+          title: { type: [string, 'null'], maxLength: 40 }
+          campaignType:
+            oneOf:
+              - { $ref: '#/schemas/CampaignType' }
+              - { type: 'null' }
+          latestSubmission:
+            oneOf:
+              - { $ref: '#/schemas/LatestSubmission' }
+              - { type: 'null' }
+          lifecycle: { type: [string, 'null'], enum: [OPEN, CLOSED, null] }
+    unevaluatedProperties: false
+  LatestSubmission:
+    type: object
+    additionalProperties: false
+    required: [sequence, sourceDraftVersion, status, reviewReason]
+    description: >-
+      Select by maximum submission sequence within this draft's campaign, not
+      review time or status. sourceDraftVersion is positive and cannot exceed the
+      returned draft version. REJECTED requires a nonblank bounded reason;
+      SUBMITTED and APPROVED have null reason. The draft remains DRAFT.
+    properties:
+      sequence: { type: integer, minimum: 1, maximum: 2147483647 }
+      sourceDraftVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+      status: { type: string, enum: [SUBMITTED, APPROVED, REJECTED] }
+      reviewReason: { type: [string, 'null'], maxLength: 1000 }
+  ReceiptEnvelope:
+    allOf:
+      - { $ref: './openapi.yaml#/components/schemas/SuccessEnvelope' }
+      - type: object
+        properties:
+          data: { $ref: '#/schemas/Receipt' }
+  DraftEnvelope:
+    allOf:
+      - { $ref: './openapi.yaml#/components/schemas/SuccessEnvelope' }
+      - type: object
+        properties:
+          data: { $ref: '#/schemas/Draft' }
+  DraftPageEnvelope:
+    allOf:
+      - { $ref: './openapi.yaml#/components/schemas/PaginatedSuccessEnvelope' }
+      - type: object
+        properties:
+          data:
+            type: array
+            items: { $ref: '#/schemas/Summary' }
+          meta: { $ref: './openapi.yaml#/components/schemas/PaginationMeta' }
+        required: [meta]

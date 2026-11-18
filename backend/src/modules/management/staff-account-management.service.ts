@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import type { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import type { AuthenticatedUser } from '../../common/auth/authenticated-user';
-import { MANAGEABLE_STAFF_ROLES, hasValidStaffCampus, isHeadquartersStaffRole } from '../../common/auth/staff-roles';
+import {
+  MANAGEABLE_STAFF_ROLES,
+  hasValidStaffCampus,
+  isHeadquartersStaffRole,
+} from '../../common/auth/staff-roles';
 import { DomainError } from '../../common/errors/domain-error';
 import { ErrorCode } from '../../common/errors/error-codes';
 import { IdempotencyService } from '../../common/idempotency/idempotency.service';
@@ -35,6 +39,13 @@ interface StaffAccountRecord {
     campus: { id: string; name: string } | null;
   }>;
   authIdentities: Array<{ provider: string }>;
+  partnerApplicationApproval?: {
+    campusId: string;
+    submission: {
+      review: { decision: string } | null;
+      application: { status: string; applicant: { userId: string } };
+    };
+  } | null;
 }
 
 export interface StaffAccountView {
@@ -58,47 +69,72 @@ export class StaffAccountManagementService {
     private readonly idempotency: IdempotencyService,
   ) {}
 
-  async list(query: StaffAccountsQueryDto) {
+  async list(actor: AuthenticatedUser, query: StaffAccountsQueryDto) {
+    this.requireAdministrator(actor);
     const keyword = query.query?.trim();
-    const where: Prisma.UserWhereInput = {
-      staffPhone: { not: null },
-      ...(query.status ? { status: query.status } : {}),
-      roles: {
-        some: {
-          roleCode: query.roleCode
-            ? query.roleCode
-            : { in: [...MANAGEABLE_STAFF_ROLES] },
-          ...(query.campusId ? { campusId: query.campusId } : {}),
-        },
+    // Compare role and approval campus columns before counting/pagination.
+    const source = Prisma.sql`
+      FROM "User" u JOIN "UserRole" r ON r."userId" = u.id
+      LEFT JOIN "Campus" c ON c.id = r."campusId"
+      LEFT JOIN "PartnerApplicationApproval" a ON a."userId" = u.id
+      LEFT JOIN "PartnerApplicationSubmission" s ON s.id = a."submissionId"
+      LEFT JOIN "PartnerApplication" p ON p.id = s."applicationId"
+      LEFT JOIN "PartnerApplicant" applicant ON applicant.id = p."applicantId"
+      LEFT JOIN "PartnerApplicationReview" review ON review."submissionId" = s.id
+      WHERE r."roleCode" IN (${Prisma.join([...MANAGEABLE_STAFF_ROLES])})
+        AND NOT EXISTS (SELECT 1 FROM "UserRole" extra WHERE extra."userId" = u.id AND extra.id <> r.id)
+        AND ((r."roleCode" IN ('HR', 'FINANCE') AND r."campusId" IS NULL) OR
+          (r."roleCode" = 'OPERATOR' AND r."campusId" IS NULL) OR
+          (r."roleCode" NOT IN ('HR', 'FINANCE') AND c.id IS NOT NULL))
+        AND (u."staffPhone" IS NOT NULL OR
+          (r."roleCode" = 'PARTNER' AND a."campusId" = r."campusId" AND applicant."userId" = u.id
+            AND p.status = 'APPROVED' AND review.decision = 'APPROVED'))
+        ${query.status ? Prisma.sql`AND u.status = ${query.status}::"UserStatus"` : Prisma.empty}
+        ${query.roleCode ? Prisma.sql`AND r."roleCode" = ${query.roleCode}::"RoleCode"` : Prisma.empty}
+        ${query.campusId ? Prisma.sql`AND r."campusId" = ${query.campusId}::uuid` : Prisma.empty}
+        ${
+          keyword
+            ? Prisma.sql`AND (strpos(lower(u."displayName"), lower(${keyword})) > 0 OR
+          strpos(u."staffPhone", ${keyword}) > 0 OR strpos(lower(s."institutionName"), lower(${keyword})) > 0)`
+            : Prisma.empty
+        }`;
+    const result = await this.prisma.$transaction(
+      async (tx) => {
+        await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${actor.userId}::uuid FOR UPDATE`;
+        await this.currentAdministrator(tx, actor.userId);
+        const [count] = await tx.$queryRaw<
+          Array<{ total: bigint }>
+        >`SELECT count(*) AS total ${source}`;
+        const ids = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT u.id ${source} ORDER BY u."createdAt" DESC, u.id ASC
+        LIMIT ${query.pageSize} OFFSET ${(query.page - 1) * query.pageSize}`;
+        const accounts = await tx.user.findMany({
+          where: { id: { in: ids.map((row) => row.id) } },
+          orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+          select: this.accountSelect(),
+        });
+        const total = Number(count.total);
+        return {
+          data: accounts.map((account) => this.toView(account)),
+          meta: {
+            page: query.page,
+            pageSize: query.pageSize,
+            total,
+            totalPages: total === 0 ? 0 : Math.ceil(total / query.pageSize),
+          },
+        };
       },
-      ...(keyword
-        ? {
-            OR: [
-              { displayName: { contains: keyword, mode: 'insensitive' } },
-              { staffPhone: { contains: keyword } },
-            ],
-          }
-        : {}),
-    };
-    const [total, accounts] = await Promise.all([
-      this.prisma.user.count({ where }),
-      this.prisma.user.findMany({
-        where,
-        orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
-        skip: (query.page - 1) * query.pageSize,
-        take: query.pageSize,
-        select: this.accountSelect(),
-      }),
-    ]);
-    return {
-      data: accounts.map((account) => this.toView(account)),
-      meta: {
-        page: query.page,
-        pageSize: query.pageSize,
-        total,
-        totalPages: total === 0 ? 0 : Math.ceil(total / query.pageSize),
+      { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead },
+    );
+    // A role-only change can be newer than the repeatable-read snapshot.
+    await this.prisma.$transaction(
+      async (tx) => {
+        await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${actor.userId}::uuid FOR UPDATE`;
+        await this.currentAdministrator(tx, actor.userId);
       },
-    };
+      { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted },
+    );
+    return result;
   }
 
   async createAccount(
@@ -110,12 +146,17 @@ export class StaffAccountManagementService {
       this.validation('The requested staff role cannot be created');
     }
     const headquarters = isHeadquartersStaffRole(input.roleCode);
-    if (headquarters && (
-      actor.roles.length !== 1 ||
-      actor.roles[0].code !== 'SUPER_ADMIN' ||
-      actor.roles[0].campusId !== null
-    )) {
-      throw new DomainError(ErrorCode.FORBIDDEN, 'Only the headquarters administrator can create headquarters staff', 403);
+    if (
+      headquarters &&
+      (actor.roles.length !== 1 ||
+        actor.roles[0].code !== 'SUPER_ADMIN' ||
+        actor.roles[0].campusId !== null)
+    ) {
+      throw new DomainError(
+        ErrorCode.FORBIDDEN,
+        'Only the headquarters administrator can create headquarters staff',
+        403,
+      );
     }
     if (!hasValidStaffCampus(input.roleCode, input.campusId)) {
       this.validation('The staff role and campus scope do not match');
@@ -133,7 +174,8 @@ export class StaffAccountManagementService {
           campusId: null,
           actorUserId: actor.userId,
         });
-        if (claim.replayed) return claim.responseBody as unknown as StaffAccountView;
+        if (claim.replayed)
+          return claim.responseBody as unknown as StaffAccountView;
 
         if (!headquarters) {
           const campus = await transaction.campus.findUnique({
@@ -210,8 +252,12 @@ export class StaffAccountManagementService {
     input: UpdateStaffAccountStatusDto,
     idempotencyKey: string,
   ): Promise<StaffAccountView> {
+    this.requireAdministrator(actor);
     const route = statusRoute(staffAccountId);
     return this.prisma.$transaction(async (transaction) => {
+      await transaction.$queryRaw`SELECT "id" FROM "User"
+        WHERE "id" IN (${staffAccountId}::uuid, ${actor.userId}::uuid) ORDER BY "id" FOR UPDATE`;
+      await this.currentAdministrator(transaction, actor.userId);
       const claim = await this.idempotency.claim(transaction, {
         key: idempotencyKey,
         route,
@@ -219,14 +265,18 @@ export class StaffAccountManagementService {
         campusId: null,
         actorUserId: actor.userId,
       });
-      if (claim.replayed) return claim.responseBody as unknown as StaffAccountView;
+      if (claim.replayed)
+        return claim.responseBody as unknown as StaffAccountView;
 
       const current = await this.findAccount(transaction, staffAccountId);
+      if (current.accountVersion >= 2_147_483_647) this.versionConflict();
       const updated = await transaction.user.updateMany({
         where: {
           id: staffAccountId,
           accountVersion: input.expectedVersion,
-          staffPhone: { not: null },
+          ...(current.staffPhone
+            ? { staffPhone: { not: null } }
+            : { staffPhone: null }),
         },
         data: { status: input.status, accountVersion: { increment: 1 } },
       });
@@ -235,7 +285,9 @@ export class StaffAccountManagementService {
         where: { userId: staffAccountId },
         data: { isActive: input.status === 'ACTIVE' },
       });
-      const response = this.toView(await this.findAccount(transaction, staffAccountId));
+      const response = this.toView(
+        await this.findAccount(transaction, staffAccountId),
+      );
       await transaction.auditLog.create({
         data: {
           campusId: response.campusId,
@@ -268,8 +320,12 @@ export class StaffAccountManagementService {
     input: UnbindStaffWechatDto,
     idempotencyKey: string,
   ): Promise<StaffAccountView> {
+    this.requireAdministrator(actor);
     const route = unbindRoute(staffAccountId);
     return this.prisma.$transaction(async (transaction) => {
+      await transaction.$queryRaw`SELECT "id" FROM "User"
+        WHERE "id" IN (${staffAccountId}::uuid, ${actor.userId}::uuid) ORDER BY "id" FOR UPDATE`;
+      await this.currentAdministrator(transaction, actor.userId);
       const claim = await this.idempotency.claim(transaction, {
         key: idempotencyKey,
         route,
@@ -277,10 +333,21 @@ export class StaffAccountManagementService {
         campusId: null,
         actorUserId: actor.userId,
       });
-      if (claim.replayed) return claim.responseBody as unknown as StaffAccountView;
+      if (claim.replayed)
+        return claim.responseBody as unknown as StaffAccountView;
 
       const current = await this.findAccount(transaction, staffAccountId);
-      if (!current.authIdentities.some(({ provider }) => provider === 'WECHAT')) {
+      if (current.accountVersion >= 2_147_483_647) this.versionConflict();
+      if (!current.staffPhone) {
+        throw new DomainError(
+          ErrorCode.WECHAT_IDENTITY_CONFLICT,
+          '未绑定个人手机号，暂不支持解除唯一微信登录身份',
+          409,
+        );
+      }
+      if (
+        !current.authIdentities.some(({ provider }) => provider === 'WECHAT')
+      ) {
         throw new DomainError(
           ErrorCode.WECHAT_IDENTITY_CONFLICT,
           'The staff account has no WeChat identity to unbind',
@@ -299,7 +366,9 @@ export class StaffAccountManagementService {
       await transaction.authIdentity.deleteMany({
         where: { userId: staffAccountId, provider: 'WECHAT' },
       });
-      const response = this.toView(await this.findAccount(transaction, staffAccountId));
+      const response = this.toView(
+        await this.findAccount(transaction, staffAccountId),
+      );
       await transaction.auditLog.create({
         data: {
           campusId: response.campusId,
@@ -332,7 +401,7 @@ export class StaffAccountManagementService {
       where: { id: userId },
       select: this.accountSelect(),
     });
-    if (!account?.staffPhone) this.unavailable();
+    if (!account || !this.hasLoginProvenance(account)) this.unavailable();
     this.resolveRole(account.roles);
     return account;
   }
@@ -357,20 +426,45 @@ export class StaffAccountManagementService {
         where: { provider: 'WECHAT' as const },
         select: { provider: true },
       },
+      partnerApplicationApproval: {
+        select: {
+          campusId: true,
+          submission: {
+            select: {
+              review: { select: { decision: true } },
+              application: {
+                select: {
+                  status: true,
+                  applicant: { select: { userId: true } },
+                },
+              },
+            },
+          },
+        },
+      },
     };
   }
 
   private toView(account: StaffAccountRecord): StaffAccountView {
-    if (!account.staffPhone) this.unavailable();
+    if (!this.hasLoginProvenance(account)) this.unavailable();
     const role = this.resolveRole(account.roles);
-    const headquarters = isHeadquartersStaffRole(role.roleCode);
-    if (!hasValidStaffCampus(role.roleCode, role.campusId) || (!headquarters && !role.campus)) {
+    const headquartersOperator =
+      role.roleCode === 'OPERATOR' && role.campusId === null;
+    const headquarters =
+      isHeadquartersStaffRole(role.roleCode) || headquartersOperator;
+    if (
+      (!headquartersOperator &&
+        !hasValidStaffCampus(role.roleCode, role.campusId)) ||
+      (!headquarters && !role.campus)
+    ) {
       this.unavailable('The staff campus is unavailable');
     }
     return {
       id: account.id,
       displayName: account.displayName,
-      maskedPhone: maskStaffPhone(account.staffPhone),
+      maskedPhone: account.staffPhone
+        ? maskStaffPhone(account.staffPhone)
+        : '未绑定个人手机号',
       roleCode: role.roleCode,
       campusId: role.campusId,
       campusName: headquarters ? '总部' : role.campus!.name,
@@ -386,11 +480,107 @@ export class StaffAccountManagementService {
     const manageable = roles.filter(({ roleCode }) =>
       MANAGEABLE_STAFF_ROLES.includes(roleCode as ManageableStaffRole),
     );
-    if (roles.length !== 1 || manageable.length !== 1) this.unavailable('The staff account must have one role');
+    if (roles.length !== 1 || manageable.length !== 1)
+      this.unavailable('The staff account must have one role');
     return {
       ...manageable[0],
       roleCode: manageable[0].roleCode as ManageableStaffRole,
     };
+  }
+
+  private requireAdministrator(actor: AuthenticatedUser) {
+    if (
+      actor.roles.length !== 1 ||
+      actor.roles[0].code !== 'SUPER_ADMIN' ||
+      actor.roles[0].campusId !== null
+    )
+      throw new DomainError(
+        ErrorCode.FORBIDDEN,
+        'An exclusive headquarters administrator is required',
+        403,
+      );
+  }
+
+  private async currentAdministrator(
+    tx: Prisma.TransactionClient,
+    userId: string,
+  ) {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: {
+        status: true,
+        roles: { select: { roleCode: true, campusId: true } },
+      },
+    });
+    if (!user || user.status !== 'ACTIVE')
+      throw new DomainError(
+        ErrorCode.UNAUTHORIZED,
+        'The administrator session is no longer active',
+        401,
+      );
+    if (
+      user.roles.length !== 1 ||
+      user.roles[0].roleCode !== 'SUPER_ADMIN' ||
+      user.roles[0].campusId !== null
+    )
+      throw new DomainError(
+        ErrorCode.FORBIDDEN,
+        'The current administrator scope is unavailable',
+        403,
+      );
+  }
+
+  // Called only by the locked approval transaction; never starts a nested transaction.
+  async activateApprovedPartner(
+    transaction: Prisma.TransactionClient,
+    userId: string,
+    campusId: string,
+  ) {
+    const user = await transaction.user.findUnique({
+      where: { id: userId },
+      select: { status: true, accountVersion: true },
+    });
+    if (
+      !user ||
+      user.status !== 'ACTIVE' ||
+      user.accountVersion >= 2_147_483_647 ||
+      (await transaction.userRole.count({ where: { userId } }))
+    ) {
+      throw new DomainError(
+        ErrorCode.CONFLICT,
+        '申请账号已更新，无法启用',
+        409,
+      );
+    }
+    const updated = await transaction.user.updateMany({
+      where: {
+        id: userId,
+        status: 'ACTIVE',
+        accountVersion: user.accountVersion,
+      },
+      data: { accountVersion: { increment: 1 } },
+    });
+    if (updated.count !== 1) this.versionConflict();
+    await transaction.userRole.create({
+      data: { userId, roleCode: 'PARTNER', campusId },
+    });
+  }
+
+  private hasLoginProvenance(account: StaffAccountRecord) {
+    if (account.staffPhone) return true;
+    return (
+      account.roles.length === 1 &&
+      account.roles[0].roleCode === 'PARTNER' &&
+      Boolean(account.roles[0].campusId) &&
+      account.partnerApplicationApproval?.campusId ===
+        account.roles[0].campusId &&
+      account.partnerApplicationApproval.submission.application.status ===
+        'APPROVED' &&
+      account.partnerApplicationApproval.submission.application.applicant
+        .userId === account.id &&
+      account.partnerApplicationApproval.submission.review?.decision ===
+        'APPROVED'
+    );
   }
 
   private asJson(value: unknown): Prisma.InputJsonValue {

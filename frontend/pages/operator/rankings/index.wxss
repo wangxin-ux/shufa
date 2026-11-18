@@ -1,0 +1,76 @@
+@import "../runtime/operator-tokens.wxss";
+
+.ranking-page {
+  padding: 52rpx 18rpx 64rpx;
+  color: var(--operator-ink);
+  font-family: var(--operator-font-body), "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 26rpx;
+  line-height: 1.55;
+  letter-spacing: 0;
+}
+
+.ranking-page view, .ranking-page text, .ranking-page button {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  letter-spacing: 0;
+}
+
+.ranking-page button { font-family: inherit; white-space: normal; }
+.ranking-page button::after { border: 0; }
+.ranking-page button[disabled] { opacity: 0.5; }
+.ranking-heading { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; }
+.ranking-title { font-family: var(--operator-font-display); font-size: 48rpx; font-weight: 700; line-height: 1.4; color: var(--operator-orange); }
+.ranking-refresh {
+  display: flex; flex: none; align-items: center; justify-content: center;
+  width: 88rpx; height: 88rpx; margin: 0; padding: 0; border: 0;
+  border-radius: 8rpx; background: transparent; color: var(--operator-ink); font-size: 44rpx; line-height: 1;
+}
+.ranking-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 20rpx; border-bottom: 2rpx solid #e4e4e4; }
+.ranking-metric {
+  display: flex; align-items: center; justify-content: center; min-height: 96rpx;
+  margin: 0; padding: 12rpx 8rpx; border-radius: 0; background: transparent;
+  font-size: 24rpx; line-height: 1.4; color: #606060;
+}
+.ranking-metric--active { box-shadow: inset 0 -4rpx var(--operator-orange); color: var(--operator-red); font-weight: 700; }
+.ranking-month { display: flex; align-items: stretch; gap: 20rpx; margin-top: 16rpx; }
+.ranking-month__control { display: block; flex: 1; min-width: 0; }
+.ranking-month__picker { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; min-height: var(--operator-touch-min); border-bottom: 2rpx solid #dedede; font-size: 28rpx; }
+.ranking-month__arrow { flex: none; font-size: 30rpx; }
+.ranking-current {
+  display: flex; flex: none; align-items: center; justify-content: center;
+  min-width: 112rpx; min-height: var(--operator-touch-min); margin: 0; padding: 12rpx 20rpx;
+  border-radius: 8rpx; background: #f2f2f2; color: var(--operator-ink); font-size: 25rpx; line-height: 1.4;
+}
+.ranking-status, .ranking-list-head { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8rpx 20rpx; margin-top: 24rpx; font-size: 25rpx; }
+.ranking-meta { display: block; margin-top: 12rpx; color: #686868; font-size: 23rpx; line-height: 1.65; }
+.ranking-own { margin-top: 24rpx; padding: 12rpx; border-radius: var(--operator-card-radius); background: var(--operator-panel); box-shadow: var(--operator-shadow); }
+.ranking-own > .ranking-own__label { padding: 16rpx 16rpx 0; }
+.ranking-own__label { display: block; font-size: 22rpx; color: #76502d; }
+.ranking-row {
+  display: grid; grid-template-columns: 80rpx minmax(0, 1fr) 152rpx; align-items: center;
+  gap: 12rpx; min-height: 108rpx; padding: 22rpx 12rpx; border-bottom: 1rpx solid #ffffff; background: var(--operator-panel); font-size: 26rpx;
+}
+.ranking-row--own { background: #ffbc47; font-weight: 700; }
+.ranking-row--head { min-height: 76rpx; color: #686868; font-size: 23rpx; }
+.ranking-row__rank { text-align: center; font-variant-numeric: tabular-nums; }
+.ranking-row__name { display: block; }
+.ranking-row__delta { text-align: right; font-size: 22rpx; color: #626262; }
+.ranking-row__delta--up { color: #8d3125; }
+.ranking-row__delta--down { color: #236347; }
+.ranking-state { display: flex; flex-direction: column; align-items: flex-start; gap: 18rpx; min-height: 260rpx; padding: 40rpx 0; }
+.ranking-state__title { font-size: 30rpx; font-weight: 700; }
+.ranking-notice { display: flex; align-items: center; flex-wrap: wrap; gap: 8rpx 16rpx; margin-top: 20rpx; color: var(--operator-red); font-size: 25rpx; }
+.ranking-notice > text { flex: 1 1 300rpx; }
+.ranking-error { display: block; margin-top: 20rpx; color: var(--operator-red); font-size: 25rpx; }
+.ranking-command {
+  display: flex; align-items: center; justify-content: center; min-height: var(--operator-touch-min);
+  margin: 16rpx 0 0; padding: 14rpx 24rpx; border-radius: 8rpx; background: #f2f2f2;
+  color: var(--operator-ink); font-size: 25rpx; line-height: 1.5;
+}
+.ranking-command--text { flex: none; margin: 0; padding: 12rpx 0; background: transparent; color: var(--operator-red); }
+.ranking-more { width: 100%; margin-top: 24rpx; }
+.ranking-end { text-align: center; padding-top: 12rpx; }
+.control--hover { opacity: 0.72; }

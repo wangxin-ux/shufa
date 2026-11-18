@@ -5,6 +5,8 @@ export type MockWechatAccount =
   | 'PARTNER'
   | 'TEACHER'
   | 'CAMPUS_MANAGER'
+  | 'OPERATOR'
+  | 'OPERATOR_HEADQUARTERS'
   | 'SUPER_ADMIN'
   | 'HR'
   | 'FINANCE';
@@ -14,6 +16,8 @@ const MOCK_WECHAT_ACCOUNTS: readonly MockWechatAccount[] = [
   'PARTNER',
   'TEACHER',
   'CAMPUS_MANAGER',
+  'OPERATOR',
+  'OPERATOR_HEADQUARTERS',
   'SUPER_ADMIN',
   'HR',
   'FINANCE',
@@ -25,6 +29,8 @@ export interface LocalRuntimeOverrides {
   accessToken?: string;
   enableTestAccountSwitcher?: boolean;
   mockWechatAccount?: MockWechatAccount;
+  parentMockScenario?: 'visual' | 'profile-setup';
+  partnerMockScenario?: 'visual';
 }
 
 export type RuntimeStorageReader = (key: string) => unknown;
@@ -62,6 +68,12 @@ export function readLocalRuntimeOverrides(
   }
   if (typeof stored.enableTestAccountSwitcher === 'boolean') {
     result.enableTestAccountSwitcher = stored.enableTestAccountSwitcher;
+  }
+  if (stored.parentMockScenario === 'visual' || stored.parentMockScenario === 'profile-setup') {
+    result.parentMockScenario = stored.parentMockScenario;
+  }
+  if (stored.partnerMockScenario === 'visual') {
+    result.partnerMockScenario = stored.partnerMockScenario;
   }
   if (
     typeof stored.mockWechatAccount === 'string' &&

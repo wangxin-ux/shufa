@@ -1,0 +1,25 @@
+[
+  {
+    "viewState": "ready",
+    "errorMessage": "",
+    "remainingTotal": 37,
+    "balanceValueSize": 180,
+    "grossTotal": 37,
+    "paidAmountLabel": "¥4800.00",
+    "validUntilLabel": "2027-08-23",
+    "hasReservations": false,
+    "hourCards": [
+      {"key": "paid", "label": "购买课时", "remaining": 37, "grantedLabel": "48", "hasKnownGrant": true, "valueSize": 132},
+      {"key": "gift", "label": "赠送课时", "remaining": 0, "grantedLabel": "12", "hasKnownGrant": true, "valueSize": 132}
+    ],
+    "entries": [
+      {"id": "visual-one", "title": "硬笔书法", "subtitleLabel": "7月23日 14:00 王老师", "delta": -1, "deltaLabel": "-1节"},
+      {"id": "visual-two", "title": "续费报名", "subtitleLabel": "7月23日 报名48节 赠送0节", "delta": 48, "deltaLabel": "+48节"},
+      {"id": "visual-three", "title": "专业美术 A", "subtitleLabel": "7月23日 15:30 赵老师", "delta": -1, "deltaLabel": "-1节"}
+    ],
+    "isEmpty": false,
+    "hasMore": false,
+    "showFilters": false,
+    "paginationError": ""
+  }
+]

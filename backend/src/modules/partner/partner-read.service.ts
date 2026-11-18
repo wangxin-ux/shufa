@@ -7,11 +7,31 @@ import { ErrorCode } from '../../common/errors/error-codes';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import type {
   PartnerPageQueryDto,
+  PartnerLessonQueryDto,
   PartnerPeriodQueryDto,
   PartnerSearchQueryDto,
+  PartnerStudentQueryDto,
 } from './dto/partner-query.dto';
 import { resolvePartnerPeriodRange } from './partner-period';
-import { lessonBalanceSelect, summarizeLessonBalances, type PackageBalance } from '../lesson-ledger/lesson-balance';
+import {
+  lessonBalanceSelect,
+  summarizeLessonBalances,
+  type PackageBalance,
+} from '../lesson-ledger/lesson-balance';
+import {
+  PartnerStudentQueryService,
+  partnerCompletedAttendanceWhere as completedAttendanceWhere,
+} from './partner-student-query.service';
+import { StoredFileService } from '../file/stored-file.service';
+import {
+  partnerPhotoSelect,
+  toPartnerPhoto,
+} from './partner-student-growth.service';
+import { readPartnerEnrollmentSummary } from './partner-enrollment-summary';
+import {
+  partnerLedgerPackageSelect,
+  toPartnerLedgerPayment,
+} from './partner-ledger-payment';
 
 const activePackageWhere = (now: Date): Prisma.CoursePackageWhereInput => ({
   isActive: true,
@@ -19,11 +39,22 @@ const activePackageWhere = (now: Date): Prisma.CoursePackageWhereInput => ({
   OR: [{ expiresAt: null }, { expiresAt: { gte: now } }],
 });
 
+const ledgerTeachingSelect = {
+  campusId: true,
+  startsAt: true,
+  classGroup: { select: { campusId: true, courseName: true } },
+  teacher: {
+    select: { campusId: true, user: { select: { displayName: true } } },
+  },
+} satisfies Prisma.LessonSessionSelect;
+
 @Injectable()
 export class PartnerReadService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly scopeService: PartnerScopeService,
+    private readonly studentQuery: PartnerStudentQueryService,
+    private readonly files: StoredFileService,
   ) {}
 
   async getDashboard(user: AuthenticatedUser) {
@@ -63,7 +94,7 @@ export class PartnerReadService {
       packages,
       consumed,
       attendanceGroups,
-      students,
+      warningPage,
     ] = await Promise.all([
       this.prisma.student.count({
         where: { campusId: scope.campusId, isActive: true },
@@ -88,27 +119,22 @@ export class PartnerReadService {
       }),
       this.prisma.attendanceRecord.groupBy({
         by: ['status'],
-        where: { campusId: scope.campusId },
+        where: completedAttendanceWhere(scope.campusId),
         _count: { _all: true },
       }),
-      this.prisma.student.findMany({
-        where: { campusId: scope.campusId, isActive: true },
-        orderBy: [{ displayName: 'asc' }, { id: 'asc' }],
-        select: this.studentSelect(serverTime),
-      }),
+      this.studentQuery.highlight(
+        scope.campusId,
+        campus.lessonWarningThresholdUnits,
+        serverTime,
+      ),
     ]);
 
     const balances = this.sumBalances(packages);
     const attendance = this.attendanceCounts(attendanceGroups);
-    const candidates = students
-      .map((student) =>
-        this.toWarning(student, campus.lessonWarningThresholdUnits),
-      )
-      .sort(
-        (left, right) =>
-          left.availableTotalUnits - right.availableTotalUnits ||
-          left.studentName.localeCompare(right.studentName, 'zh-CN'),
-      );
+    const highlight = warningPage.students[0];
+    const personalAttendance = this.attendanceCounts(
+      warningPage.attendanceGroups,
+    );
 
     return {
       partner: { displayName: partner.displayName },
@@ -120,7 +146,22 @@ export class PartnerReadService {
       remainingGiftUnits: balances.giftAvailableUnits,
       monthConsumedUnits: Math.max(0, -(consumed._sum.deltaUnits ?? 0)),
       attendanceRateBasisPoints: this.attendanceRate(attendance),
-      highlight: candidates[0] ?? null,
+      highlight: highlight
+        ? {
+            ...this.toWarning(highlight, campus.lessonWarningThresholdUnits),
+            classNames: warningPage.classes.map((item) => item.className),
+            classes: warningPage.classes,
+            enrollmentSummary: warningPage.enrollmentSummary,
+            attendance: {
+              presentCount: personalAttendance.PRESENT,
+              absentCount: personalAttendance.ABSENT,
+              leaveCount: personalAttendance.LEAVE,
+              recordedCount: personalAttendance.total,
+              attendanceRateBasisPoints:
+                this.attendanceRate(personalAttendance),
+            },
+          }
+        : null,
       serverTime: serverTime.toISOString(),
     };
   }
@@ -153,34 +194,23 @@ export class PartnerReadService {
     if (!partner || !campus || partner.roles.length !== 1) {
       this.forbidden();
     }
+    const activeStudentCount = await this.prisma.student.count({
+      where: { campusId: scope.campusId, isActive: true },
+    });
     return {
       displayName: partner.displayName,
       roleCode: 'PARTNER' as const,
+      activeStudentCount,
       campus,
     };
   }
 
-  async listStudents(user: AuthenticatedUser, query: PartnerSearchQueryDto) {
+  async listStudents(user: AuthenticatedUser, query: PartnerStudentQueryDto) {
     const scope = this.scopeService.require(user);
-    const now = new Date();
-    const keyword = query.query?.trim();
-    const where: Prisma.StudentWhereInput = {
-      campusId: scope.campusId,
-      isActive: true,
-      ...(keyword
-        ? { displayName: { contains: keyword, mode: 'insensitive' } }
-        : {}),
-    };
-    const [total, students] = await Promise.all([
-      this.prisma.student.count({ where }),
-      this.prisma.student.findMany({
-        where,
-        orderBy: [{ displayName: 'asc' }, { id: 'asc' }],
-        skip: (query.page - 1) * query.pageSize,
-        take: query.pageSize,
-        select: this.studentSelect(now),
-      }),
-    ]);
+    const { students, total } = await this.studentQuery.list(
+      scope.campusId,
+      query,
+    );
     return this.page(
       students.map((student) => this.toStudent(student)),
       total,
@@ -191,75 +221,96 @@ export class PartnerReadService {
   async getStudent(user: AuthenticatedUser, studentId: string) {
     const scope = this.scopeService.require(user);
     const now = new Date();
-    const [student, attendanceGroups] = await Promise.all([
-      this.prisma.student.findFirst({
-        where: { id: studentId, campusId: scope.campusId, isActive: true },
-        select: {
-          id: true,
-          displayName: true,
-          birthDate: true,
-          classMemberships: {
-            where: { leftAt: null, classGroup: { status: 'ACTIVE' } },
-            orderBy: [{ classGroup: { name: 'asc' } }],
+    const [student, attendanceGroups, enrollmentSummary] =
+      await this.prisma.$transaction(
+        async (tx) => {
+          const student = await tx.student.findFirst({
+            where: { id: studentId, campusId: scope.campusId, isActive: true },
             select: {
-              classGroup: {
+              id: true,
+              displayName: true,
+              birthDate: true,
+              profilePhotoFile: { select: partnerPhotoSelect },
+              classMemberships: {
+                where: {
+                  campusId: scope.campusId,
+                  leftAt: null,
+                  classGroup: { campusId: scope.campusId, status: 'ACTIVE' },
+                },
+                orderBy: [{ classGroup: { name: 'asc' } }],
+                select: {
+                  classGroup: {
+                    select: {
+                      id: true,
+                      name: true,
+                      courseName: true,
+                      teacher: {
+                        select: { user: { select: { displayName: true } } },
+                      },
+                    },
+                  },
+                },
+              },
+              coursePackages: {
+                where: { campusId: scope.campusId, ...activePackageWhere(now) },
+                select: lessonBalanceSelect,
+              },
+              attendanceRecords: {
+                where: completedAttendanceWhere(scope.campusId),
+                orderBy: [
+                  { lessonSession: { startsAt: 'desc' } },
+                  { id: 'desc' },
+                ],
+                take: 5,
                 select: {
                   id: true,
-                  name: true,
-                  courseName: true,
-                  teacher: {
-                    select: { user: { select: { displayName: true } } },
+                  status: true,
+                  recordedAt: true,
+                  lessonSession: {
+                    select: {
+                      startsAt: true,
+                      classGroup: { select: { courseName: true } },
+                      teacher: {
+                        select: { user: { select: { displayName: true } } },
+                      },
+                    },
                   },
                 },
               },
-            },
-          },
-          coursePackages: {
-            where: activePackageWhere(now),
-            select: lessonBalanceSelect,
-          },
-          attendanceRecords: {
-            orderBy: [{ lessonSession: { startsAt: 'desc' } }, { id: 'desc' }],
-            take: 5,
-            select: {
-              id: true,
-              status: true,
-              recordedAt: true,
-              lessonSession: {
+              lessonLedger: {
+                where: {
+                  campusId: scope.campusId,
+                  entryType: { in: ['CONSUME', 'REVERSAL'] },
+                },
+                orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+                take: 5,
                 select: {
-                  startsAt: true,
-                  classGroup: { select: { courseName: true } },
-                  teacher: {
-                    select: { user: { select: { displayName: true } } },
-                  },
+                  id: true,
+                  entryType: true,
+                  bucket: true,
+                  deltaUnits: true,
+                  balanceBeforeUnits: true,
+                  balanceAfterUnits: true,
+                  reason: true,
+                  createdAt: true,
+                  coursePackage: { select: partnerLedgerPackageSelect },
+                  lessonSession: { select: ledgerTeachingSelect },
                 },
               },
             },
-          },
-          lessonLedger: {
-            where: { entryType: { in: ['CONSUME', 'REVERSAL'] } },
-            orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-            take: 5,
-            select: {
-              id: true,
-              entryType: true,
-              bucket: true,
-              deltaUnits: true,
-              balanceBeforeUnits: true,
-              balanceAfterUnits: true,
-              reason: true,
-              createdAt: true,
-              coursePackage: { select: { name: true } },
-            },
-          },
+          });
+          const attendanceGroups = await tx.attendanceRecord.groupBy({
+            by: ['status'],
+            where: { ...completedAttendanceWhere(scope.campusId), studentId },
+            _count: { _all: true },
+          });
+          const enrollmentSummary = student
+            ? await readPartnerEnrollmentSummary(tx, scope.campusId, studentId)
+            : null;
+          return [student, attendanceGroups, enrollmentSummary] as const;
         },
-      }),
-      this.prisma.attendanceRecord.groupBy({
-        by: ['status'],
-        where: { campusId: scope.campusId, studentId },
-        _count: { _all: true },
-      }),
-    ]);
+        { isolationLevel: 'RepeatableRead' },
+      );
     if (!student) {
       throw new DomainError(
         ErrorCode.RESOURCE_NOT_FOUND,
@@ -279,8 +330,11 @@ export class PartnerReadService {
       id: student.id,
       displayName: student.displayName,
       birthDate: student.birthDate?.toISOString().slice(0, 10) ?? null,
+      photo: toPartnerPhoto(this.files, student),
+      enrollmentSummary,
       classNames: classes.map(({ className }) => className),
       ...balances,
+      totalBalanceUnits: balances.mainBalanceUnits + balances.giftBalanceUnits,
       classes,
       attendance: {
         presentCount: attendance.PRESENT,
@@ -311,6 +365,15 @@ export class PartnerReadService {
         balanceAfterUnits: entry.balanceAfterUnits,
         reason: entry.reason,
         createdAt: entry.createdAt.toISOString(),
+        paymentContext: toPartnerLedgerPayment(
+          scope.campusId,
+          student.id,
+          entry.coursePackage,
+        ),
+        teachingContext: this.toLedgerTeachingContext(
+          scope.campusId,
+          entry.lessonSession,
+        ),
       })),
     };
   }
@@ -342,7 +405,7 @@ export class PartnerReadService {
       this.prisma.attendanceRecord.groupBy({
         by: ['status'],
         where: {
-          campusId: scope.campusId,
+          ...completedAttendanceWhere(scope.campusId),
           recordedAt: { gte: range.start, lt: range.end },
         },
         _count: { _all: true },
@@ -360,7 +423,9 @@ export class PartnerReadService {
     ]);
     const teachers = teacherGroups.length
       ? await this.prisma.teacherProfile.findMany({
-          where: { id: { in: teacherGroups.map(({ teacherId }) => teacherId) } },
+          where: {
+            id: { in: teacherGroups.map(({ teacherId }) => teacherId) },
+          },
           select: { id: true, user: { select: { displayName: true } } },
         })
       : [];
@@ -409,74 +474,57 @@ export class PartnerReadService {
     if (!campus) {
       this.forbidden();
     }
-    const keyword = query.query?.trim();
-    const students = await this.prisma.student.findMany({
-      where: {
-        campusId: scope.campusId,
-        isActive: true,
-        ...(keyword
-          ? { displayName: { contains: keyword, mode: 'insensitive' } }
-          : {}),
-      },
-      orderBy: [{ displayName: 'asc' }, { id: 'asc' }],
-      select: this.studentSelect(now),
-    });
-    const warnings = students
-      .map((student) =>
-        this.toWarning(student, campus.lessonWarningThresholdUnits),
-      )
-      .filter(
-        ({ availableTotalUnits, thresholdUnits }) =>
-          availableTotalUnits <= thresholdUnits,
-      )
-      .sort(
-        (left, right) =>
-          left.availableTotalUnits - right.availableTotalUnits ||
-          left.studentName.localeCompare(right.studentName, 'zh-CN'),
-      );
-    const start = (query.page - 1) * query.pageSize;
-    return this.page(
-      warnings.slice(start, start + query.pageSize),
-      warnings.length,
+    const { students, total } = await this.studentQuery.warnings(
+      scope.campusId,
+      campus.lessonWarningThresholdUnits,
       query,
+      now,
     );
+    const warnings = students.map((student) =>
+      this.toWarning(student, campus.lessonWarningThresholdUnits),
+    );
+    return this.page(warnings, total, query);
   }
 
   async getAttendance(user: AuthenticatedUser, query: PartnerPageQueryDto) {
     const scope = this.scopeService.require(user);
     const where: Prisma.AttendanceRecordWhereInput = {
-      campusId: scope.campusId,
+      ...completedAttendanceWhere(scope.campusId),
     };
-    const [groups, total, records] = await Promise.all([
-      this.prisma.attendanceRecord.groupBy({
-        by: ['status'],
-        where,
-        _count: { _all: true },
-      }),
-      this.prisma.attendanceRecord.count({ where }),
-      this.prisma.attendanceRecord.findMany({
-        where,
-        orderBy: [{ lessonSession: { startsAt: 'desc' } }, { id: 'desc' }],
-        skip: (query.page - 1) * query.pageSize,
-        take: query.pageSize,
-        select: {
-          id: true,
-          studentId: true,
-          status: true,
-          recordedAt: true,
-          student: { select: { displayName: true } },
-          lessonSession: {
-            select: {
-              startsAt: true,
-              classGroup: { select: { courseName: true } },
-              teacher: {
-                select: { user: { select: { displayName: true } } },
+    const [groups, total, records] = await this.prisma.$transaction(
+      async (tx) => {
+        const groups = await tx.attendanceRecord.groupBy({
+          by: ['status'],
+          where,
+          _count: { _all: true },
+        });
+        const total = await tx.attendanceRecord.count({ where });
+        const records = await tx.attendanceRecord.findMany({
+          where,
+          orderBy: [{ lessonSession: { startsAt: 'desc' } }, { id: 'desc' }],
+          skip: (query.page - 1) * query.pageSize,
+          take: query.pageSize,
+          select: {
+            id: true,
+            studentId: true,
+            status: true,
+            recordedAt: true,
+            student: { select: { displayName: true } },
+            lessonSession: {
+              select: {
+                startsAt: true,
+                classGroup: { select: { courseName: true } },
+                teacher: {
+                  select: { user: { select: { displayName: true } } },
+                },
               },
             },
           },
-        },
-      }),
-    ]);
+        });
+        return [groups, total, records] as const;
+      },
+      { isolationLevel: 'RepeatableRead' },
+    );
     const counts = this.attendanceCounts(groups);
     return {
       presentCount: counts.PRESENT,
@@ -522,39 +570,49 @@ export class PartnerReadService {
         ? { user: { displayName: { contains: keyword, mode: 'insensitive' } } }
         : {}),
     };
-    const [total, teachers] = await Promise.all([
-      this.prisma.teacherProfile.count({ where }),
-      this.prisma.teacherProfile.findMany({
-        where,
-        orderBy: [{ user: { displayName: 'asc' } }, { id: 'asc' }],
-        skip: (query.page - 1) * query.pageSize,
-        take: query.pageSize,
-        select: {
-          id: true,
-          employeeCode: true,
-          specialties: true,
-          user: { select: { displayName: true } },
-          classGroups: {
-            where: { status: 'ACTIVE' },
-            orderBy: [{ name: 'asc' }, { id: 'asc' }],
-            select: {
-              name: true,
-              members: {
-                where: { leftAt: null, student: { isActive: true } },
-                select: { studentId: true },
+    const [total, teachers] = await this.prisma.$transaction(
+      async (tx) => {
+        const total = await tx.teacherProfile.count({ where });
+        const teachers = await tx.teacherProfile.findMany({
+          where,
+          orderBy: [{ user: { displayName: 'asc' } }, { id: 'asc' }],
+          skip: (query.page - 1) * query.pageSize,
+          take: query.pageSize,
+          select: {
+            id: true,
+            employeeCode: true,
+            specialties: true,
+            user: { select: { displayName: true } },
+            classGroups: {
+              where: { campusId: scope.campusId, status: 'ACTIVE' },
+              orderBy: [{ name: 'asc' }, { id: 'asc' }],
+              select: {
+                name: true,
+                members: {
+                  where: {
+                    campusId: scope.campusId,
+                    leftAt: null,
+                    student: { campusId: scope.campusId, isActive: true },
+                  },
+                  select: { studentId: true },
+                },
               },
             },
-          },
-          lessonSessions: {
-            where: {
-              status: 'COMPLETED',
-              completedAt: { gte: start, lt: end },
+            lessonSessions: {
+              where: {
+                campusId: scope.campusId,
+                classGroup: { campusId: scope.campusId },
+                status: 'COMPLETED',
+                completedAt: { gte: start, lt: end },
+              },
+              select: { id: true },
             },
-            select: { id: true },
           },
-        },
-      }),
-    ]);
+        });
+        return [total, teachers] as const;
+      },
+      { isolationLevel: 'RepeatableRead' },
+    );
     return this.page(
       teachers.map((teacher) => ({
         id: teacher.id,
@@ -574,48 +632,86 @@ export class PartnerReadService {
     );
   }
 
-  async getLessonAccount(user: AuthenticatedUser, query: PartnerPageQueryDto) {
+  async getLessonAccount(
+    user: AuthenticatedUser,
+    query: PartnerLessonQueryDto,
+  ) {
     const scope = this.scopeService.require(user);
     const now = new Date();
     const packageWhere: Prisma.CoursePackageWhereInput = {
       campusId: scope.campusId,
+      student: { campusId: scope.campusId },
       ...activePackageWhere(now),
     };
     const ledgerWhere: Prisma.LessonLedgerEntryWhereInput = {
       campusId: scope.campusId,
+      student: { campusId: scope.campusId },
+      coursePackage: { campusId: scope.campusId },
+      ...(query.entryType ? { entryType: query.entryType } : {}),
+      ...(query.subjectId
+        ? {
+            subjectId:
+              query.subjectId === 'UNCLASSIFIED' ? null : query.subjectId,
+          }
+        : {}),
     };
-    const [packages, total, entries] = await Promise.all([
-      this.prisma.coursePackage.findMany({
-        where: packageWhere,
-        select: lessonBalanceSelect,
-      }),
-      this.prisma.lessonLedgerEntry.count({ where: ledgerWhere }),
-      this.prisma.lessonLedgerEntry.findMany({
-        where: ledgerWhere,
-        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-        skip: (query.page - 1) * query.pageSize,
-        take: query.pageSize,
-        select: {
-          id: true,
-          studentId: true,
-          entryType: true,
-          bucket: true,
-          deltaUnits: true,
-          balanceBeforeUnits: true,
-          balanceAfterUnits: true,
-          reason: true,
-          createdAt: true,
-          student: { select: { displayName: true } },
-          coursePackage: { select: { name: true } },
-        },
-      }),
-    ]);
+    const [packages, total, entries] = await this.prisma.$transaction(
+      async (tx) => {
+        if (
+          query.subjectId &&
+          query.subjectId !== 'UNCLASSIFIED' &&
+          !(await tx.campusSubject.findFirst({
+            where: { id: query.subjectId, campusId: scope.campusId },
+            select: { id: true },
+          }))
+        ) {
+          throw new DomainError(
+            ErrorCode.RESOURCE_NOT_FOUND,
+            'Subject not found',
+            404,
+          );
+        }
+        const packages = await tx.coursePackage.findMany({
+          where: packageWhere,
+          select: lessonBalanceSelect,
+        });
+        const total = await tx.lessonLedgerEntry.count({ where: ledgerWhere });
+        const entries = await tx.lessonLedgerEntry.findMany({
+          where: ledgerWhere,
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+          skip: (query.page - 1) * query.pageSize,
+          take: query.pageSize,
+          select: {
+            id: true,
+            studentId: true,
+            subjectId: true,
+            subjectName: true,
+            entryType: true,
+            bucket: true,
+            deltaUnits: true,
+            balanceBeforeUnits: true,
+            balanceAfterUnits: true,
+            reason: true,
+            createdAt: true,
+            student: { select: { displayName: true } },
+            coursePackage: { select: partnerLedgerPackageSelect },
+            lessonSession: { select: ledgerTeachingSelect },
+          },
+        });
+        return [packages, total, entries] as const;
+      },
+      { isolationLevel: 'RepeatableRead' },
+    );
     const balances = this.sumBalances(packages);
     return {
       ...balances,
       totalBalanceUnits: balances.mainBalanceUnits + balances.giftBalanceUnits,
       items: entries.map((entry) => ({
         id: entry.id,
+        subject:
+          entry.subjectId && entry.subjectName
+            ? { id: entry.subjectId, name: entry.subjectName }
+            : null,
         studentId: entry.studentId,
         studentName: entry.student.displayName,
         packageName: entry.coursePackage.name,
@@ -626,26 +722,39 @@ export class PartnerReadService {
         balanceAfterUnits: entry.balanceAfterUnits,
         reason: entry.reason,
         createdAt: entry.createdAt.toISOString(),
+        paymentContext: toPartnerLedgerPayment(
+          scope.campusId,
+          entry.studentId,
+          entry.coursePackage,
+        ),
+        teachingContext: this.toLedgerTeachingContext(
+          scope.campusId,
+          entry.lessonSession,
+        ),
       })),
       meta: this.meta(total, query),
     };
   }
 
-  private studentSelect(now: Date) {
+  private toLedgerTeachingContext(
+    campusId: string,
+    lesson: Prisma.LessonSessionGetPayload<{
+      select: typeof ledgerTeachingSelect;
+    }> | null,
+  ) {
+    if (
+      !lesson ||
+      lesson.campusId !== campusId ||
+      lesson.classGroup.campusId !== campusId ||
+      lesson.teacher.campusId !== campusId
+    ) {
+      return null;
+    }
     return {
-      id: true,
-      displayName: true,
-      birthDate: true,
-      classMemberships: {
-        where: { leftAt: null, classGroup: { status: 'ACTIVE' as const } },
-        orderBy: [{ classGroup: { name: 'asc' as const } }],
-        select: { classGroup: { select: { name: true } } },
-      },
-      coursePackages: {
-        where: activePackageWhere(now),
-        select: lessonBalanceSelect,
-      },
-    } satisfies Prisma.StudentSelect;
+      courseName: lesson.classGroup.courseName,
+      teacherName: lesson.teacher.user.displayName,
+      lessonStartsAt: lesson.startsAt.toISOString(),
+    };
   }
 
   private toStudent(student: {
@@ -690,9 +799,7 @@ export class PartnerReadService {
     };
   }
 
-  private sumBalances(
-    packages: PackageBalance[],
-  ) {
+  private sumBalances(packages: PackageBalance[]) {
     return summarizeLessonBalances(packages);
   }
 

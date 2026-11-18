@@ -33,8 +33,11 @@ export class StaffAccountManagementController {
   constructor(private readonly service: StaffAccountManagementService) {}
 
   @Get()
-  list(@Query() query: StaffAccountsQueryDto) {
-    return this.service.list(query);
+  list(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Query() query: StaffAccountsQueryDto,
+  ) {
+    return this.service.list(actor, query);
   }
 
   @Post()
@@ -54,7 +57,12 @@ export class StaffAccountManagementController {
     @Body() input: UpdateStaffAccountStatusDto,
     @IdempotencyKey() idempotencyKey: string,
   ) {
-    return this.service.updateStatus(actor, staffAccountId, input, idempotencyKey);
+    return this.service.updateStatus(
+      actor,
+      staffAccountId,
+      input,
+      idempotencyKey,
+    );
   }
 
   @Post(':staffAccountId/unbind-wechat')
@@ -66,6 +74,11 @@ export class StaffAccountManagementController {
     @Body() input: UnbindStaffWechatDto,
     @IdempotencyKey() idempotencyKey: string,
   ) {
-    return this.service.unbindWechat(actor, staffAccountId, input, idempotencyKey);
+    return this.service.unbindWechat(
+      actor,
+      staffAccountId,
+      input,
+      idempotencyKey,
+    );
   }
 }

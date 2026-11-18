@@ -45,6 +45,7 @@ import {
   GroupPage,
   ManagementCourseProductQuery,
   ManagementCourseProductView,
+  CourseProductMutationInput,
   ManagementGroupCampaignQuery,
 } from "../types/group-buying";
 
@@ -187,6 +188,9 @@ export interface SuperAdminDataSource {
   listCourseProducts(
     query: ManagementCourseProductQuery,
   ): Promise<GroupPage<ManagementCourseProductView>>;
+  createCourseProduct(input: CourseProductMutationInput, key: string): Promise<ManagementCourseProductView>;
+  updateCourseProduct(id: string, input: CourseProductMutationInput, version: number, key: string): Promise<ManagementCourseProductView>;
+  transitionCourseProduct(id: string, action: 'activate' | 'retire', version: number, key: string): Promise<ManagementCourseProductView>;
   createGroupCampaign(
     input: GroupCampaignMutationInput,
     idempotencyKey: string,

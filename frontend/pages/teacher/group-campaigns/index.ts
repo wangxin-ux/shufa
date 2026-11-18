@@ -1,3 +1,5 @@
+import { loadTeacherDisplayFont } from '../runtime/teacher-display-font';
+
 import { presentGroupPromotionCampaign } from '../../../services/group-promotion.presenter';
 import { teacherService } from '../../../services/teacher-runtime';
 
@@ -15,6 +17,7 @@ Page({
   },
 
   onLoad() {
+    void loadTeacherDisplayFont();
     void this.load(true);
   },
 

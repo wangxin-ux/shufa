@@ -1,0 +1,32 @@
+[
+  {
+    "items": [
+      {
+        "id": "partner-student-1",
+        "displayName": "姓名很长也必须完整显示的学员同学",
+        "nameFontSize": 36,
+        "lowBalance": false,
+        "classLabel": "创意美术综合材料探索与硬笔书法周末提高班",
+        "totalBalanceLabel": "123.75"
+      },
+      {
+        "id": "partner-student-2",
+        "displayName": "陈晨",
+        "nameFontSize": 78,
+        "lowBalance": true,
+        "classLabel": "硬笔书法",
+        "totalBalanceLabel": "0"
+      }
+    ],
+    "expandedId": "partner-student-1",
+    "expandedState": "ready",
+    "expandedError": "",
+    "expandedDetail": {
+      "photo": null,
+      "remainingLabel": "123.75",
+      "attendanceRateLabel": "33.33%",
+      "reservationLabel": "可用 123.75 节 · 退课处理中 10.25 节 · 账面 134 节",
+      "teacherLabel": "王老师、林老师"
+    }
+  }
+]

@@ -5,6 +5,7 @@ import { IdempotencyModule } from './common/idempotency/idempotency.module';
 import { RequestIdMiddleware } from './common/request-id/request-id.middleware';
 import { PrismaModule } from './infrastructure/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { PartnerApplicationModule } from './modules/partner-application/partner-application.module';
 import { AttendanceModule } from './modules/attendance/attendance.module';
 import { FeedbackModule } from './modules/feedback/feedback.module';
 import { HealthController } from './modules/health/health.controller';
@@ -14,6 +15,7 @@ import { EarningModule } from './modules/earning/earning.module';
 import { FileModule } from './modules/file/file.module';
 import { WithdrawalModule } from './modules/withdrawal/withdrawal.module';
 import { CampusManagerModule } from './modules/campus-manager/campus-manager.module';
+import { OperatorModule } from './modules/operator/operator.module';
 import { ManagementModule } from './modules/management/management.module';
 import { PartnerModule } from './modules/partner/partner.module';
 import { PartnerEarningModule } from './modules/partner-earning/partner-earning.module';
@@ -21,6 +23,8 @@ import { GroupBuyingModule } from './modules/group-buying/group-buying.module';
 import { RosterExchangeModule } from './modules/roster-exchange/roster-exchange.module';
 import { FinanceModule } from './modules/finance/finance.module';
 import { HrModule } from './modules/hr/hr.module';
+import { CampusSubjectModule } from './modules/subjects/campus-subject.module';
+import { PartnerWithdrawalModule } from './modules/partner-withdrawal/partner-withdrawal.module';
 
 @Module({
   imports: [
@@ -33,6 +37,7 @@ import { HrModule } from './modules/hr/hr.module';
     PrismaModule,
     IdempotencyModule,
     AuthModule,
+    PartnerApplicationModule,
     AttendanceModule,
     EarningModule,
     FileModule,
@@ -41,6 +46,7 @@ import { HrModule } from './modules/hr/hr.module';
     TeacherPortalModule,
     ParentPortalModule,
     CampusManagerModule,
+    OperatorModule,
     PartnerModule,
     PartnerEarningModule,
     ManagementModule,
@@ -48,6 +54,8 @@ import { HrModule } from './modules/hr/hr.module';
     RosterExchangeModule,
     FinanceModule,
     HrModule,
+    CampusSubjectModule,
+    PartnerWithdrawalModule,
   ],
   controllers: [HealthController],
 })

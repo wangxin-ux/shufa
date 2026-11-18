@@ -1,3 +1,4 @@
+<partner-approved-role-badge id="partner-identity-badge" blocked="{{viewState === 'forbidden'}}" />
 <partner-page-shell
   markTitle="活动详情"
   markIcon="/pages/partner/assets/profile-mark-glyph.png"
@@ -12,6 +13,7 @@
     <view wx:elif="{{viewState === 'forbidden'}}" class="partner-state">
       <text class="partner-state__title">无访问权限</text>
       <text class="partner-state__message">{{errorMessage}}</text>
+      <button class="partner-command" bindtap="onLogin">重新登录</button>
     </view>
     <view wx:elif="{{viewState === 'error'}}" class="partner-state">
       <text class="partner-state__title">活动详情加载失败</text>
@@ -20,10 +22,14 @@
     </view>
 
     <view wx:elif="{{viewState === 'ready'}}" class="detail-content">
+      <view wx:if="{{refreshError}}" class="detail-refresh-error">
+        <text>{{refreshError}}</text>
+        <button class="partner-command" bindtap="onRetry">重试</button>
+      </view>
       <view class="detail-summary">
         <view class="detail-summary__top">
           <text class="detail-summary__course">{{campaign.courseName}}</text>
-          <text class="detail-summary__status">推广中</text>
+          <text class="detail-summary__status">{{campaign.statusLabel}}</text>
         </view>
         <text class="detail-summary__title">{{campaign.title}}</text>
         <text class="detail-summary__description">{{campaign.description}}</text>
@@ -46,7 +52,7 @@
       </view>
       <view wx:else class="poster-empty">
         <text class="poster-empty__title">活动暂未配置海报</text>
-        <text class="poster-empty__message">仍可复制活动文案或发送给好友</text>
+        <text wx:if="{{campaign.canPromote}}" class="poster-empty__message">仍可复制活动文案或发送给好友</text>
       </view>
 
       <view class="contact-card">
@@ -55,13 +61,13 @@
         <text class="contact-card__line">{{campaign.customerService.phone || '联系电话暂未配置'}}</text>
       </view>
 
-      <view class="share-copy">
+      <view wx:if="{{campaign.canPromote}}" class="share-copy">
         <text class="share-copy__title">推广文案</text>
         <text class="share-copy__content">{{shareCopy}}</text>
       </view>
 
-      <view class="action-space"></view>
-      <view class="action-bar">
+      <view wx:if="{{campaign.canPromote}}" class="action-space"></view>
+      <view wx:if="{{campaign.canPromote}}" class="action-bar">
         <button
           class="action-button action-button--secondary action-button--poster"
           loading="{{posterGenerating}}"
@@ -91,6 +97,10 @@
           <view class="poster-loading__dot"></view>
           <text>正在生成专属海报</text>
         </view>
+        <view wx:if="{{posterError}}" class="poster-loading">
+          <text>{{posterError}}</text>
+          <button class="partner-command" bindtap="onOpenPoster">重试</button>
+        </view>
       </view>
       <view class="poster-note">
         <text class="poster-note__title">扫码进入家长活动详情</text>
@@ -98,7 +108,7 @@
       </view>
       <view class="poster-actions">
         <button class="poster-action poster-action--primary" open-type="share">发送给好友</button>
-        <button class="poster-action poster-action--secondary" bindtap="onSavePoster">保存海报</button>
+        <button class="poster-action poster-action--secondary" loading="{{posterSaving}}" disabled="{{!posterPath || posterSaving}}" bindtap="onSavePoster">保存海报</button>
         <button class="poster-action poster-action--secondary" bindtap="onCopyText">复制文案</button>
       </view>
     </view>

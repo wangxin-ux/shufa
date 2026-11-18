@@ -17,6 +17,7 @@ export interface BoundParentStudent {
   profileAge: number | null;
   homeAddress: string | null;
   profileVersion: number;
+  parentProfileCompletedAt?: Date | null;
 }
 
 @Injectable()
@@ -61,6 +62,7 @@ export class ParentScopeService {
             profileAge: true,
             homeAddress: true,
             profileVersion: true,
+            parentProfileCompletedAt: true,
           },
         },
       },
@@ -93,6 +95,7 @@ export class ParentScopeService {
             profileAge: true,
             homeAddress: true,
             profileVersion: true,
+            parentProfileCompletedAt: true,
           },
         },
       },

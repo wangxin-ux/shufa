@@ -7,7 +7,8 @@ import { StoredFileService } from '../file/stored-file.service';
 it('reads parent balances and ledger in one repeatable snapshot', async () => {
   const prisma = {
     coursePackage: { findMany: jest.fn().mockResolvedValue([]) },
-    lessonLedgerEntry: { findMany: jest.fn().mockResolvedValue([]) },
+    lessonLedgerEntry: { findMany: jest.fn().mockResolvedValue([]), count: jest.fn().mockResolvedValue(0) },
+    classGroup: { findMany: jest.fn().mockResolvedValue([]) },
     $transaction: jest.fn((queries: Promise<unknown>[]) =>
       Promise.all(queries),
     ),
@@ -23,7 +24,7 @@ it('reads parent balances and ledger in one repeatable snapshot', async () => {
   );
   await service.getHours({ userId: 'parent', campusId: 'campus' });
   expect(prisma.$transaction).toHaveBeenCalledWith(
-    [expect.any(Promise), expect.any(Promise)],
+    [expect.any(Promise), expect.any(Promise), expect.any(Promise), expect.any(Promise), expect.any(Promise)],
     { isolationLevel: 'RepeatableRead' },
   );
 });

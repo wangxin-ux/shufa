@@ -10,6 +10,7 @@ import {
   TeacherStudent,
   TeacherWithdrawal,
   TeachingRecord,
+  TeacherStudentDetail,
 } from '../../types/teacher';
 
 export interface TeacherFixture {
@@ -18,6 +19,7 @@ export interface TeacherFixture {
   lessonSessions: TeacherLessonSession[];
   lessonDetails: Record<string, TeacherLessonDetail>;
   students: TeacherStudent[];
+  studentArchives?: Record<string, TeacherStudentDetail['archive']>;
   teachingRecords: TeachingRecord[];
   lessonLedger: TeacherLedgerRecord[];
   earningSummary: TeacherEarningSummary;
@@ -87,6 +89,7 @@ export const NORMAL_TEACHER_FIXTURE: TeacherFixture = {
         {
           id: '40000000-0000-4000-8000-000000000001',
           displayName: '陈晨',
+          canEditFeedback: false,
           attendanceStatus: null,
           expectedConsumeUnits: 0,
           feedback: null,
@@ -95,6 +98,7 @@ export const NORMAL_TEACHER_FIXTURE: TeacherFixture = {
         {
           id: '40000000-0000-4000-8000-000000000002',
           displayName: '安然',
+          canEditFeedback: false,
           attendanceStatus: null,
           expectedConsumeUnits: 0,
           feedback: null,
@@ -111,6 +115,7 @@ export const NORMAL_TEACHER_FIXTURE: TeacherFixture = {
         {
           id: '40000000-0000-4000-8000-000000000001',
           displayName: '陈晨',
+          canEditFeedback: true,
           attendanceStatus: 'PRESENT',
           expectedConsumeUnits: 100,
           feedback:
@@ -120,6 +125,7 @@ export const NORMAL_TEACHER_FIXTURE: TeacherFixture = {
         {
           id: '40000000-0000-4000-8000-000000000002',
           displayName: '安然',
+          canEditFeedback: true,
           attendanceStatus: 'PRESENT',
           expectedConsumeUnits: 100,
           feedback: null,
@@ -146,6 +152,15 @@ export const NORMAL_TEACHER_FIXTURE: TeacherFixture = {
       latestFeedbackAt: null,
     },
   ],
+  studentArchives: {
+    '40000000-0000-4000-8000-000000000001': {
+      age: 8,
+      photo: null,
+      enrollment: { initialMainUnits: 2000, initialGiftUnits: 500, receivedAmountFen: 200000, pendingIssuanceCount: 0 },
+      balance: { mainAvailableUnits: 150, giftAvailableUnits: 50, availableTotalUnits: 200,
+        thresholdUnits: 500, isWarning: true, asOf: '2026-08-30T08:00:00+08:00' },
+    },
+  },
   teachingRecords: [
     {
       id: 'a0000000-0000-4000-8000-000000000001',

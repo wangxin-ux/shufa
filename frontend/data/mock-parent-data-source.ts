@@ -4,6 +4,7 @@ import {
   NORMAL_PARENT_FIXTURE,
   ParentFixture,
 } from '../mock/fixtures/parent.fixture';
+import { VISUAL_PARENT_FIXTURE } from '../mock/fixtures/parent-visual.fixture';
 import {
   LeaveDraft,
   LeavePageView,
@@ -12,10 +13,20 @@ import {
   ParentCampusLocation,
   ParentCampusPage,
   ParentCampusQuery,
+  ParentCourseCatalogQuery,
+  ParentCourseCatalogPage,
+  ParentCourseQuote,
   ParentHoursView,
+  ParentHoursQuery,
   ParentProfileView,
   ParentProfileUpdateInput,
   ParentUpdatesView,
+  ParentGrowthStudent,
+  ParentReviewDraft,
+  ParentLessonReview,
+  ParentPhotoUpload,
+  ParentProfileSetupView,
+  ParentProfileSetupInput,
 } from '../types/parent';
 import {
   GroupCampaignView,
@@ -29,7 +40,7 @@ import {
   ParentGroupCampaignQuery,
 } from '../types/group-buying';
 import { formatDateTimeLabel } from '../utils/format';
-import { ParentDataSource } from './parent-data-source';
+import { ParentDataSource, ParentDataSourceError } from './parent-data-source';
 
 export interface MockParentDataSourceOptions {
   scenario?: ParentMockScenario;
@@ -50,12 +61,19 @@ export class MockParentDataSource implements ParentDataSource {
   private readonly groupOrders: GroupOrderView[] = [];
   private readonly groupCampaigns: GroupCampaignView[];
   private readonly profileSubmissions = new Map<string, ParentProfileView>();
+  private readonly reviewSubmissions = new Map<string, ParentLessonReview>();
+  private readonly photoSubmissions = new Map<string, ParentGrowthStudent>();
+  private readonly stagedPhotos = new Map<string, { studentId: string; file: ParentPhotoUpload; filePath: string }>();
+  private readonly setupSubmissions = new Map<string, { request: string; view: ParentProfileSetupView }>();
+  private birthDate: string | null = null;
+  private setupCompleted = false;
   private nextLeaveSequence = 1;
 
   constructor(options: MockParentDataSourceOptions = {}) {
     this.scenario = options.scenario ?? 'normal';
     this.fixture = cloneFixtureValue(
-      this.scenario === 'empty' ? EMPTY_PARENT_FIXTURE : NORMAL_PARENT_FIXTURE,
+      this.scenario === 'empty' ? EMPTY_PARENT_FIXTURE :
+        this.scenario === 'visual' ? VISUAL_PARENT_FIXTURE : NORMAL_PARENT_FIXTURE,
     );
     this.leaveRecords = cloneFixtureValue(this.fixture.leave.records);
     this.groupCampaigns = this.scenario === 'empty' ? [] : [this.createGroupCampaignFixture()];
@@ -93,18 +111,57 @@ export class MockParentDataSource implements ParentDataSource {
 
   async getHomeSummary(): Promise<ParentHomeSummary> {
     this.assertAvailable();
-    return cloneFixtureValue(this.fixture.home);
+    this.refreshBirthdayAge();
+    return { ...cloneFixtureValue(this.fixture.home),
+      profileSetupRequired: this.scenario === 'profile-setup' && !this.setupCompleted && !!this.fixture.profile.student };
   }
 
-  async getHoursView(): Promise<ParentHoursView> {
+  async listCourseCatalog(query: ParentCourseCatalogQuery): Promise<ParentCourseCatalogPage> {
     this.assertAvailable();
-    return cloneFixtureValue(this.fixture.hours);
+    if (this.scenario === 'empty') return this.page([], query);
+    const campuses = (await this.listCampuses({ page: 1, pageSize: 100 })).data;
+    const courses = [
+      ['专业美术', 488000], ['硬笔规范字', 388000], ['软笔书法', 388000],
+      ['演讲与口才', 498000], ['第一乐章', 488000],
+    ] as const;
+    return this.page(courses.map(([courseName, priceFen], index) => {
+      const regular = campuses.map(({ distanceMeters: _distance, ...campus }, campusIndex): ParentCourseQuote => ({
+        productId: `catalog-${index}-${campusIndex}`, productName: `${courseName}学习班`,
+        classType: '学习班', priceFen, mainUnits: 4800, giftUnits: 0, validityDays: 365, campus,
+      }));
+      const individual: ParentCourseQuote = {
+        ...regular[0], productId: `catalog-${index}-individual`,
+        productName: `${courseName}一对一`, classType: '一对一', priceFen: 15000, mainUnits: 100,
+      };
+      return { courseName, primaryQuote: regular[0], classTypes: [
+        { name: '学习班', quotes: regular }, { name: '一对一', quotes: [individual] },
+      ] };
+    }).filter((course) => !query.courseName || course.courseName === query.courseName), query);
   }
 
-  async getLeavePage(): Promise<LeavePageView> {
+  async getHoursView(query?: ParentHoursQuery): Promise<ParentHoursView> {
     this.assertAvailable();
+    const view = cloneFixtureValue(this.fixture.hours);
+    const allEntries = view.entries.map((entry) => ({ ...entry, courseName: entry.courseName ?? '未分类' }));
+    const entries = allEntries.filter((entry) =>
+      (!query?.courseName || query.courseName === entry.courseName) &&
+      (query?.direction === 'debit' ? entry.delta < 0 : query?.direction === 'credit' ? entry.delta > 0 : true));
+    const page = query?.page ?? 1;
+    const pageSize = query?.pageSize ?? 20;
+    return { ...view, courseNames: [...new Set(allEntries.map((entry) => entry.courseName))].sort(),
+      entries: entries.slice((page - 1) * pageSize, page * pageSize),
+      meta: { page, pageSize, total: entries.length, totalPages: Math.ceil(entries.length / pageSize) },
+    };
+  }
+
+  async getLeavePage(studentId?: string): Promise<LeavePageView> {
+    this.assertAvailable();
+    if (studentId && !this.fixture.leave.students.some((student) => student.id === studentId)) {
+      throw new ParentDataSourceError(403, 'FORBIDDEN', '无权查看该学员');
+    }
     return {
       ...cloneFixtureValue(this.fixture.leave),
+      weeklyWarnings: cloneFixtureValue(this.fixture.leave.weeklyWarnings ?? []),
       records: cloneFixtureValue(this.leaveRecords),
     };
   }
@@ -136,6 +193,7 @@ export class MockParentDataSource implements ParentDataSource {
       lessonTimeLabel: formatDateTimeLabel(lesson.startsAt),
       reason: draft.reason.trim(),
       status: 'pending',
+      contactWarning: null,
     };
     this.nextLeaveSequence += 1;
     this.leaveRecords.unshift(record);
@@ -145,7 +203,78 @@ export class MockParentDataSource implements ParentDataSource {
 
   async getProfile(): Promise<ParentProfileView> {
     this.assertAvailable();
+    this.refreshBirthdayAge();
     return cloneFixtureValue(this.fixture.profile);
+  }
+
+  async getProfileSetup(): Promise<ParentProfileSetupView> {
+    this.assertAvailable();
+    this.refreshBirthdayAge();
+    const student = this.fixture.profile.student;
+    return cloneFixtureValue({
+      required: this.scenario === 'profile-setup' && !this.setupCompleted && !!student,
+      student: student ? {
+        id: student.id, name: student.name, age: student.age, birthDate: this.birthDate,
+        profileVersion: student.profileVersion, photo: this.fixture.updates.student?.photo ?? null,
+      } : null,
+    });
+  }
+
+  async completeProfileSetup(studentId: string, input: ParentProfileSetupInput, key: string): Promise<ParentProfileSetupView> {
+    this.assertAvailable();
+    const student = this.fixture.profile.student;
+    if (!student || student.id !== studentId) throw new ParentDataSourceError(403, 'FORBIDDEN', '无权修改此学员资料');
+    if (!key.trim()) throw new ParentDataSourceError(400, 'INVALID_IDEMPOTENCY_KEY', '提交标识不能为空');
+    const request = JSON.stringify([studentId, input.name, input.birthDate, input.fileId, input.expectedVersion]);
+    const replay = this.setupSubmissions.get(key);
+    if (replay) {
+      if (replay.request !== request) throw new ParentDataSourceError(409, 'IDEMPOTENCY_CONFLICT', '提交内容已变化');
+      return cloneFixtureValue(replay.view);
+    }
+    if (this.setupCompleted) throw new ParentDataSourceError(409, 'PARENT_PROFILE_ALREADY_COMPLETED', '孩子资料已完善');
+    if (student.profileVersion !== input.expectedVersion) throw new ParentDataSourceError(409, 'STUDENT_PROFILE_VERSION_CONFLICT', '资料已更新，请刷新后重试');
+    const date = new Date(`${input.birthDate}T00:00:00Z`);
+    const today = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
+    if (!input.name.trim() || input.name.trim().length > 100 ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(input.birthDate) || !Number.isFinite(date.getTime()) ||
+      date.toISOString().slice(0, 10) !== input.birthDate || input.birthDate > today ||
+      this.birthdayAge(input.birthDate) > 120) {
+      throw new ParentDataSourceError(400, 'VALIDATION_FAILED', '请正确填写姓名和出生日期');
+    }
+    const staged = this.stagedPhotos.get(input.fileId);
+    const currentPhoto = this.fixture.updates.student?.photo;
+    const photo = currentPhoto?.id === input.fileId ? currentPhoto :
+      staged?.studentId === studentId ? { ...staged.file, accessUrl: staged.filePath,
+        accessUrlExpiresAt: new Date(Date.now() + 900000).toISOString() } : null;
+    if (!photo) throw new ParentDataSourceError(400, 'STUDENT_PHOTO_INVALID', '请重新选择照片');
+    this.birthDate = input.birthDate;
+    this.setupCompleted = true;
+    student.name = input.name.trim();
+    student.profileVersion += 1;
+    student.profileSetupCompleted = true;
+    this.fixture.updates.student = { id: student.id, name: student.name, age: this.birthdayAge(input.birthDate),
+      profileVersion: student.profileVersion, photo };
+    this.refreshBirthdayAge();
+    const view = await this.getProfileSetup();
+    this.setupSubmissions.set(key, { request, view: cloneFixtureValue(view) });
+    return view;
+  }
+
+  private birthdayAge(birthDate: string): number {
+    const today = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
+    return Math.max(0, Number(today.slice(0, 4)) - Number(birthDate.slice(0, 4)) -
+      (today.slice(5) < birthDate.slice(5) ? 1 : 0));
+  }
+
+  private refreshBirthdayAge() {
+    const student = this.fixture.profile.student;
+    if (!this.setupCompleted || !this.birthDate || !student) return;
+    student.age = this.birthdayAge(this.birthDate);
+    this.fixture.home.student = { id: student.id, name: student.name, age: student.age };
+    this.fixture.leave.students = this.fixture.leave.students.map((bound) => bound.id === student.id ? { ...bound, name: student.name } : bound);
+    if (this.fixture.updates.student) Object.assign(this.fixture.updates.student, {
+      name: student.name, age: student.age, profileVersion: student.profileVersion,
+    });
   }
 
   async updateProfile(
@@ -162,7 +291,8 @@ export class MockParentDataSource implements ParentDataSource {
     if (student.profileVersion !== input.expectedVersion) {
       throw new Error('资料已更新，请刷新后重试');
     }
-    student.age = input.age;
+    if (this.setupCompleted && input.age !== undefined) throw new ParentDataSourceError(400, 'VALIDATION_FAILED', '年龄按生日自动更新');
+    if (input.age !== undefined) student.age = input.age;
     student.homeAddress = input.homeAddress.trim() || null;
     student.profileVersion += 1;
     const result = cloneFixtureValue(this.fixture.profile);
@@ -172,7 +302,62 @@ export class MockParentDataSource implements ParentDataSource {
 
   async getUpdates(): Promise<ParentUpdatesView> {
     this.assertAvailable();
+    this.refreshBirthdayAge();
+    const profile = this.fixture.profile.student;
+    if (profile && this.fixture.updates.student) {
+      this.fixture.updates.student = { ...this.fixture.updates.student, name: profile.name,
+        age: profile.age, profileVersion: profile.profileVersion };
+    }
     return cloneFixtureValue(this.fixture.updates);
+  }
+
+  async uploadStudentPhoto(studentId: string, filePath: string): Promise<ParentPhotoUpload> {
+    this.assertAvailable();
+    if (this.fixture.profile.student?.id !== studentId) throw new ParentDataSourceError(403, 'FORBIDDEN', '无权修改此学员照片');
+    const id = `mock-photo-${this.stagedPhotos.size + 1}`;
+    const file: ParentPhotoUpload = { id, mimeType: 'image/jpeg', sizeBytes: 100 };
+    this.stagedPhotos.set(id, { studentId, file, filePath });
+    return cloneFixtureValue(file);
+  }
+
+  async replaceStudentPhoto(studentId: string, input: { fileId: string; expectedVersion: number }, key: string): Promise<ParentGrowthStudent> {
+    this.assertAvailable();
+    const replay = this.photoSubmissions.get(key);
+    if (replay) return cloneFixtureValue(replay);
+    const student = this.fixture.profile.student;
+    const staged = this.stagedPhotos.get(input.fileId);
+    if (!student || student.id !== studentId) throw new ParentDataSourceError(403, 'FORBIDDEN', '无权修改此学员照片');
+    if (!staged || staged.studentId !== studentId) throw new ParentDataSourceError(400, 'STUDENT_PHOTO_INVALID', '请重新选择照片');
+    if (student.profileVersion !== input.expectedVersion) throw new ParentDataSourceError(409, 'STUDENT_PROFILE_VERSION_CONFLICT', '资料已更新，请刷新后重试');
+    student.profileVersion += 1;
+    const result: ParentGrowthStudent = { id: student.id, name: student.name, age: student.age,
+      profileVersion: student.profileVersion, photo: { ...staged.file, accessUrl: staged.filePath,
+        accessUrlExpiresAt: new Date(Date.now() + 900000).toISOString() } };
+    this.fixture.updates.student = result;
+    this.photoSubmissions.set(key, cloneFixtureValue(result));
+    return cloneFixtureValue(result);
+  }
+
+  async submitLessonReview(lessonId: string, studentId: string, draft: ParentReviewDraft, key: string): Promise<ParentLessonReview> {
+    this.assertAvailable();
+    const replay = this.reviewSubmissions.get(key);
+    if (replay) return cloneFixtureValue(replay);
+    if (studentId !== this.fixture.profile.student?.id) throw new ParentDataSourceError(403, 'FORBIDDEN', '无权评价此学员');
+    const record = this.fixture.updates.records.find((item) => item.lessonSessionId === lessonId);
+    if (!record || record.lessonStatus !== 'COMPLETED' || record.attendanceStatus !== 'PRESENT') {
+      throw new ParentDataSourceError(409, 'PARENT_REVIEW_NOT_ALLOWED', '该课次当前不可评价');
+    }
+    if (record.review) throw new ParentDataSourceError(409, 'PARENT_REVIEW_ALREADY_EXISTS', '这节课已经评价');
+    if (['teaching', 'communication', 'environment', 'overall'].some((field) => {
+      const value = draft[field as keyof ParentReviewDraft];
+      return typeof value !== 'number' || !Number.isInteger(value) || value < 1 || value > 10;
+    }) || draft.note.trim().length > 500) throw new ParentDataSourceError(400, 'VALIDATION_FAILED', '请完整填写四项评分');
+    const result: ParentLessonReview = { ...draft, note: draft.note.trim(), id: `mock-review-${lessonId}`,
+      lessonSessionId: lessonId, studentId, valid: true, createdAt: new Date().toISOString() };
+    record.review = result;
+    record.canReview = false;
+    this.reviewSubmissions.set(key, cloneFixtureValue(result));
+    return cloneFixtureValue(result);
   }
 
   async listGroupCampaigns(

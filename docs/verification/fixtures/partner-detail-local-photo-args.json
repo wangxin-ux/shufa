@@ -1,0 +1,11 @@
+[
+  {
+    "detail.photo": {
+      "id": "verification-local-image",
+      "mimeType": "image/png",
+      "sizeBytes": 12,
+      "accessUrl": "/pages/partner/assets/icon-students.png",
+      "accessUrlExpiresAt": "2026-10-10T23:59:59+08:00"
+    }
+  }
+]

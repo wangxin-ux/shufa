@@ -1,8 +1,11 @@
+import { TeacherFeedbackRatings } from '../types/teacher-feedback';
+import { validTeacherRatings } from '../utils/teacher-ratings';
 import {
   AttendanceItem,
   CompleteLessonResult,
   StudentFeedback,
   TeacherLessonDetail,
+  FeedbackDraft,
 } from '../types/teacher';
 import { RequestState } from '../utils/request-state';
 
@@ -32,12 +35,7 @@ interface TeacherLessonWorkflowService {
     idempotencyKey: string,
   ): Promise<RequestState<CompleteLessonResult>>;
   saveFeedback(
-    input: {
-      lessonSessionId: string;
-      studentId: string;
-      content: string;
-      imageFileIds: string[];
-    },
+    input: FeedbackDraft,
     idempotencyKey: string,
   ): Promise<RequestState<StudentFeedback>>;
   loadLessonSession(id: string): Promise<RequestState<TeacherLessonDetail>>;
@@ -59,6 +57,7 @@ export type TeacherLessonWorkflowOutcome<T> =
       status: 'validation' | 'error' | 'forbidden' | 'conflict';
       message: string;
       code?: string;
+      statusCode?: number;
       details?: Record<string, unknown>;
       insufficientStudents?: InsufficientStudentModel[];
       draft: AttendanceItem[];
@@ -66,6 +65,7 @@ export type TeacherLessonWorkflowOutcome<T> =
 
 export interface TeacherLessonWorkflowOptions {
   createIdempotencyKey?: () => string;
+  refreshLessonAfterMutation?: boolean;
 }
 
 let idempotencySequence = 0;
@@ -141,6 +141,7 @@ function parseInsufficientStudents(
 
 export class TeacherLessonWorkflow {
   private readonly createIdempotencyKey: () => string;
+  private readonly refresh: boolean;
   private readonly keys = new Map<string, string>();
   private readonly inFlight = new Map<
     string,
@@ -153,6 +154,7 @@ export class TeacherLessonWorkflow {
   ) {
     this.createIdempotencyKey =
       options.createIdempotencyKey ?? defaultIdempotencyKey;
+    this.refresh = options.refreshLessonAfterMutation ?? true;
   }
 
   saveAttendance(
@@ -248,17 +250,36 @@ export class TeacherLessonWorkflow {
     studentId: string,
     content: string,
     imageFileIds: readonly string[] = [],
+    performanceRating?: number | null,
+    ratings?: { teacherRatings: TeacherFeedbackRatings; expectedVersion: number },
   ): Promise<TeacherLessonWorkflowOutcome<StudentFeedback>> {
     const validation = validateFeedback(content);
     if (validation) {
       return Promise.resolve(this.validation(validation, []));
     }
+    if (
+      performanceRating !== undefined && performanceRating !== null &&
+      (!Number.isInteger(performanceRating) || performanceRating < 1 || performanceRating > 10)
+    ) {
+      return Promise.resolve(this.validation('课堂表现请选择 0.5–5 星', []));
+    }
     if (!detail.students.some(({ id }) => id === studentId)) {
       return Promise.resolve(this.validation('请选择当前课次学员', []));
     }
+    if (detail.status !== 'COMPLETED') {
+      return Promise.resolve(this.validation('当前课次不可填写反馈', []));
+    }
+    if (ratings && (!validTeacherRatings(ratings.teacherRatings) ||
+      !Number.isInteger(ratings.expectedVersion) || ratings.expectedVersion < 0)) {
+      return Promise.resolve(this.validation('评分或反馈版本无效，请重新加载', []));
+    }
     const normalizedContent = content.trim();
     const normalizedImageFileIds = [...imageFileIds];
-    const signature = `feedback:${detail.id}:${studentId}:${normalizedContent}:${normalizedImageFileIds.join(',')}`;
+    const signature = JSON.stringify([
+      'feedback', detail.id, studentId, normalizedContent, normalizedImageFileIds,
+      performanceRating === undefined ? 'unchanged' : performanceRating,
+      ratings ?? null,
+    ]);
     return this.run(
       signature,
       [],
@@ -269,6 +290,8 @@ export class TeacherLessonWorkflow {
             studentId,
             content: normalizedContent,
             imageFileIds: normalizedImageFileIds,
+            ...(performanceRating === undefined ? {} : { performanceRating }),
+            ...(ratings ?? {}),
           },
           key,
         ),
@@ -336,7 +359,7 @@ export class TeacherLessonWorkflow {
     if (state.status === 'success') {
       this.keys.delete(signature);
       const refreshedLesson =
-        refreshLesson && lessonId
+        refreshLesson && lessonId && this.refresh
           ? await this.service.loadLessonSession(lessonId)
           : undefined;
       return {
@@ -349,31 +372,12 @@ export class TeacherLessonWorkflow {
     if (state.status !== 'error') {
       return { status: 'error', message: '操作未完成，请重试', draft };
     }
-    if (state.statusCode === 403) {
-      return {
-        status: 'forbidden',
-        message: state.message,
-        code: state.code,
-        details: state.details,
-        draft,
-      };
+    if (state.statusCode === 401 || state.statusCode === 403) {
+      return {status:'forbidden',statusCode:state.statusCode,message:state.message,code:state.code,details:state.details,draft};
     }
     if (state.statusCode === 409) {
-      return {
-        status: 'conflict',
-        message: state.message,
-        code: state.code,
-        details: state.details,
-        insufficientStudents: parseInsufficientStudents(state.details),
-        draft,
-      };
+      return {status:'conflict',statusCode:state.statusCode,message:state.message,code:state.code,details:state.details,insufficientStudents:parseInsufficientStudents(state.details),draft};
     }
-    return {
-      status: 'error',
-      message: state.message,
-      code: state.code,
-      details: state.details,
-      draft,
-    };
+    return {status:'error',statusCode:state.statusCode,message:state.message,code:state.code,details:state.details,draft};
   }
 }

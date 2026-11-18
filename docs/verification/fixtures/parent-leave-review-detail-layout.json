@@ -1,0 +1,25 @@
+[
+  {
+    "records": [
+      {
+        "id": "visual-pending",
+        "courseName": "创意基础",
+        "subtitle": "10月1日 待审核",
+        "reviewNote": "",
+        "status": "pending",
+        "statusLabel": "待审核",
+        "tagTone": "orange"
+      },
+      {
+        "id": "visual-rejected",
+        "courseName": "初中数学综合能力提升与应用专题学习班",
+        "subtitle": "10月2日 已驳回",
+        "reviewNote": "驳回说明：本次课程已超过可审批时段，请联系校区工作人员核对后续课程安排。下次课程请提前提交申请，校区工作人员会确认上课时间和课程信息。",
+        "status": "rejected",
+        "statusLabel": "已驳回",
+        "tagTone": "red"
+      }
+    ],
+    "recordsEmpty": false
+  }
+]

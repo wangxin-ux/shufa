@@ -431,6 +431,16 @@ export class SuperAdminService {
     );
   }
 
+  createCourseProduct(input: import('../types/group-buying').CourseProductMutationInput, key: string) {
+    return loadRequestState(() => this.dataSource.createCourseProduct(input, key));
+  }
+  updateCourseProduct(id: string, input: import('../types/group-buying').CourseProductMutationInput, version: number, key: string) {
+    return loadRequestState(() => this.dataSource.updateCourseProduct(id, input, version, key));
+  }
+  transitionCourseProduct(id: string, action: 'activate' | 'retire', version: number, key: string) {
+    return loadRequestState(() => this.dataSource.transitionCourseProduct(id, action, version, key));
+  }
+
   createGroupCampaign(
     input: GroupCampaignMutationInput,
     idempotencyKey: string,

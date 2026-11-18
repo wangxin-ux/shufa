@@ -41,9 +41,6 @@ export class AuthService {
     }
 
     const me = await this.getMe(identity.userId);
-    if (!this.hasValidSingleRoleScope(me)) {
-      this.unauthorized();
-    }
     return this.issueSession(me);
   }
 
@@ -92,6 +89,9 @@ export class AuthService {
   }
 
   private async issueSession(me: MeView): Promise<AuthSession> {
+    if (!this.hasValidSingleRoleScope(me)) {
+      this.unauthorized();
+    }
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         { sub: me.userId, kind: 'access' },
@@ -122,6 +122,9 @@ export class AuthService {
       return false;
     }
     const role = me.roles[0];
+    if (role.code === 'OPERATOR' && role.campusId === null) {
+      return true;
+    }
     if (
       role.code === 'SUPER_ADMIN' ||
       role.code === 'HR' ||
@@ -133,6 +136,7 @@ export class AuthService {
       (role.code === 'PARENT' ||
         role.code === 'PARTNER' ||
         role.code === 'TEACHER' ||
+        role.code === 'OPERATOR' ||
         role.code === 'CAMPUS_MANAGER') &&
       typeof role.campusId === 'string' &&
       role.campusId.length > 0

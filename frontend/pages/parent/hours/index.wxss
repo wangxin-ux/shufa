@@ -1,3 +1,6 @@
+@import "../../../styles/parent-pdf.wxss";
+@import "../styles/pdf-typography.wxss";
+
 .hours {
   position: relative;
   padding: 76rpx 0 72rpx;
@@ -29,7 +32,7 @@
   font-size: 64rpx;
   font-family: var(--parent-font-display);
   line-height: 1.1;
-  font-weight: 800;
+  font-weight: 400;
   color: var(--parent-orange);
 }
 
@@ -38,7 +41,7 @@
   z-index: 1;
   min-height: 364rpx;
   margin: 14rpx 10rpx 0 8rpx;
-  padding: 62rpx 40rpx 28rpx;
+  padding: 34rpx 40rpx 28rpx;
   overflow: visible;
   box-sizing: border-box;
   border-radius: 48rpx;
@@ -56,6 +59,8 @@
 
 .balance-card__label {
   font-size: 28rpx;
+  line-height: 28rpx;
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .balance-card__value-row {
@@ -68,20 +73,19 @@
 
 .balance-card__value {
   max-width: 350rpx;
-  font-size: 190rpx;
+  font-size: 155rpx;
   font-family: var(--parent-font-display);
   line-height: 1;
-  font-weight: 800;
+  font-weight: 400;
   color: #000000;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .balance-card__unit {
   margin-left: 12rpx;
-  font-size: 40rpx;
+  font-size: 46rpx;
   font-family: var(--parent-font-display);
-  font-weight: 700;
+  font-weight: 400;
   color: #000000;
 }
 
@@ -105,7 +109,7 @@
   width: auto;
   font-size: 21rpx;
   line-height: 1.35;
-  color: rgba(255, 255, 255, 0.76);
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .balance-card__meta-value {
@@ -113,7 +117,8 @@
   font-size: 23rpx;
   line-height: 1.35;
   font-weight: 600;
-  color: #ffffff;
+  color: rgba(255, 255, 255, 0.65);
+  overflow-wrap: anywhere;
 }
 
 .balance-card__mascot-frame {
@@ -132,6 +137,20 @@
   width: 495rpx;
 }
 
+.balance-card--long .balance-card__mascot-frame {
+  width: 360rpx;
+  height: 440rpx;
+}
+
+.balance-card--long .balance-card__mascot {
+  width: 360rpx;
+}
+
+.balance-card--long .balance-card__value-row,
+.balance-card--long .balance-card__meta {
+  max-width: 290rpx;
+}
+
 .balance-card__renew {
   position: absolute;
   right: 9rpx;
@@ -145,29 +164,30 @@
   --parent-primary-deep-height: 117rpx;
   --parent-primary-deep-padding: 6rpx 8rpx;
   --parent-primary-deep-font-size: 34rpx;
+  --parent-primary-shadow: inset 0 0 6rpx 1rpx rgba(255, 255, 255, 0.5),
+    0 4rpx 8rpx rgba(24, 18, 14, 0.24);
 }
 
 .hour-cards {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 18rpx;
   margin: 56rpx 8rpx 0;
-}
-
-.hour-cards--single .hour-card {
-  max-width: 276rpx;
+  max-width: 653rpx;
 }
 
 .hour-card {
   flex: 1;
   min-width: 0;
+  max-width: 276rpx;
   min-height: 212rpx;
-  padding: 22rpx 28rpx;
+  padding: 7rpx 28rpx;
   box-sizing: border-box;
   border-radius: 40rpx;
-  background: var(--parent-yellow-bright);
+  background: #ffd75e;
   box-shadow: 0 7rpx 9rpx rgba(24, 18, 14, 0.28);
 }
 
@@ -178,6 +198,7 @@
 
 .hour-card__label {
   font-size: 24rpx;
+  line-height: 24rpx;
   font-weight: 600;
 }
 
@@ -185,19 +206,23 @@
   display: flex;
   align-items: baseline;
   justify-content: flex-start;
-  margin: 8rpx 0 6rpx;
+  min-height: 139rpx;
+  margin: 4rpx -14rpx 3rpx;
+}
+
+.hour-card__value-row--unknown {
+  align-items: center;
 }
 
 .hour-card__value {
   flex: none;
-  max-width: 190rpx;
-  font-size: 132rpx;
+  max-width: 204rpx;
+  font-size: 139rpx;
   font-family: var(--parent-font-display);
   line-height: 1;
-  font-weight: 800;
+  font-weight: 400;
   color: #000000;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .hour-card__value--compact {
@@ -206,11 +231,19 @@
 
 .hour-card__unit {
   flex: none;
-  margin-left: 12rpx;
-  font-size: 30rpx;
+  margin-left: 0;
+  font-size: 53rpx;
   font-family: var(--parent-font-display);
-  font-weight: 700;
+  font-weight: 400;
   color: #000000;
+}
+
+.hour-card__sub {
+  display: block;
+  font-size: 20rpx;
+  line-height: 1.4;
+  color: var(--parent-ink);
+  overflow-wrap: anywhere;
 }
 
 .hour-cards__plus {
@@ -219,7 +252,7 @@
   font-family: var(--parent-font-display);
   line-height: 1;
   font-weight: 800;
-  color: #ff0000;
+  color: var(--parent-pdf-plus);
 }
 
 .ledger {
@@ -243,6 +276,49 @@
   gap: 8rpx;
 }
 
+.ledger__filter-toggle {
+  flex: none;
+  margin: 0;
+  padding: 8rpx 12rpx;
+  background: transparent;
+  color: #8b9490;
+  font-size: 22rpx;
+  line-height: 1.4;
+}
+.ledger__filter-toggle::after,
+.ledger__load-more::after { border: none; }
+.ledger__filter-panel {
+  margin-top: 20rpx;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12rpx;
+}
+.ledger__subject {
+  max-width: 500rpx;
+  padding: 8rpx 0;
+  font-size: 24rpx;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.ledger__load-more {
+  position: relative;
+  z-index: 1;
+  margin: 24rpx 0 0;
+  background: #ffffff;
+  font-size: 24rpx;
+  color: var(--parent-ink);
+}
+.ledger__page-error {
+  position: relative;
+  z-index: 1;
+  display: block;
+  background: #ffffff;
+  font-size: 22rpx;
+  color: #b53b26;
+  overflow-wrap: anywhere;
+}
+
 .ledger__filter {
   min-height: 56rpx;
   padding: 0 22rpx;
@@ -263,6 +339,20 @@
   margin-top: 32rpx;
 }
 
+.ledger__card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 40rpx;
+  background: var(--parent-yellow-card);
+  pointer-events: none;
+}
+
+.ledger__card--filtered {
+  margin-top: 148rpx;
+}
+
 .ledger__mascot {
   position: absolute;
   top: -126rpx;
@@ -277,7 +367,7 @@
   z-index: 1;
   padding: 8rpx 32rpx;
   border-radius: 40rpx;
-  background: rgba(246, 212, 104, 0.9);
+  background: rgba(246, 212, 104, 0.84);
   box-shadow: 0 7rpx 9rpx rgba(24, 18, 14, 0.28);
 }
 
@@ -289,7 +379,13 @@
 }
 
 .hours parent-record-card {
+  --parent-record-card-tag-radius: 16rpx;
+  --parent-record-card-title-weight: 800;
+  --parent-record-card-title-stroke: 0.8rpx currentColor;
   --parent-record-card-subtitle-size: 22rpx;
+  --parent-record-card-subtitle-family: var(--parent-font-display);
+  --parent-record-card-subtitle-weight: 600;
+  --parent-record-card-subtitle-color: var(--parent-ink);
   --parent-record-card-flat-padding: 23rpx 16rpx;
 }
 
@@ -298,7 +394,7 @@
   margin-top: 5rpx;
   font-size: 22rpx;
   line-height: 1.4;
-  color: rgba(44, 69, 63, 0.82);
+  color: rgba(44, 66, 64, 0.82);
 }
 
 @media (max-width: 350px) {
@@ -320,6 +416,8 @@
   }
 }
 .hours__refund-status {
+  position: relative;
+  z-index: 1;
   margin: 24rpx 0;
   padding: 20rpx 0;
   border-top: 1rpx solid rgba(0, 0, 0, 0.12);

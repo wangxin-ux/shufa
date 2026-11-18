@@ -14,10 +14,14 @@ export interface ParentHourCardModel {
   key: 'paid' | 'gift';
   label: string;
   remaining: number;
+  grantedLabel: string;
+  hasKnownGrant: boolean;
+  valueSize: number;
 }
 
 export interface ParentHoursEntryModel extends ParentHoursEntry {
   deltaLabel: string;
+  subtitleLabel: string;
 }
 
 export interface ParentHoursPageModel {
@@ -56,15 +60,22 @@ export function buildParentHoursPageModel(
   filter: ParentHoursFilter,
 ): ParentHoursPageModel {
   const hourCards: ParentHourCardModel[] = [
-    { key: 'paid', label: '购买课时', remaining: view.paidHours },
+    { key: 'paid', label: '购买课时', remaining: view.paidHours,
+      grantedLabel: view.grantedPaidHours == null ? '待核对' : String(view.grantedPaidHours),
+      valueSize: view.grantedPaidHours == null ? 36 : Math.min(139, Math.floor(204 / (String(view.grantedPaidHours).length * 0.72))),
+      hasKnownGrant: view.grantedPaidHours != null },
   ];
   if (view.giftHours !== null) {
-    hourCards.push({ key: 'gift', label: '赠送课时', remaining: view.giftHours });
+    hourCards.push({ key: 'gift', label: '赠送课时', remaining: view.giftHours,
+      grantedLabel: view.grantedGiftHours == null ? '待核对' : String(view.grantedGiftHours),
+      valueSize: view.grantedGiftHours == null ? 36 : Math.min(139, Math.floor(204 / (String(view.grantedGiftHours).length * 0.72))),
+      hasKnownGrant: view.grantedGiftHours != null });
   }
 
   const entries = view.entries
     .filter((entry) => matchesFilter(entry, filter))
-    .map((entry) => ({ ...entry, deltaLabel: formatDelta(entry.delta) }));
+    .map((entry) => ({ ...entry, deltaLabel: formatDelta(entry.delta),
+      subtitleLabel: entry.summaryLabel ?? `${entry.occurredAtLabel} ${entry.detailLabel}`.trim() }));
 
   return {
     grossTotal: view.grossTotal ?? view.remainingTotal,

@@ -12,6 +12,10 @@
       </button>
     </view>
 
+    <button class="free-campaign-button" bindtap="onFreeCampaigns">
+      <text>免费活动</text><text>›</text>
+    </button>
+
     <view-state
       wx:if="{{viewState !== 'ready'}}"
       state="{{viewState}}"

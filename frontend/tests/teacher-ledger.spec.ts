@@ -15,10 +15,21 @@ describe('teacher ledger presenter', () => {
         occurredAt: '2026-09-01T10:05:00+08:00', entryType: 'REVERSAL', bucket: 'MAIN', deltaUnits: 100,
       },
     ]);
-    expect(model[0]).toMatchObject({ typeLabel: '扣课', bucketLabel: '主课时', deltaLabel: '-100', tone: 'negative' });
+    expect(model[0]).toMatchObject({ typeLabel: '扣课', bucketLabel: '主课时', deltaLabel: '-1', tone: 'negative' });
     expect(model[0].occurredAtLabel).toBe('9月1日 10:00');
-    expect(model[1]).toMatchObject({ typeLabel: '撤销返还', deltaLabel: '+100', tone: 'positive' });
+    expect(model[1]).toMatchObject({ typeLabel: '撤销返还', deltaLabel: '+1', tone: 'positive' });
     expect(Object.keys(model[0])).not.toContain('balance');
+  });
+
+  it.each([
+    [-1, '-0.01'], [-60, '-0.6'], [-150, '-1.5'], [0, '0'],
+    [1, '+0.01'], [40, '+0.4'], [100, '+1'],
+  ])('displays %s internal units as %s lessons', (deltaUnits, deltaLabel) => {
+    const [model] = buildTeacherLedgerPageModel([{
+      id: 'entry', lessonSessionId: 'lesson', studentId: 'student', studentName: '合成学员',
+      occurredAt: '2026-10-25T10:00:00Z', entryType: 'CONSUME', bucket: 'GIFT', deltaUnits,
+    }]);
+    expect(model.deltaLabel).toBe(deltaLabel);
   });
 
   it('deduplicates appended ledger pages', () => {

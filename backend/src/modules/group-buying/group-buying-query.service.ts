@@ -13,6 +13,7 @@ import type {
   ManagementGroupCampaignsQueryDto,
   ManagementGroupOrdersQueryDto,
   ParentGroupCampaignsQueryDto,
+  PartnerGroupCampaignsQueryDto,
 } from './dto/group-buying.dto';
 
 const campaignInclude = {
@@ -241,6 +242,82 @@ export class GroupBuyingQueryService {
     return toPromotionCampaignView(campaign, this.storedFileService);
   }
 
+  async listPartnerPromotionCampaigns(
+    campusId: string,
+    query: PartnerGroupCampaignsQueryDto,
+  ) {
+    const now = new Date();
+    const where: Prisma.GroupCampaignWhereInput = {
+      campusId,
+      ...(query.phase === 'ENDED'
+        ? {
+            OR: [
+              { status: 'CLOSED' },
+              { status: 'ACTIVE', endsAt: { lte: now } },
+            ],
+          }
+        : {
+            status: 'ACTIVE',
+            startsAt: { lte: now },
+            endsAt: { gt: now },
+          }),
+    };
+    // Count and rows share a snapshot even if an activity closes during the read.
+    return this.prisma.$transaction(
+      async (database) => {
+        const total = await database.groupCampaign.count({ where });
+        const campaigns = await database.groupCampaign.findMany({
+          where,
+          include: promotionCampaignInclude,
+          orderBy: [
+            { endsAt: query.phase === 'ENDED' ? 'desc' : 'asc' },
+            { id: 'asc' },
+          ],
+          skip: (query.page - 1) * query.pageSize,
+          take: query.pageSize,
+        });
+        return {
+          data: campaigns.map((campaign) =>
+            toPartnerPromotionCampaignView(
+              campaign,
+              this.storedFileService,
+              now,
+            ),
+          ),
+          meta: pagination(query.page, query.pageSize, total),
+        };
+      },
+      { isolationLevel: 'RepeatableRead' },
+    );
+  }
+
+  async getPartnerPromotionCampaign(campusId: string, campaignId: string) {
+    const now = new Date();
+    const campaign = await this.prisma.groupCampaign.findFirst({
+      where: {
+        id: campaignId,
+        campusId,
+        OR: [
+          { status: 'CLOSED' },
+          { status: 'ACTIVE', startsAt: { lte: now } },
+        ],
+      },
+      include: promotionCampaignInclude,
+    });
+    if (!campaign) {
+      throw new DomainError(
+        ErrorCode.RESOURCE_NOT_FOUND,
+        'Group campaign not found',
+        404,
+      );
+    }
+    return toPartnerPromotionCampaignView(
+      campaign,
+      this.storedFileService,
+      now,
+    );
+  }
+
   async listManagementCampaigns(query: ManagementGroupCampaignsQueryDto) {
     const where: Prisma.GroupCampaignWhereInput = {
       ...(query.campusId ? { campusId: query.campusId } : {}),
@@ -282,6 +359,8 @@ export class GroupBuyingQueryService {
     return {
       data: products.map(({ campus, ...product }) => ({
         ...product,
+        courseName: product.courseName ?? product.name,
+        classType: product.classType ?? '常规班',
         campusName: campus.name,
       })),
       meta: pagination(query.page, query.pageSize, total),
@@ -490,6 +569,20 @@ function toPromotionCampaignView(
     },
     createdAt: campaign.createdAt.toISOString(),
     updatedAt: campaign.updatedAt.toISOString(),
+  };
+}
+
+function toPartnerPromotionCampaignView(
+  campaign: PromotionCampaignRecord,
+  storedFileService: StoredFileService,
+  now: Date,
+) {
+  return {
+    ...toPromotionCampaignView(campaign, storedFileService),
+    canPromote:
+      campaign.status === 'ACTIVE' &&
+      campaign.startsAt <= now &&
+      campaign.endsAt > now,
   };
 }
 

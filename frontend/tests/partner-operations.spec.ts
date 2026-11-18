@@ -9,6 +9,7 @@ import {
 } from '../types/partner';
 
 const student: PartnerStudentDetail = {
+  photo: null,
   id: 'student-1',
   displayName: '林一诺',
   birthDate: '2017-06-18',

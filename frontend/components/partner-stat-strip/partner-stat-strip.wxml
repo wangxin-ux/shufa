@@ -6,6 +6,7 @@
     aria-hidden="true"
   />
   <view class="stats__item" wx:for="{{items}}" wx:key="key">
+    <view wx:if="{{index > 0}}" class="stats__divider" aria-hidden="true" />
     <text class="stats__label">{{item.label}}</text>
     <view class="stats__number">
       <text class="stats__value {{item.compact ? 'stats__value--compact' : ''}}">{{item.value}}</text>

@@ -1,4 +1,4 @@
-<parent-page-shell markTitle="课堂动态" markIcon="/pages/parent/assets/icon-mark-profile.png" bg="yellow" showBack="{{true}}">
+<parent-page-shell markTitle="学员资料" markIcon="/pages/parent/assets/icon-mark-profile.png" bg="yellow" showBack="{{true}}" waveSrc="/pages/parent/assets/top-wave.png">
   <view-state
     wx:if="{{viewState !== 'ready'}}"
     state="{{viewState}}"
@@ -6,45 +6,77 @@
     bind:retry="onRetry"
   />
 
-  <view wx:else class="updates">
-    <view class="updates__heading">
-      <text class="updates__title">课堂动态</text>
-      <text class="updates__subtitle">出勤与课堂反馈</text>
+  <view wx:else class="growth">
+    <view wx:if="{{refreshError || mutationMessage || pendingPhoto || photoBusy}}" class="growth-notices">
+      <view wx:if="{{refreshError}}" class="growth__message" bindtap="onRetry">{{refreshError}}</view>
+      <view wx:if="{{mutationMessage}}" class="growth__message">{{mutationMessage}}</view>
+      <button wx:if="{{pendingPhoto}}" class="growth__retry-photo" disabled="{{photoBusy || reviewSubmitting}}" bindtap="onRetryPhoto">{{photoBusy ? '保存中' : '重试照片'}}</button>
+      <text wx:if="{{photoBusy}}" class="growth__busy">照片处理中</text>
     </view>
-
-    <view-state wx:if="{{isEmpty}}" state="empty" emptyText="暂无课堂动态" />
-    <view wx:else class="updates__list">
-      <view class="update-card" wx:for="{{records}}" wx:key="lessonSessionId">
-        <view class="update-card__head">
-          <view class="update-card__course">
-            <view class="update-card__dot" aria-hidden="true"></view>
-            <text class="update-card__name">{{item.courseName}}</text>
-          </view>
-          <text class="update-card__status update-card__status--{{item.statusTone}}">{{item.statusLabel}}</text>
-        </view>
-        <text class="update-card__meta">{{item.lessonTimeLabel}} · {{item.teacherName}}</text>
-        <view class="update-card__attendance">
-          <text class="update-card__label">出勤</text>
-          <text class="update-card__value">{{item.attendanceLabel}}</text>
-        </view>
-        <view class="update-card__feedback">
-          <text class="update-card__label">课堂反馈</text>
-          <text class="update-card__feedback-text">{{item.feedback || '老师暂未填写反馈'}}</text>
-          <view wx:if="{{item.feedbackImages.length}}" class="update-card__images">
-            <image
-              wx:for="{{item.feedbackImages}}"
-              wx:for-item="image"
-              wx:key="id"
-              class="update-card__image"
-              src="{{image.accessUrl}}"
-              mode="aspectFill"
-              data-id="{{item.lessonSessionId}}"
-              data-url="{{image.accessUrl}}"
-              bindtap="onPreviewImages"
-            />
-          </view>
+    <view-state wx:if="{{!student}}" state="empty" emptyText="暂未绑定学员" />
+    <block wx:else>
+      <view class="growth-identity">
+        <image wx:if="{{student.photo}}" class="growth-identity__photo" src="{{student.photo.accessUrl}}" mode="aspectFill" bindtap="onPreviewPhoto" bindlongpress="onPhotoLongPress" />
+        <view wx:else class="growth-identity__empty" bindtap="onChoosePhoto"><text>暂无照片</text></view>
+        <view class="growth-identity__name">
+          <text class="growth-identity__student-name" style="font-size: {{nameFontSize}}rpx;">{{student.name}}</text>
+          <text class="growth-identity__age">{{student.age}}岁</text>
         </view>
       </view>
-    </view>
+      <view-state wx:if="{{isEmpty}}" state="empty" emptyText="暂无课堂记录" />
+      <block wx:else>
+        <view class="growth-feedback">
+          <view class="growth-feedback__inner">
+          <view class="growth-feedback__head" id="growth-feedback-{{current.lessonSessionId}}">
+            <image wx:if="{{current.feedbackImages.length}}" class="growth-feedback__photo" src="{{current.feedbackImages[0].accessUrl}}" mode="aspectFill" data-url="{{current.feedbackImages[0].accessUrl}}" bindtap="onPreviewImages" />
+            <view wx:else class="growth-feedback__photo growth-feedback__photo--empty"><text>暂无课堂照片</text></view>
+            <view class="growth-feedback__summary">
+              <text class="growth-feedback__campus">{{current.campusName}}</text>
+              <text class="growth-feedback__course" style="font-size: {{current.courseFontSize}}rpx;">{{current.courseName}}</text>
+              <picker class="growth-feedback__lesson-picker" range="{{lessonOptions}}" value="{{lessonIndex}}" disabled="{{records.length < 2 || reviewSubmitting || photoBusy}}" bindchange="onLessonChange" aria-label="切换课堂记录">
+                <view class="growth-feedback__meta"><text class="growth-feedback__meta-text">{{current.lessonDateLabel}}</text><text class="growth-feedback__meta-text">{{current.teacherName}}</text></view>
+              </picker>
+              <view wx:if="{{current.performanceRating !== null}}" class="growth-stars growth-stars--performance" aria-label="历史单项评分 {{current.performanceRatingLabel}}">
+                <view wx:for="{{current.performanceStars}}" wx:for-item="fill" wx:key="index" class="growth-star">
+                  <image class="growth-star__base" src="/pages/parent/assets/rating-star.png" />
+                  <view class="growth-star__fill" style="width: {{fill}}%;"><image class="growth-star__image" src="/pages/parent/assets/rating-star.png" /></view>
+                </view>
+              </view>
+              <text wx:if="{{current.performanceRating !== null}}" class="growth-feedback__unrated">历史单项评分 · {{current.performanceRatingLabel}}</text>
+              <text wx:elif="{{!current.teacherRatingRows.length}}" class="growth-feedback__unrated">未评分</text>
+            </view>
+          </view>
+          <view wx:if="{{current.teacherRatingRows.length}}" class="growth-teacher-ratings">
+            <text class="growth-teacher-ratings__author">教师评分 · {{current.feedbackAuthorName}}</text>
+            <view wx:for="{{current.teacherRatingRows}}" wx:for-item="rating" wx:key="field" class="growth-teacher-ratings__row">
+              <text>{{rating.label}}</text><text>{{rating.ratingLabel}}</text>
+            </view>
+          </view>
+          <text wx:if="{{current.statusTone === 'gray'}}" class="growth-feedback__status">课次已撤销</text>
+          <text class="growth-feedback__content">{{current.feedback || '老师暂未填写反馈'}}</text>
+          <view wx:if="{{current.feedbackImages.length > 1}}" class="growth-feedback__gallery">
+            <image wx:for="{{current.feedbackImages}}" wx:for-item="image" wx:key="id" src="{{image.accessUrl}}" mode="aspectFill" data-url="{{image.accessUrl}}" bindtap="onPreviewImages" />
+          </view>
+          </view>
+        </view>
+        <view class="growth-review">
+          <view class="growth-review__row" wx:for="{{reviewRows}}" wx:for-item="row" wx:key="field">
+            <text class="growth-review__label">{{row.label}}</text>
+            <view class="growth-stars" aria-label="{{row.label}} {{row.score / 2}} 星">
+              <view class="growth-star" wx:for="{{row.stars}}" wx:for-item="star" wx:key="full">
+                <image class="growth-star__base" src="/pages/parent/assets/rating-star.png" />
+                <view class="growth-star__fill" style="width: {{star.fill}}%;"><image class="growth-star__image" src="/pages/parent/assets/rating-star.png" /></view>
+                <view wx:if="{{current.canReview && !reviewSubmitting}}" class="growth-star__tap growth-star__tap--half" data-field="{{row.field}}" data-score="{{star.half}}" bindtap="onRate"></view>
+                <view wx:if="{{current.canReview && !reviewSubmitting}}" class="growth-star__tap growth-star__tap--full" data-field="{{row.field}}" data-score="{{star.full}}" bindtap="onRate"></view>
+              </view>
+            </view>
+          </view>
+          <textarea wx:if="{{current.canReview}}" id="parent-review-note" class="growth-review__note" value="{{reviewDraft.note}}" maxlength="500" disabled="{{reviewSubmitting || photoBusy}}" placeholder="家长对于本次课程意见" bindinput="onReviewNote" auto-height="{{true}}" />
+          <view wx:else class="growth-review__note growth-review__note--readonly"><text>{{current.review ? current.review.note || '暂无备注' : '此课次不可评价'}}</text></view>
+          <button wx:if="{{current.canReview}}" id="parent-review-submit" class="growth-review__submit" disabled="{{reviewSubmitting || photoBusy}}" bindtap="onSubmitReview">{{reviewSubmitting ? '提交中' : '提交评价'}}</button>
+          <text wx:elif="{{current.review}}" class="growth-review__state">{{current.review.valid ? '已评价' : '课次已撤销 · 评价无效'}}</text>
+        </view>
+      </block>
+    </block>
   </view>
 </parent-page-shell>

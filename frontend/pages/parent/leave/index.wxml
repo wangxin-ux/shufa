@@ -16,20 +16,20 @@
 
         <view class="field">
           <text class="field__label">选择孩子</text>
-          <picker range="{{students}}" range-key="name" value="{{studentIndex}}" bindchange="onStudentChange">
+          <picker id="parent-leave-student" range="{{students}}" range-key="name" value="{{studentIndex}}" disabled="{{submitStatus === 'submitting'}}" bindchange="onStudentChange">
             <view class="field__control">
-              <text>{{studentIndex >= 0 ? students[studentIndex].name : '暂无可选学员'}}</text>
-              <text class="field__arrow">⌄</text>
+              <text>{{studentIndex >= 0 ? students[studentIndex].name : students.length ? '请选择孩子' : '暂无可选学员'}}</text>
+              <view class="field__arrow" aria-hidden="true"></view>
             </view>
           </picker>
         </view>
 
         <view class="field">
           <text class="field__label">请假课程</text>
-          <picker range="{{lessons}}" range-key="label" value="{{lessonIndex}}" bindchange="onLessonChange">
+          <picker id="parent-leave-lesson" range="{{lessons}}" range-key="label" value="{{lessonIndex}}" disabled="{{submitStatus === 'submitting'}}" bindchange="onLessonChange">
             <view class="field__control">
-              <text class="field__value">{{lessonIndex >= 0 ? lessons[lessonIndex].label : '暂无可选课程'}}</text>
-              <text class="field__arrow">⌄</text>
+              <text class="field__value">{{lessonIndex >= 0 ? lessons[lessonIndex].label : lessons.length ? '请选择请假课程' : '暂无可选课程'}}</text>
+              <view class="field__arrow" aria-hidden="true"></view>
             </view>
           </picker>
         </view>
@@ -42,12 +42,14 @@
             maxlength="200"
             placeholder="请说明请假原因"
             bindinput="onReasonInput"
+            disabled="{{submitStatus === 'submitting'}}"
           />
         </view>
 
         <text wx:if="{{submitMessage}}" class="form-card__message">{{submitMessage}}</text>
         <view class="form-card__submit">
           <parent-primary-button
+            id="parent-leave-submit"
             text="{{submitStatus === 'submitting' ? '提交中…' : '提交请假申请'}}"
             disabled="{{submitStatus === 'submitting' || students.length === 0 || lessons.length === 0}}"
             bind:tap="onSubmitTap"
@@ -64,20 +66,29 @@
       <view class="records__head">
         <text class="records__title">请假记录</text>
       </view>
-
+      <view wx:if="{{contactWarning}}" class="leave__contact">
+        <text>{{contactWarningText}}</text>
+        <text class="leave__contact-campus">{{contactWarning.campusName}}{{contactWarning.contactPhone ? ' · ' + contactWarning.contactPhone : ' · 电话暂未登记'}}</text>
+        <button wx:if="{{contactWarning.contactPhone}}" class="leave__contact-call" bindtap="onContactCampusTap">拨打校区</button>
+      </view>
+      <view wx:if="{{refreshError}}" class="leave__refresh-error">
+        <text>{{refreshError}}</text><button bindtap="onRetry">重试</button>
+      </view>
       <view-state wx:if="{{recordsEmpty}}" state="empty" emptyText="暂无请假记录" />
       <view wx:else class="records__list">
-        <parent-record-card
-          wx:for="{{records}}"
-          wx:key="id"
-          hideDot="{{true}}"
-          tagPlain="{{true}}"
-          title="{{item.courseName}}"
-          subtitle="{{item.subtitle}}"
-          tagText="{{item.statusLabel}}"
-          tagTone="{{item.tagTone}}"
-          dotColor="{{item.dotColor}}"
-        />
+        <view class="records__item" wx:for="{{records}}" wx:key="id">
+          <parent-record-card
+            hideDot="{{true}}"
+            tagPlain="{{true}}"
+            title="{{item.courseName}}"
+            subtitle="{{item.subtitle}}"
+            tagText="{{item.statusLabel}}"
+            tagTone="{{item.tagTone}}"
+            dotColor="{{item.dotColor}}"
+          >
+            <text wx:if="{{item.reviewNote}}" class="records__review-note">{{item.reviewNote}}</text>
+          </parent-record-card>
+        </view>
       </view>
     </view>
   </view>

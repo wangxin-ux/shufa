@@ -1,35 +1,87 @@
+<partner-approved-role-badge id="partner-identity-badge" blocked="{{viewState === 'forbidden'}}" />
 <partner-page-shell
   markTitle="统计"
   markIcon="/pages/partner/assets/lesson-account-mark-glyph.png"
   showBack="{{true}}"
   plainGradient="{{true}}"
 >
-  <view class="partner-workspace account-page">
-    <view wx:if="{{viewState === 'loading'}}" class="partner-state"><text class="partner-state__title">正在加载课时账户</text></view>
-    <view wx:elif="{{viewState === 'forbidden'}}" class="partner-state"><text class="partner-state__title">无访问权限</text><text class="partner-state__message">{{errorMessage}}</text></view>
-    <view wx:elif="{{viewState === 'error'}}" class="partner-state"><text class="partner-state__title">课时账户加载失败</text><text class="partner-state__message">{{errorMessage}}</text><button class="partner-command" bindtap="onRetry">重试</button></view>
-
+  <view class="partner-workspace account-page {{subjectError || refreshError || earningAccountError || earningPreviewError || viewState === 'error' ? 'account-page--feedback' : ''}}">
+    <view wx:if="{{viewState === 'forbidden'}}" class="partner-state"><text class="partner-state__title">无访问权限</text><text class="partner-state__message">{{errorMessage}}</text><button class="partner-command" bindtap="onLogin">重新登录</button></view>
     <block wx:else>
-      <text class="account-page__title">校区课时账户</text>
+      <text class="account-page__title">课时账户</text>
       <view class="account-hero">
-        <view class="account-hero__copy"><text class="account-hero__label">全校区学员课时合计</text><view class="account-hero__number"><text class="account-hero__value">{{summary.totalBalanceLabel}}</text><text class="account-hero__unit">节</text></view></view>
         <image class="account-hero__character" src="/pages/partner/assets/lesson-account-top-character.png" mode="widthFix" aria-hidden="true" />
-      </view>
-      <view class="account-balances">
-        <view class="account-balance"><text class="account-balance__label">主课时</text><view class="account-balance__number"><text class="account-balance__value">{{summary.mainBalanceLabel}}</text><text class="account-balance__unit">节</text></view></view>
-        <view class="account-balance"><text class="account-balance__label">赠送课时</text><view class="account-balance__number"><text class="account-balance__value">{{summary.giftBalanceLabel}}</text><text class="account-balance__unit">节</text></view></view>
+        <view class="account-hero__copy">
+          <text class="account-earning-summary__title">累计内部收益</text>
+          <text wx:if="{{earningAccountState === 'loading'}}" class="account-earning-preview__state">正在读取累计收益</text>
+          <block wx:if="{{earningAccount}}">
+            <text class="account-earning-summary__amount">{{earningAccount.estimatedTotalLabel}}</text>
+            <text class="account-earning-summary__pending">其中待审核 {{earningAccount.pendingReviewLabel}}</text>
+          </block>
+          <view wx:if="{{earningAccountError}}" class="account-earning-preview__error">
+            <text>{{earningAccountError}}</text><button class="account-earnings-link" bindtap="onEarningAccountRetry">重试</button>
+          </view>
+          <view wx:if="{{summary}}" class="account-balances">
+            <text class="account-hero__label">全校区 {{summary.totalBalanceLabel}} 节</text>
+            <text class="account-hero__label">主课时 {{summary.mainBalanceLabel}} · 赠送 {{summary.giftBalanceLabel}}</text>
+          </view>
+        </view>
+        <view class="account-earning-preview">
+          <view class="account-actions">
+            <text class="account-earning-preview__title">近期内部收益</text>
+            <button class="account-earnings-link" bindtap="onEarningsTap" aria-label="查看内部收益明细"><text>收益明细</text><text aria-hidden="true">›</text></button>
+          </view>
+          <scroll-view class="account-earning-preview__list" scroll-y="{{true}}" show-scrollbar="{{true}}">
+            <view wx:if="{{earningPreviewError}}" class="account-earning-preview__error">
+              <text>{{earningPreviewError}}</text><button class="account-earnings-link" bindtap="onEarningsRetry">重试</button>
+            </view>
+            <text wx:if="{{earningPreviewState === 'loading'}}" class="account-earning-preview__state">正在读取收益流水</text>
+            <text wx:elif="{{earningPreviewState === 'empty'}}" class="account-earning-preview__state">暂无内部收益记录</text>
+            <view wx:for="{{earningPreviewItems}}" wx:key="id" class="account-earning-preview__row">
+              <view class="account-earning-preview__main">
+                <text class="account-earning-preview__course">{{item.courseName}} · {{item.typeLabel}}</text>
+                <text class="account-ledger__meta">登记 {{item.registeredAtLabel}}</text>
+                <text class="account-ledger__meta">原课次完课 {{item.completedAtLabel}}</text>
+              </view>
+              <view class="account-earning-preview__aside">
+                <text class="account-earning-preview__amount account-ledger__delta--{{item.tone}}">{{item.amountLabel}}</text>
+                <text class="account-ledger__meta">{{item.statusLabel}}</text>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
+        <view class="account-withdrawal"><button class="account-withdrawal__button" bindtap="onWithdrawalTap" aria-label="查看提现申请与记录">提现申请与记录</button></view>
       </view>
 
       <view class="account-ledger-stage">
-        <image class="account-ledger-stage__character" src="/pages/partner/assets/lesson-account-lower-character.png" mode="widthFix" aria-hidden="true" />
         <view class="account-ledger-stage__head"><text class="account-ledger-stage__title">课时流水</text><text class="account-ledger-stage__count">{{total}}条</text></view>
-        <view wx:if="{{viewState === 'empty'}}" class="partner-state account-empty"><text class="partner-state__title">暂无课时记录</text><text class="partner-state__message">当前校区还没有课时账本流水</text></view>
-        <view wx:else class="account-ledger">
+        <view class="account-filters">
+          <picker class="account-filter" range="{{subjectOptions}}" range-key="label" value="{{subjectIndex}}" bindchange="onSubjectChange" aria-label="按报名科目筛选">
+            <view class="account-filter__value"><text>{{subjectOptions[subjectIndex].label}}</text><text aria-hidden="true">⌄</text></view>
+          </picker>
+          <picker class="account-filter" range="{{entryTypeOptions}}" range-key="label" value="{{entryTypeIndex}}" bindchange="onEntryTypeChange" aria-label="按课时流水类别筛选">
+            <view class="account-filter__value"><text>{{entryTypeOptions[entryTypeIndex].label}}</text><text aria-hidden="true">⌄</text></view>
+          </picker>
+        </view>
+        <view wx:if="{{subjectError}}" class="account-earning-preview__error"><text>{{subjectError}}</text><button class="account-earnings-link" bindtap="onSubjectsRetry">重试</button></view>
+        <view wx:if="{{refreshError}}" class="account-earning-preview__error"><text>{{refreshError}}</text><button class="account-earnings-link" bindtap="onRetry">重试</button></view>
+        <view wx:if="{{ledgerLoading}}" class="account-filter-loading" aria-live="polite"><text>正在读取课时流水</text></view>
+        <view wx:elif="{{viewState === 'loading'}}" class="account-filter-loading">正在加载课时账户</view>
+        <view wx:elif="{{viewState === 'error'}}" class="account-filter-loading"><text>{{errorMessage}}</text><button class="account-earnings-link" bindtap="onRetry">重试</button></view>
+        <view wx:elif="{{viewState === 'empty'}}" class="partner-state account-empty"><text class="partner-state__title">暂无课时记录</text><text class="partner-state__message">{{entryType ? '当前类别暂无流水' : '当前校区还没有课时账本流水'}}</text></view>
+        <scroll-view wx:else class="account-ledger" scroll-y="{{true}}" bindscrolltolower="onLedgerReachBottom" lower-threshold="80" enhanced="{{true}}" show-scrollbar="{{true}}">
           <view wx:for="{{items}}" wx:key="id" class="account-ledger__row">
-            <view class="account-ledger__main"><text class="account-ledger__type">{{item.typeLabel}}</text><text class="account-ledger__student">{{item.studentName}} · {{item.packageName}}</text><text class="account-ledger__meta">{{item.timeLabel}} · {{item.bucketLabel}}</text><text class="account-ledger__reason">{{item.reasonLabel}}</text></view>
+            <view class="account-ledger__main"><text class="account-ledger__type">{{item.subjectLabel}} · {{item.typeLabel}}</text><text class="account-ledger__student">{{item.studentName}} · {{item.packageName}}</text><text class="account-ledger__meta">{{item.paymentLabel}}</text><text class="account-ledger__teaching">{{item.teachingLabel}}</text><text wx:if="{{item.lessonTimeLabel}}" class="account-ledger__meta">{{item.lessonTimeLabel}}</text><text class="account-ledger__meta">登记 {{item.timeLabel}} · {{item.bucketLabel}}</text><text class="account-ledger__reason">{{item.reasonLabel}}</text></view>
             <view class="account-ledger__aside"><text class="account-ledger__delta account-ledger__delta--{{item.tone}}">{{item.deltaLabel}} 节</text><text class="account-ledger__balance">{{item.balanceAfterLabel}}</text></view>
           </view>
-          <button wx:if="{{hasMore}}" class="partner-command partner-command--load-more" loading="{{loadingMore}}" disabled="{{loadingMore}}" bindtap="onLoadMore">{{loadingMore ? '加载中' : '加载更多'}}</button>
+          <text wx:if="{{pageError}}" class="partner-state__message account-page-error">{{pageError}}</text>
+          <button wx:if="{{hasMore}}" class="partner-command partner-command--load-more" loading="{{loadingMore}}" disabled="{{loadingMore || refreshError}}" bindtap="onLoadMore">{{loadingMore ? '加载中' : pageError ? '重试加载' : '加载更多'}}</button>
+        </scroll-view>
+      </view>
+      <view class="account-ranking-stage">
+        <image class="account-ledger-stage__character" src="/pages/partner/assets/lesson-account-lower-character.png" mode="widthFix" aria-hidden="true" />
+        <view class="account-ranking-stage__preview">
+          <partner-ranking-preview id="account-ranking-preview" blocked="{{viewState === 'forbidden'}}" bindforbidden="onRankingForbidden" />
         </view>
       </view>
     </block>

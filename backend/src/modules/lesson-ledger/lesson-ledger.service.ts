@@ -52,26 +52,26 @@ export function consumeLessonUnits(
   }
 
   let remainingUnits = requestedUnits;
-  const mainConsumed = Math.min(input.mainUnits, remainingUnits);
-  remainingUnits -= mainConsumed;
   const giftConsumed = Math.min(input.giftUnits, remainingUnits);
+  remainingUnits -= giftConsumed;
+  const mainConsumed = Math.min(input.mainUnits, remainingUnits);
   const balance = {
     mainUnits: input.mainUnits - mainConsumed,
     giftUnits: input.giftUnits - giftConsumed,
   };
   const entries: BalanceEntry[] = [];
-  if (mainConsumed > 0) {
-    entries.push({
-      bucket: 'MAIN',
-      deltaUnits: -mainConsumed,
-      balanceAfterUnits: balance.mainUnits,
-    });
-  }
   if (giftConsumed > 0) {
     entries.push({
       bucket: 'GIFT',
       deltaUnits: -giftConsumed,
       balanceAfterUnits: balance.giftUnits,
+    });
+  }
+  if (mainConsumed > 0) {
+    entries.push({
+      bucket: 'MAIN',
+      deltaUnits: -mainConsumed,
+      balanceAfterUnits: balance.mainUnits,
     });
   }
 
@@ -120,7 +120,7 @@ export function planPackageConsumption(
 
   let remainingUnits = requestedUnits;
   const entries: PlannedLedgerEntry[] = [];
-  for (const bucket of ['MAIN', 'GIFT'] as const) {
+  for (const bucket of ['GIFT', 'MAIN'] as const) {
     const balanceKey =
       bucket === 'MAIN' ? 'mainBalanceUnits' : 'giftBalanceUnits';
     for (const coursePackage of eligible) {

@@ -15,14 +15,16 @@ import {
   PartnerPeriodQuery,
   PartnerSearchQuery,
   PartnerStudent,
+  PartnerStudentQuery,
   PartnerStudentDetail,
+  PartnerStudentGrowth,
+  PartnerStudentPhoto,
   PartnerTeacher,
   PartnerWarning,
 } from '../types/partner';
 import {
-  GroupPage,
-  GroupPromotionCampaignQuery,
-  GroupPromotionCampaignView,
+  PartnerCampaignQuery,
+  PartnerCampaignView,
 } from '../types/group-buying';
 import {
   PartnerDataSource,
@@ -86,39 +88,54 @@ export class ApiPartnerDataSource implements PartnerDataSource {
     return this.envelope('/partners/me/profile');
   }
 
-  listGroupPromotionCampaigns(
-    query: GroupPromotionCampaignQuery,
-  ): Promise<GroupPage<GroupPromotionCampaignView>> {
-    return this.page<
-      GroupPromotionCampaignView,
-      GroupPromotionCampaignQuery
-    >(
+  listGroupPromotionCampaigns(query: PartnerCampaignQuery) {
+    return this.page<PartnerCampaignView, PartnerCampaignQuery>(
       '/partners/me/group-campaigns',
       query,
     ).then((page) => ({
       ...page,
-      data: page.data.map((campaign) =>
-        this.mapGroupPromotionCampaign(campaign),
-      ),
+      data: page.data.map((campaign) => this.mapGroupPromotionCampaign(campaign)),
     }));
   }
 
-  getGroupPromotionCampaign(id: string): Promise<GroupPromotionCampaignView> {
-    return this.envelope<GroupPromotionCampaignView>(
+  getGroupPromotionCampaign(id: string) {
+    return this.envelope<PartnerCampaignView>(
       `/partners/me/group-campaigns/${encodeURIComponent(id)}`,
     ).then((campaign) => this.mapGroupPromotionCampaign(campaign));
   }
 
   listStudents(
-    query: PartnerSearchQuery,
+    query: PartnerStudentQuery,
   ): Promise<PartnerPage<PartnerStudent>> {
     return this.page('/partners/me/students', query);
   }
 
   getStudent(studentId: string): Promise<PartnerStudentDetail> {
-    return this.envelope(
+    return this.envelope<PartnerStudentDetail>(
       `/partners/me/students/${encodeURIComponent(studentId)}`,
-    );
+    ).then((detail) => ({ ...detail, photo: this.mapStudentMedia(detail.photo) }));
+  }
+
+  getStudentGrowth(studentId: string, query: PartnerPageQuery): Promise<PartnerStudentGrowth> {
+    return this.envelope<PartnerStudentGrowth>(
+      `/partners/me/students/${encodeURIComponent(studentId)}/growth${this.query(query)}`,
+    ).then((growth) => ({
+      ...growth,
+      student: { ...growth.student, photo: this.mapStudentMedia(growth.student.photo) },
+      items: growth.items.map((item) => ({
+        ...item,
+        feedbackImages: item.feedbackImages.map((image) => this.mapStudentMedia(image)!),
+      })),
+    }));
+  }
+
+  private mapStudentMedia(file: PartnerStudentPhoto | null): PartnerStudentPhoto | null {
+    if (!file) return null;
+    return {
+      ...file,
+      accessUrl: /^https?:\/\//.test(file.accessUrl) ? file.accessUrl
+        : `${this.baseUrl}${file.accessUrl.startsWith('/') ? '' : '/'}${file.accessUrl}`,
+    };
   }
 
   getOperationsSummary(
@@ -233,8 +250,8 @@ export class ApiPartnerDataSource implements PartnerDataSource {
   }
 
   private mapGroupPromotionCampaign(
-    campaign: GroupPromotionCampaignView,
-  ): GroupPromotionCampaignView {
+    campaign: PartnerCampaignView,
+  ): PartnerCampaignView {
     return {
       ...campaign,
       posterImages: campaign.posterImages.map((poster) => ({

@@ -26,13 +26,19 @@ export interface PartnerDashboard {
   remainingGiftUnits: number;
   monthConsumedUnits: number;
   attendanceRateBasisPoints: number | null;
-  highlight: PartnerWarning | null;
+  highlight: PartnerDashboardHighlight | null;
   serverTime: string;
+}
+
+export interface PartnerDashboardHighlight extends PartnerWarning {
+  classes: PartnerStudentClass[];
+  attendance: PartnerAttendanceSummary;
 }
 
 export interface PartnerProfile {
   displayName: string;
   roleCode: 'PARTNER';
+  activeStudentCount: number;
   campus: PartnerCampusSummary & {
     contactPhone: string | null;
     address: string | null;
@@ -58,6 +64,13 @@ export interface PartnerPageQuery {
 
 export interface PartnerSearchQuery extends PartnerPageQuery {
   query?: string;
+}
+
+export const PARTNER_BALANCE_BANDS = ['ALL', 'ZERO', 'LTE_FIVE', 'GT_FIVE'] as const;
+export type PartnerBalanceBand = (typeof PARTNER_BALANCE_BANDS)[number];
+
+export interface PartnerStudentQuery extends PartnerSearchQuery {
+  balanceBand?: PartnerBalanceBand;
 }
 
 export interface PartnerStudent extends LessonAvailability {
@@ -104,10 +117,54 @@ export interface PartnerStudentClass {
 }
 
 export interface PartnerStudentDetail extends PartnerStudent {
+  photo: PartnerStudentPhoto | null;
   classes: PartnerStudentClass[];
   attendance: PartnerAttendanceSummary;
   recentAttendance: PartnerAttendanceRecord[];
   recentLessonLedger: PartnerLessonLedgerEntry[];
+}
+
+export interface PartnerStudentPhoto {
+  id: string;
+  mimeType: string;
+  sizeBytes: number;
+  accessUrl: string;
+  accessUrlExpiresAt: string;
+}
+
+export interface PartnerStudentReview {
+  id: string;
+  lessonSessionId: string;
+  studentId: string;
+  teaching: number;
+  communication: number;
+  environment: number;
+  overall: number;
+  note: string;
+  createdAt: string;
+  valid: boolean;
+}
+
+export interface PartnerStudentGrowthRecord {
+  lessonSessionId: string;
+  studentId: string;
+  courseName: string;
+  campusName: string;
+  teacherName: string;
+  startsAt: string;
+  lessonStatus: 'COMPLETED' | 'REVERSED';
+  attendanceStatus: PartnerAttendanceStatus | null;
+  feedback: string | null;
+  performanceRating: number | null;
+  review: PartnerStudentReview | null;
+  feedbackImages: PartnerStudentPhoto[];
+  feedbackUpdatedAt: string | null;
+}
+
+export interface PartnerStudentGrowth {
+  student: { id: string; displayName: string; photo: PartnerStudentPhoto | null };
+  items: PartnerStudentGrowthRecord[];
+  meta: PartnerPageMeta;
 }
 
 export interface PartnerTeacher {

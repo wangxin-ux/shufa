@@ -64,14 +64,15 @@ export const TEACHER_HOME_ACTIONS = [
   },
 ];
 
-const WEEKDAYS = [
-  '周日',
-  '周一',
-  '周二',
-  '周三',
-  '周四',
-  '周五',
-  '周六',
+// 原稿首页日期行使用英文花体星期（Saturday 等），与家长端 parent-home.presenter 一致。
+const ENGLISH_WEEKDAYS = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
 ];
 
 const STATUS_PRESENTATION: Record<
@@ -95,7 +96,7 @@ function formatLessonTime(value: string): string {
 
 function formatWeekday(value: string): string {
   const weekday = parseZonedDateTime(value)?.weekday;
-  return weekday === undefined ? '' : WEEKDAYS[weekday] ?? '';
+  return weekday === undefined ? '' : ENGLISH_WEEKDAYS[weekday] ?? '';
 }
 
 function toCount(value: number): { value: string; compact: boolean } {

@@ -27,13 +27,16 @@
 .record-card__title {
   font-size: 32rpx;
   font-family: var(--parent-font-display);
-  font-weight: 600;
+  font-weight: var(--parent-record-card-title-weight, 600);
+  -webkit-text-stroke: var(--parent-record-card-title-stroke, 0);
   color: var(--parent-ink);
 }
 
 .record-card__subtitle {
   margin-top: 8rpx;
   font-size: var(--parent-record-card-subtitle-size, 24rpx);
+  font-family: var(--parent-record-card-subtitle-family, inherit);
+  font-weight: var(--parent-record-card-subtitle-weight, inherit);
   color: var(--parent-record-card-subtitle-color, var(--parent-text-muted));
 }
 
@@ -43,7 +46,7 @@
   padding: 0 28rpx;
   min-height: 56rpx;
   line-height: 56rpx;
-  border-radius: 999rpx;
+  border-radius: var(--parent-record-card-tag-radius, 999rpx);
   font-size: 26rpx;
   font-family: var(--parent-font-display);
   font-weight: 600;

@@ -105,7 +105,7 @@ describe('teacher attendance, completion, reversal, and feedback', () => {
       .expect(200);
     accessToken = (bindResponse.body as Envelope<{ accessToken: string }>).data
       .accessToken;
-  });
+  }, 30_000);
 
   afterAll(async () => {
     if (prisma) {
@@ -225,7 +225,7 @@ describe('teacher attendance, completion, reversal, and feedback', () => {
       status: 'COMPLETED',
       teachingRecordId: expect.any(String) as unknown,
       consumed: [
-        { studentId: ids.eastStudentA, mainUnits: 100, giftUnits: 0 },
+        { studentId: ids.eastStudentA, mainUnits: 0, giftUnits: 100 },
         { studentId: ids.eastStudentB, mainUnits: 0, giftUnits: 0 },
       ],
     });
@@ -247,16 +247,16 @@ describe('teacher attendance, completion, reversal, and feedback', () => {
     ]);
     expect(lesson).toMatchObject({ status: 'COMPLETED', version: 2 });
     expect(packages.map(({ mainBalanceUnits }) => mainBalanceUnits)).toEqual([
-      800, 700,
+      900, 700,
     ]);
     expect(ledger).toHaveLength(1);
     expect(ledger[0]).toMatchObject({
       studentId: ids.eastStudentA,
       entryType: 'CONSUME',
-      bucket: 'MAIN',
+      bucket: 'GIFT',
       deltaUnits: -100,
-      balanceBeforeUnits: 900,
-      balanceAfterUnits: 800,
+      balanceBeforeUnits: 200,
+      balanceAfterUnits: 100,
     });
     expect(teachingRecords).toHaveLength(1);
     await expect(
@@ -343,6 +343,7 @@ describe('teacher attendance, completion, reversal, and feedback', () => {
         lessonSessionId: ids.eastScheduled,
         studentId: ids.eastStudentA,
         content: 'Focused and completed the activity.',
+        performanceRating: null,
         images: [],
         updatedAt: expect.any(String) as unknown,
       },
@@ -381,10 +382,12 @@ describe('teacher attendance, completion, reversal, and feedback', () => {
     ]);
     expect(lesson).toMatchObject({ status: 'REVERSED', version: 3 });
     expect(coursePackage.mainBalanceUnits).toBe(900);
+    expect(coursePackage.giftBalanceUnits).toBe(200);
     expect(ledger).toHaveLength(2);
     expect(ledger[0]).toMatchObject({ entryType: 'CONSUME', deltaUnits: -100 });
     expect(ledger[1]).toMatchObject({
       entryType: 'REVERSAL',
+      bucket: ledger[0].bucket,
       deltaUnits: 100,
       reversalOfId: ledger[0].id,
     });

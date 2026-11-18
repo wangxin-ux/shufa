@@ -1,0 +1,33 @@
+<view class="shell {{surfacePage ? 'shell--surface' : ''}} {{tone === 'account' ? 'shell--account' : ''}}">
+  <view wx:if="{{!surfacePage && tone !== 'account'}}" class="shell__wave" aria-hidden="true"></view>
+  <view class="shell__header" style="padding-top: {{headerTopPx}}px;">
+    <view
+      class="shell__header-inner {{surfacePage ? 'shell__header-inner--surface' : ''}} {{homePage ? 'shell__header-inner--home' : ''}}"
+      style="--operator-header-height: {{headerHeightPx}}px; min-height: {{headerHeightPx}}px; padding-right: {{headerRightPx}}px;"
+    >
+      <button
+        wx:if="{{showBack}}"
+        class="shell__back"
+        aria-label="返回上一页"
+        catchtap="onBackTap"
+        hover-class="shell__back--hover"
+      >
+        <text class="shell__back-icon">‹</text>
+      </button>
+      <view class="shell__mark {{plainMark ? 'shell__mark--plain' : ''}}">
+        <view class="shell__mark-disc shell__mark-disc--{{markIconHasDisc ? 'framed' : 'glyph'}} {{plainMark ? 'shell__mark-disc--plain' : ''}}">
+          <image
+            class="shell__mark-icon shell__mark-icon--{{markIconHasDisc ? 'framed' : 'glyph'}} {{plainMark ? 'shell__mark-icon--plain' : ''}}"
+            src="{{markIcon}}"
+            mode="aspectFit"
+            style="width: {{markIconSize}}rpx; height: {{markIconSize}}rpx; transform: translateY({{markIconOffsetY}}rpx);"
+            aria-hidden="true"
+          />
+        </view>
+        <text class="shell__mark-title">{{markTitle}}</text>
+      </view>
+      <view class="shell__tools"><slot name="tools" /></view>
+    </view>
+  </view>
+  <view class="shell__body"><slot /></view>
+</view>

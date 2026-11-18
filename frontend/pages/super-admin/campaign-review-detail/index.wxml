@@ -1,0 +1,62 @@
+<super-admin-page-shell header="free-campaign-header" show-back mark-title="审核" mark-icon="/pages/super-admin/assets/profile-mark-glyph.png" fallback-url="/pages/super-admin/campaign-reviews/index">
+  <view class="free-campaign-header-space" style="height: calc({{headerTopPx}}px + 150rpx);" aria-hidden="true"></view>
+  <view class="workspace free-review-detail">
+    <view class="workspace__head"><text class="workspace__title">免费活动详情</text></view>
+    <text wx:if="{{simulated}}" class="notice">合成演示数据</text>
+    <text wx:if="{{message}}" class="free-review-detail__message" aria-live="polite">{{message}}</text>
+    <view wx:if="{{viewState === 'forbidden'}}" class="state"><text class="state__title">无法访问活动</text><button class="button" bindtap="onLogin">重新登录</button></view>
+    <view wx:elif="{{viewState === 'loading'}}" class="state"><text class="state__title">正在读取冻结详情</text></view>
+    <view wx:elif="{{viewState === 'error'}}" class="state"><text class="state__title">详情读取失败</text><button class="button" disabled="{{loading || submitting || dialogPending}}" bindtap="onReload">重读状态</button></view>
+    <block wx:if="{{detail}}">
+      <view class="free-review-detail__facts">
+        <text class="free-review-detail__name">{{detail.configuration.title}}</text>
+        <text class="status">{{statusLabel}}</text>
+        <view class="free-review-detail__fact"><text>校区标识</text><text>{{detail.campusId}}</text></view>
+        <view class="free-review-detail__fact"><text>活动类型</text><text>免费报名</text></view>
+        <view class="free-review-detail__fact"><text>转发描述</text><text>{{detail.configuration.shareDescription}}</text></view>
+        <view class="free-review-detail__fact"><text>机构电话</text><text>{{detail.configuration.contactPhone || '未填写'}}</text></view>
+        <view class="free-review-detail__fact"><text>开始时间</text><text>{{startsLabel}}</text></view>
+        <view class="free-review-detail__fact"><text>结束时间</text><text>{{endsLabel}}</text></view>
+        <view class="free-review-detail__fact"><text>活动时区</text><text>{{detail.configuration.timezone}}</text></view>
+        <view class="free-review-detail__fact"><text>名额上限</text><text>{{capacityLabel}}</text></view>
+        <view class="free-review-detail__fact"><text>报名费用（分）</text><text>{{detail.configuration.feeFen}}</text></view>
+        <view class="free-review-detail__fact"><text>课时权益</text><text>不自动发放</text></view>
+        <view class="free-review-detail__fact"><text>报名次数</text><text>每名孩子一次，撤销后不能重报</text></view>
+        <view class="free-review-detail__fact"><text>送审序号</text><text>{{detail.sequence}}</text></view>
+        <view class="free-review-detail__fact"><text>来源草稿版本</text><text>{{detail.sourceDraftVersion}}</text></view>
+        <view class="free-review-detail__fact"><text>审核版本</text><text>{{detail.version}}</text></view>
+        <view class="free-review-detail__fact"><text>活动状态版本</text><text>{{detail.campaignVersion}}</text></view>
+        <view class="free-review-detail__fact"><text>活动状态</text><text>{{detail.lifecycle === 'CLOSED' ? '已关闭' : '开放'}}</text></view>
+        <view class="free-review-detail__fact"><text>公开版本</text><text>{{detail.publishedVersionId || '尚未发布'}}</text></view>
+        <view class="free-review-detail__fact"><text>送审时间</text><text>{{submittedLabel}}</text></view>
+        <view wx:if="{{reviewedLabel}}" class="free-review-detail__fact"><text>审核时间</text><text>{{reviewedLabel}}</text></view>
+        <view wx:if="{{detail.reviewReason}}" class="free-review-detail__fact"><text>审核原因</text><text>{{detail.reviewReason}}</text></view>
+      </view>
+      <view wx:if="{{detail.configuration.activityContent}}" class="free-review-detail__content">
+        <text class="form__label">活动正文</text>
+        <text class="free-review-detail__content-text">{{detail.configuration.activityContent}}</text>
+      </view>
+      <view wx:if="{{detail.configuration.images.cover}}" class="free-review-detail__content">
+        <text class="form__label">活动封面</text>
+        <image class="free-review-detail__image free-review-detail__image--cover" src="{{detail.configuration.images.cover.accessUrl}}" mode="aspectFit" />
+      </view>
+      <view wx:if="{{detail.configuration.images.share}}" class="free-review-detail__content">
+        <text class="form__label">转发图</text>
+        <image class="free-review-detail__image free-review-detail__image--share" src="{{detail.configuration.images.share.accessUrl}}" mode="aspectFit" />
+      </view>
+      <view wx:if="{{detail.status === 'SUBMITTED' || detail.lifecycle === 'OPEN'}}" class="free-review-detail__decision">
+        <text class="form__label">驳回或关闭原因</text>
+        <textarea class="textarea" value="{{reason}}" maxlength="-1" disabled="{{submitting || dialogPending || uncertain}}" bindinput="onReasonInput" cursor-spacing="32" auto-height="{{true}}" placeholder="请填写原因，最多1000个字符" />
+        <view class="actions">
+          <button wx:if="{{detail.status === 'SUBMITTED'}}" class="button" disabled="{{!canApprove}}" bindtap="onApprove">批准活动</button>
+          <button wx:if="{{detail.status === 'SUBMITTED'}}" class="button button--danger" disabled="{{!canReject}}" bindtap="onReject">驳回活动</button>
+          <button wx:if="{{detail.lifecycle === 'OPEN'}}" class="button button--ghost" disabled="{{!canClose}}" bindtap="onCloseCampaign">关闭活动</button>
+        </view>
+      </view>
+    </block>
+    <view wx:if="{{viewState !== 'forbidden'}}" class="actions">
+      <button wx:if="{{uncertain}}" class="button" disabled="{{loading || submitting || dialogPending}}" bindtap="onRetryAction">重试原操作</button>
+      <button wx:if="{{viewState !== 'loading'}}" class="button button--ghost" disabled="{{loading || submitting || dialogPending}}" loading="{{loading}}" bindtap="onReload">重读状态</button>
+    </view>
+  </view>
+</super-admin-page-shell>

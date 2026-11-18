@@ -1,0 +1,16 @@
+[
+  {
+    "viewState": "ready",
+    "students": [{ "id": "visual-student", "name": "陈晨 · 初中二年级" }],
+    "lessons": [{ "id": "visual-lesson", "title": "初中数学综合能力提升与应用专题学习班", "startsAt": "2030-10-02T06:00:00Z", "label": "2030-10-02 14:00 · 初中数学综合能力提升与应用专题学习班" }],
+    "studentIndex": 0,
+    "lessonIndex": 0,
+    "draft": { "studentId": "visual-student", "lessonId": "visual-lesson", "reason": "家庭临时有事，已与校区工作人员联系，申请本次课程请假。" },
+    "records": [],
+    "recordsEmpty": true,
+    "cutoffText": "须提前 2 小时提交",
+    "contactWarning": { "weekStart": "2030-09-30", "weekEnd": "2030-10-06", "consecutiveCount": 2, "lessonSessionIds": ["visual-one", "visual-two"], "campusName": "启明东校区", "contactPhone": "0731-88886666" },
+    "contactWarningText": "2030-09-30 至 2030-10-06 连续请假2次，须电话沟通联系校区",
+    "refreshError": ""
+  }
+]

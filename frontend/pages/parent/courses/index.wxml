@@ -1,0 +1,39 @@
+<parent-page-shell markTitle="课程" markIcon="/pages/parent/assets/icon-mark-home.png" bg="white" showBack="{{true}}">
+  <view class="catalog" style="height: {{contentHeight}}px;">
+    <view class="catalog__list">
+      <view-state wx:if="{{viewState === 'loading'}}" state="loading" loadingText="正在加载课程…" />
+      <view-state wx:elif="{{viewState === 'error'}}" state="error" errorText="{{errorMessage}}" bind:retry="onRetry" />
+      <view-state wx:elif="{{viewState === 'empty'}}" state="empty" emptyText="暂无上架课程" />
+      <scroll-view wx:else scroll-y class="catalog__scroll">
+        <view class="course-row" wx:for="{{courses}}" wx:key="courseName">
+          <view class="course-row__name"><view class="course-row__dot"></view><text>{{item.courseName}}</text></view>
+          <view class="course-row__quote"><text class="course-row__price" style="font-size: {{item.priceSize || 36}}rpx;">{{item.priceLabel}}</text><text class="course-row__units">{{item.unitsLabel}}</text></view>
+          <button class="class-type-button" data-name="{{item.courseName}}" bindtap="onClassTypeTap" aria-label="{{item.courseName}}班型">班型</button>
+        </view>
+      </scroll-view>
+    </view>
+    <view class="catalog__map">
+      <map wx:if="{{mapState === 'ready'}}" id="catalog-map" class="catalog__native-map" latitude="{{mapLatitude}}" longitude="{{mapLongitude}}" scale="13" markers="{{markers}}" include-points="{{includePoints}}" bindmarkertap="onMarkerTap"></map>
+      <view-state wx:elif="{{mapState === 'loading'}}" state="loading" loadingText="正在加载门店…" />
+      <view-state wx:elif="{{mapState === 'error'}}" state="error" errorText="{{mapError}}" bind:retry="onMapRetry" />
+      <view-state wx:else state="empty" emptyText="暂无公开门店" />
+      <button wx:if="{{selectedCampus && mapState === 'ready'}}" class="catalog__map-campus" bindtap="onNavigateTap">{{selectedCampus.name}} <text class="catalog__map-arrow">›</text></button>
+    </view>
+    <image class="catalog__mascot" src="/pages/parent/assets/profile-mascot.png" mode="widthFix" aria-hidden="true" />
+    <button id="catalog-offers" class="catalog__offers" bindtap="onOffersTap">更多优惠活动</button>
+    <view wx:if="{{activeCourse}}" class="catalog__quote-backdrop" bindtap="onCloseQuotes"></view>
+    <view wx:if="{{activeCourse}}" class="catalog__popover" catchtap="onQuotePanelTap">
+      <view class="catalog__popover-head"><text>{{activeCourse.courseName}}</text><button class="catalog__close" bindtap="onCloseQuotes" aria-label="关闭班型">×</button></view>
+      <scroll-view scroll-y class="catalog__quote-scroll" style="height: {{activeCourse.quotePanelHeight || 280}}rpx;">
+        <view wx:for="{{activeCourse.classTypes}}" wx:for-item="type" wx:key="name" class="quote-type">
+          <text class="quote-type__name">{{type.name}}</text>
+          <view wx:for="{{type.quotes}}" wx:for-item="quote" wx:key="productId" class="quote-row">
+            <button class="quote-row__map" data-id="{{quote.campus.id}}" bindtap="onNavigateTap" aria-label="导航到{{quote.campus.name}}"><image src="/pages/parent/assets/map-marker.png" mode="aspectFit" /></button>
+            <view class="quote-row__details"><text class="quote-row__text">{{quote.campus.name}}</text><text class="quote-row__text">{{quote.priceLabel}} / {{quote.unitsLabel}}</text></view>
+          </view>
+        </view>
+      </scroll-view>
+      <button class="catalog__more-campuses" bindtap="onMoreCampuses">更多附近校区 ›››</button>
+    </view>
+  </view>
+</parent-page-shell>

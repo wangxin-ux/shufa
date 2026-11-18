@@ -1,0 +1,33 @@
+[
+  {
+    "student": { "id": "visual-student", "name": "陈晨", "age": 9, "profileVersion": 1, "photo": null },
+    "records": [
+      {
+        "lessonSessionId": "visual-reviewed",
+        "studentId": "visual-student",
+        "courseName": "专业美术B",
+        "campusName": "京南一品校区",
+        "teacherName": "赵老师",
+        "startsAt": "2026-09-24T01:00:00Z",
+        "lessonStatus": "COMPLETED",
+        "attendanceStatus": "PRESENT",
+        "feedback": "学员认真观察并能够独立表达。",
+        "feedbackImages": [],
+        "performanceRating": 7,
+        "canReview": false,
+        "review": {
+          "id": "visual-review",
+          "lessonSessionId": "visual-reviewed",
+          "studentId": "visual-student",
+          "teaching": 9,
+          "communication": 8,
+          "environment": 10,
+          "overall": 9,
+          "note": "校区环境与课后沟通体验良好。",
+          "createdAt": "2026-09-24T02:00:00Z",
+          "valid": true
+        }
+      }
+    ]
+  }
+]

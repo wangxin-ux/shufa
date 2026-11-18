@@ -29,6 +29,7 @@ export interface PaymentAdapter {
     amountFen: number;
     description: string;
     payerOpenId: string;
+    expiresAt?: Date;
   }): Promise<PaymentInvocation>;
 
   verifyNotification(

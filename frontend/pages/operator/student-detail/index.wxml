@@ -1,0 +1,149 @@
+<template name="growthStars"><view class="growth-stars"><view wx:for="{{fills}}" wx:key="index" class="growth-star"><image class="growth-star__base" src="/pages/operator/assets/rating-star.png" mode="aspectFit" aria-hidden="true" /><image wx:if="{{item}}" class="growth-star__fill {{item === 50 ? 'growth-star__fill--half' : ''}}" src="/pages/operator/assets/rating-star.png" mode="aspectFit" aria-hidden="true" /></view></view></template>
+<operator-page-shell
+  markTitle="学员"
+  markIcon="/pages/operator/assets/page-mark-pdf.png" markIconSize="44"
+  showBack="{{true}}"
+>
+  <view slot="tools"><button wx:if="{{viewState === 'ready'}}" class="detail-tools-button" bindtap="onToggleTools" aria-label="学员档案详情">···</button></view>
+  <view class="student-detail-page">
+    <view wx:if="{{viewState === 'loading'}}" class="detail-state" aria-live="polite">
+      <text class="detail-state__title">正在加载学员详情</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="detail-state" aria-live="polite">
+      <text class="detail-state__title">无访问权限</text>
+      <text class="detail-state__message">{{errorMessage}}</text>
+      <button class="detail-command" bindtap="onLogin" hover-class="detail-control--hover">重新登录</button>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="detail-state" aria-live="polite">
+      <text class="detail-state__title">学员详情加载失败</text>
+      <text class="detail-state__message">{{errorMessage}}</text>
+      <button class="detail-command" bindtap="onRetry" hover-class="detail-control--hover">重试</button>
+    </view>
+
+    <block wx:elif="{{viewState === 'ready'}}">
+      <view wx:if="{{refreshError || refreshing}}" class="detail-refresh" aria-live="polite">
+        <text class="detail-state__message">{{refreshError || '正在刷新档案'}}</text>
+        <block wx:if="{{refreshError}}">
+        <button class="detail-command" disabled="{{refreshing}}" bindtap="onRetry" hover-class="detail-control--hover">重试刷新</button>
+        </block>
+      </view>
+      <view class="detail-hero {{photo && photo.localPath ? '' : 'detail-hero--empty'}}">
+        <button wx:if="{{photo && photo.localPath}}" class="detail-photo" data-id="{{photo.id}}" bindtap="onPreviewImage" disabled="{{previewBusy}}" aria-label="预览学员照片">
+          <image class="detail-photo__image" src="{{photo.localPath}}" mode="aspectFill" data-id="{{photo.id}}" binderror="onImageError" />
+        </button>
+        <view wx:else class="detail-photo detail-photo--empty"><text>{{photo ? (photo.loading ? '照片加载中' : '照片不可用') : '暂无照片'}}</text></view>
+        <view class="detail-hero__head"><text class="detail-hero__name {{detail.displayName.length > 4 ? 'detail-hero__name--compact' : ''}}">{{detail.displayName}}</text><text class="detail-hero__age">{{detail.ageLabel}}</text></view>
+        <view wx:if="{{photo && photo.errorMessage}}" class="detail-photo-error">
+          <text>{{photo.errorMessage}}</text>
+          <button class="detail-text-command" bindtap="onMediaRetry">刷新图片资料</button>
+        </view>
+      </view>
+
+      <view class="detail-archive-meta"><text>{{detail.classLabel}} · {{detail.statusLabel}}</text><text>成长档案 · 北京时间</text></view>
+      <text wx:if="{{growthState === 'empty'}}" class="detail-note">暂无成长记录</text>
+      <text wx:if="{{growthLoading}}" class="detail-note" aria-live="polite">正在读取成长记录</text>
+      <view wx:for="{{growthItems}}" wx:for-item="record" wx:key="id" class="growth-record">
+        <view class="growth-record__intro"><image wx:if="{{photo && photo.localPath}}" class="growth-record__portrait" src="{{photo.localPath}}" mode="aspectFill" aria-hidden="true" /><view class="growth-record__intro-copy"><text class="growth-record__campus">{{record.campusName}}</text>
+        <view class="growth-record__head">
+          <text class="growth-record__course">{{record.courseName}}</text>
+          <text class="growth-record__status">{{record.lessonStatusLabel}}</text>
+        </view>
+        <text class="detail-note">{{record.startsAtLabel}} · {{record.attendanceLabel}}</text>
+        <text class="growth-record__teacher">{{record.teacherName}}</text></view></view>
+        <view class="growth-section">
+          <text class="growth-section__title">教师反馈</text>
+          <text class="detail-note">{{record.feedbackAuthorLabel}} · {{record.feedbackVersionLabel}} · {{record.feedbackStateLabel}}</text>
+          <text class="growth-record__body">{{record.feedback}}</text>
+          <view class="growth-ratings">
+            <view wx:for="{{record.teacherRatings}}" wx:for-item="dimension" wx:key="label" class="growth-rating">
+              <text>{{dimension.label}}</text><template is="growthStars" data="{{fills: dimension.fills}}" /><text class="growth-rating__value">{{dimension.value}}</text>
+            </view>
+          </view>
+          <text wx:if="{{record.legacyRatingLabel !== '未评分'}}" class="detail-note">原课堂单项：{{record.legacyRatingLabel}}</text>
+          <view wx:if="{{record.images.length}}" class="growth-images">
+            <view wx:for="{{record.images}}" wx:for-item="picture" wx:key="id" class="growth-image">
+              <button wx:if="{{picture.localPath}}" class="growth-image__button" data-id="{{picture.id}}" bindtap="onPreviewImage" disabled="{{previewBusy}}" aria-label="预览课堂图片">
+                <image class="growth-image__bitmap" src="{{picture.localPath}}" mode="aspectFill" data-id="{{picture.id}}" binderror="onImageError" />
+              </button>
+              <view wx:else class="growth-image__placeholder"><text>{{picture.loading ? '图片加载中' : '图片不可用'}}</text></view>
+              <button wx:if="{{picture.errorMessage}}" class="detail-text-command" bindtap="onMediaRetry">刷新图片</button>
+            </view>
+          </view>
+          <text class="detail-note">更新于 {{record.feedbackUpdatedAtLabel}}</text>
+        </view>
+        <view class="growth-section">
+          <text class="growth-section__title">家长评价</text>
+          <block wx:if="{{record.hasReview}}">
+            <text class="detail-note">{{record.reviewAuthorLabel}} · {{record.reviewStateLabel}}</text>
+            <text class="growth-record__body">{{record.reviewNote}}</text>
+            <view class="growth-ratings growth-ratings--parent">
+              <view wx:for="{{record.reviewRatings}}" wx:for-item="dimension" wx:key="label" class="growth-rating">
+                <text>{{dimension.label}}</text><template is="growthStars" data="{{fills: dimension.fills}}" /><text class="growth-rating__value">{{dimension.value}}</text>
+              </view>
+            </view>
+            <text class="detail-note">{{record.reviewCreatedAtLabel}}</text>
+          </block>
+          <text wx:else class="detail-note">暂无家长评价</text>
+        </view>
+      </view>
+      <view wx:if="{{growthError}}" class="detail-growth-error" aria-live="polite">
+        <text>{{growthError}}</text>
+        <button class="detail-command" disabled="{{growthLoading}}" bindtap="onGrowthRetry">重试成长记录</button>
+      </view>
+      <button wx:if="{{growthHasMore}}" class="detail-command detail-growth-more" disabled="{{growthLoading || refreshing}}" bindtap="onGrowthLoadMore">{{growthLoading ? '加载中' : '更多成长记录'}}</button>
+      <view wx:if="{{toolsOpen}}" class="detail-tools-layer"><view class="detail-tools-backdrop" bindtap="onToggleTools"></view><scroll-view scroll-y="{{true}}" class="detail-tools-sheet"><view class="detail-tools-heading"><text>学员档案详情</text><button bindtap="onToggleTools">完成</button></view>
+      <view class="detail-section-head">
+        <text class="detail-section-head__title">报名记录</text>
+        <text class="detail-section-head__meta">系统登记累计</text>
+      </view>
+      <view class="detail-enrollment">
+        <view class="detail-enrollment__item"><text>报名实收</text><text class="detail-enrollment__value">{{detail.receivedAmountLabel}}</text></view>
+        <view class="detail-enrollment__item"><text>实际退款</text><text class="detail-enrollment__value">{{detail.refundedAmountLabel}}</text></view>
+        <view class="detail-enrollment__item"><text>原始购买课时</text><text class="detail-enrollment__value">{{detail.initialMainLabel}}</text></view>
+        <view class="detail-enrollment__item"><text>原始赠送课时</text><text class="detail-enrollment__value">{{detail.initialGiftLabel}}</text></view>
+      </view>
+      <text wx:if="{{detail.pendingIssuanceLabel}}" class="detail-note">{{detail.pendingIssuanceLabel}}</text>
+
+      <view class="detail-section-head">
+        <text class="detail-section-head__title">当前可用课时</text>
+      </view>
+      <view class="detail-metrics">
+        <view class="detail-metric">
+          <text class="detail-metric__value">{{detail.mainBalanceLabel}}</text>
+          <text class="detail-metric__label">主课时</text>
+        </view>
+        <view class="detail-metric">
+          <text class="detail-metric__value">{{detail.giftBalanceLabel}}</text>
+          <text class="detail-metric__label">赠送课时</text>
+        </view>
+        <view class="detail-metric detail-metric--total">
+          <text class="detail-metric__value">{{detail.totalBalanceLabel}}</text>
+          <text class="detail-metric__label">可用合计</text>
+        </view>
+      </view>
+      <text wx:if="{{detail.reservationLabel}}" class="detail-note">{{detail.reservationLabel}}</text>
+      <text wx:if="{{detail.warningLabel}}" class="detail-warning">{{detail.warningLabel}}</text>
+      <text class="detail-note">统计于 {{detail.calculatedAtLabel}}（北京时间）</text>
+
+      <view class="detail-facts">
+        <view class="detail-fact">
+          <view class="detail-fact__copy">
+            <text class="detail-fact__title">有效出勤</text>
+            <text class="detail-fact__meta">到课 {{detail.presentLabel}} · 缺勤 {{detail.absentLabel}} · 请假 {{detail.leaveLabel}}</text>
+            <text class="detail-fact__meta">已记录 {{detail.recordedLabel}} 次</text>
+          </view>
+          <text class="detail-fact__value">{{detail.attendanceRateLabel}}</text>
+        </view>
+      </view>
+
+      <view wx:if="{{detail.classes.length}}" class="detail-classes">
+        <view wx:for="{{detail.classes}}" wx:key="id" class="detail-class">
+          <text class="detail-class__name">{{item.className}}</text>
+          <text class="detail-note">{{item.courseName}} · {{item.teacherName}}</text>
+        </view>
+      </view>
+
+      </scroll-view></view>
+    </block>
+  </view>
+</operator-page-shell>

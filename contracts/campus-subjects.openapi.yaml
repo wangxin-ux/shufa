@@ -1,0 +1,236 @@
+parameters:
+  Campus:
+    name: campusId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+  Subject:
+    name: subjectId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+  Query:
+    name: query
+    in: query
+    schema: { type: string, maxLength: 100 }
+partner:
+  get:
+    operationId: listPartnerCampusSubjects
+    summary: Read this partner campus subject directory including archived subjects
+    description: Requires PARTNER_LEDGER_READ and a single campus-scoped PARTNER. Caller campus IDs are rejected. IDs remain stable after rename or archive. Archived subjects remain selectable for historical ledger reads.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+      - { $ref: '#/parameters/Query' }
+    responses:
+      '200': { $ref: '#/responses/Subjects' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+management:
+  parameters: [{ $ref: '#/parameters/Campus' }]
+  get:
+    operationId: listManagementCampusSubjects
+    summary: Read the subject directory of a selected campus
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+      - { $ref: '#/parameters/Query' }
+    responses:
+      '200': { $ref: '#/responses/Subjects' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+  post:
+    operationId: createCampusSubject
+    summary: Create a stable campus subject with audit and idempotency
+    description: Only a single SUPER_ADMIN with CAMPUS_SUBJECT_MANAGE. Names are trimmed and NFC normalized, unique per campus. Does not create a balance or backfill historical entries.
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    parameters: [{ $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/Create' }
+    responses:
+      '200': { $ref: '#/responses/Subject' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+subject:
+  parameters: [{ $ref: '#/parameters/Campus' }, { $ref: '#/parameters/Subject' }]
+  patch:
+    operationId: updateCampusSubject
+    summary: Rename, archive or restore a campus subject without rewriting ledger snapshots
+    description: Requires a single SUPER_ADMIN with CAMPUS_SUBJECT_MANAGE. Expected version, audit and idempotency are enforced. Archive prevents new assignments; existing links and historical reads remain.
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    parameters: [{ $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/Update' }
+    responses:
+      '200': { $ref: '#/responses/Subject' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+links:
+  parameters: [{ $ref: '#/parameters/Campus' }]
+  get:
+    operationId: listCampusSubjectLinks
+    summary: Read class or package attribution for headquarters maintenance
+    description: Requires a single SUPER_ADMIN with CAMPUS_SUBJECT_MANAGE. Pagination version is the attribution version, independent of package balance versions.
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+      - { $ref: '#/parameters/Query' }
+      - name: kind
+        in: query
+        schema: { type: string, enum: [CLASS, PACKAGE], default: PACKAGE }
+    responses:
+      '200':
+        description: Scoped attribution page.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data, meta]
+              properties:
+                data: { type: array, items: { $ref: '#/schemas/Link' } }
+                meta: { $ref: './openapi.yaml#/components/schemas/PaginationMeta' }
+                requestId: { type: string }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+binding:
+  parameters:
+    - { $ref: '#/parameters/Campus' }
+    - name: kind
+      in: path
+      required: true
+      schema: { type: string, enum: [CLASS, PACKAGE] }
+    - name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  patch:
+    operationId: updateCampusSubjectLink
+    summary: Associate or clear a class or package subject for future facts
+    description: >-
+      Requires a single SUPER_ADMIN with CAMPUS_SUBJECT_MANAGE. Target and subject
+      must belong to this campus, and a new association must reference an active
+      subject. Locks only the target and selected subject, checks attribution
+      expectedVersion, and commits audit and idempotency atomically.
+      Null clears the association. Existing ledger entries, balances and package
+      eligibility are not rewritten. New ledger entries freeze their actual
+      package association; reversals copy the original snapshot including null.
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    parameters: [{ $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [subjectId, expectedVersion, reason]
+            properties:
+              subjectId: { type: [string, 'null'], format: uuid }
+              expectedVersion: { type: integer, minimum: 1 }
+              reason: { type: string, minLength: 1, maxLength: 200 }
+    responses:
+      '200':
+        description: Updated attribution.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: object
+                  additionalProperties: false
+                  required: [id, subjectId, version]
+                  properties:
+                    id: { type: string, format: uuid }
+                    subjectId: { type: [string, 'null'], format: uuid }
+                    version: { type: integer, minimum: 1 }
+                requestId: { type: string }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+schemas:
+  Subject:
+    type: object
+    additionalProperties: false
+    required: [id, name, isActive, version]
+    properties:
+      id: { type: string, format: uuid }
+      name: { type: string, minLength: 1, maxLength: 80 }
+      isActive: { type: boolean }
+      version: { type: integer, minimum: 1 }
+  Create:
+    type: object
+    additionalProperties: false
+    required: [name]
+    properties:
+      name: { type: string, minLength: 1, maxLength: 80 }
+  Update:
+    type: object
+    additionalProperties: false
+    required: [name, isActive, expectedVersion]
+    properties:
+      name: { type: string, minLength: 1, maxLength: 80 }
+      isActive: { type: boolean }
+      expectedVersion: { type: integer, minimum: 1 }
+  Link:
+    type: object
+    additionalProperties: false
+    required: [id, name, studentName, subjectId, subjectName, version]
+    properties:
+      id: { type: string, format: uuid }
+      name: { type: string, minLength: 1, maxLength: 200 }
+      studentName: { type: [string, 'null'] }
+      subjectId: { type: [string, 'null'], format: uuid }
+      subjectName: { type: [string, 'null'], maxLength: 80 }
+      version: { type: integer, minimum: 1 }
+responses:
+  Subject:
+    description: Subject record.
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [data]
+          properties:
+            data: { $ref: '#/schemas/Subject' }
+            requestId: { type: string }
+  Subjects:
+    description: Scoped subject page, including archived historical choices.
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [data, meta]
+          properties:
+            data: { type: array, items: { $ref: '#/schemas/Subject' } }
+            meta: { $ref: './openapi.yaml#/components/schemas/PaginationMeta' }
+            requestId: { type: string }

@@ -1,15 +1,15 @@
 <teacher-page-shell
-  markTitle="收益"
-  markIcon="/pages/teacher/assets/icon-student-record.png"
-  tone="yellow"
+  markTitle="课时账户"
+  markIcon="/pages/teacher/assets/page-mark-pdf.png" markIconSize="44"
+  tone="account"
   showBack="{{true}}"
 >
+  <view slot="tools"><button wx:if="{{viewState === 'ready'}}" class="account-tools-button" aria-label="账户详情" bindtap="onAccountDetails">···</button></view>
   <view class="earnings-page">
-    <teacher-workspace-banner
-      class="earnings-page__overview"
-      title="我的收益"
-      detail="内部预计 · 人工审核与线下打款"
-    />
+    <!-- PSD a3：导航下方是屏标题区（课时账户）与一句内部预计说明，没有工作区摘要条。 -->
+    <view class="page-head">
+      <text class="page-head__title">课时账户</text>
+    </view>
 
     <view wx:if="{{viewState === 'loading'}}" class="page-state">
       <text class="page-state__title">正在加载收益</text>
@@ -17,6 +17,7 @@
     <view wx:elif="{{viewState === 'forbidden'}}" class="page-state">
       <text class="page-state__title">无访问权限</text>
       <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-command" bindtap="onLogin">重新登录</button>
     </view>
     <view wx:elif="{{viewState === 'error'}}" class="page-state">
       <text class="page-state__title">收益加载失败</text>
@@ -25,128 +26,233 @@
     </view>
 
     <block wx:else>
-      <view class="summary-panel" aria-label="内部预计收益概览">
-        <view
-          wx:for="{{summaryItems}}"
-          wx:key="key"
-          class="summary-item summary-item--{{item.key}}"
+      <view wx:if="{{summaryError}}" class="list-error">
+        <text>收益概览{{summaryError}}</text>
+        <button class="page-command" data-section="summary" bindtap="onRetrySection">重试概览</button>
+      </view>
+      <text wx:elif="{{summaryLoading && !summaryLoaded}}" class="list-error">正在加载收益概览</text>
+
+      <!-- PSD 橙色账户卡：累计收益大字 + 立即提现圆钮 + 时间维度与资金状态 -->
+      <view wx:if="{{summaryLoaded}}" class="account-card" aria-label="内部预计收益概览">
+        <image class="account-card__character" src="/pages/teacher/assets/account-mascot.png" mode="widthFix" aria-hidden="true" />
+        <view class="account-card__head">
+          <text class="account-card__label">累计收益 · 内部预计</text>
+        </view>
+        <view class="account-card__figure">
+          <view class="account-card__figure-text">
+            <text class="account-card__amount {{summaryHeadline.value.length > 12 ? 'account-card__amount--long' : summaryHeadline.value.length > 9 ? 'account-card__amount--compact' : ''}}">{{summaryHeadline.value}}</text>
+          </view>
+
+        </view>
+        <view class="account-card__metrics">
+          <block wx:for="{{summaryItems}}" wx:key="key">
+            <view wx:if="{{item.key !== 'estimated'}}" class="account-card__metric">
+              <text class="account-card__metric-label">{{item.label}}</text>
+              <text class="account-card__metric-value">{{item.value}}</text>
+            </view>
+          </block>
+        </view>
+          <button
+            wx:if="{{!recoveryPending}}"
+            class="withdraw-command account-card__withdraw"
+            disabled="{{submitting || !withdrawalReady || !canWithdraw}}"
+            bindtap="onOpenWithdrawal"
+            hover-class="control--hover"
+          >
+            <text>立即</text>
+            <text>提现</text>
+          </button>
+
+      </view>
+
+      <text wx:if="{{recoveryMessage}}" class="withdrawal-recovery" role="status">
+        {{recoveryMessage}}
+      </text>
+      <button
+        wx:if="{{recoveryMessage}}"
+        class="page-command withdrawal-recovery__command"
+        disabled="{{submitting}}"
+        bindtap="onRecoverCommand"
+      >重试核对</button>
+
+      <!-- PSD：区块标题右侧只有一个「筛选」，收益明细 / 提现记录的切换收进筛选面板。 -->
+      <view class="ledger-section">
+        <view class="section-head">
+          <text class="section-title">课时流水</text>
+          <button
+            class="section-link"
+            aria-label="筛选课时流水"
+            bindtap="onToggleFilter"
+            hover-class="control--hover"
+          >筛选</button>
+        </view>
+
+        <view wx:if="{{listError}}" class="list-error">
+          <text>{{listError}}</text>
+          <button class="page-command" data-section="{{selectedTab}}" bindtap="onRetrySection">重试记录</button>
+        </view>
+
+        <view wx:if="{{selectedTab === 'earnings'}}" class="ledger-card">
+          <text wx:if="{{earningsLoading && !earningsLoaded}}" class="list-empty">正在加载收益明细</text>
+          <view wx:if="{{earningsLoaded && earnings.length === 0 && !earningsLoading && !earningsError}}" class="list-empty">
+            <text class="list-empty__title">暂无收益明细</text>
+            <text class="list-empty__message">完成课次后由系统记录内部预计收益</text>
+          </view>
+          <view wx:for="{{earnings}}" wx:key="id" class="ledger-row">
+            <view class="ledger-row__dot"></view>
+            <view class="ledger-row__main">
+              <text class="ledger-row__title">{{item.courseName}}</text>
+              <text class="ledger-row__meta">{{item.timeLabel}} · {{item.entryTypeLabel}} · {{item.statusLabel}}</text>
+              <text class="ledger-row__note">{{item.basisLabel}} · {{item.basisDetail}}</text>
+              <text wx:if="{{item.reason}}" class="ledger-row__reason">{{item.reason}}</text>
+            </view>
+            <text class="amount-badge">{{item.amount}}</text>
+          </view>
+          <button
+            wx:if="{{earningsHasMore}}"
+            class="page-command load-more"
+            disabled="{{loadingMore}}"
+            bindtap="onLoadMore"
+          >{{loadingMore ? '加载中' : '加载更多'}}</button>
+        </view>
+
+        <view wx:else class="ledger-card">
+          <text wx:if="{{withdrawalsLoading && !withdrawalsLoaded}}" class="list-empty">正在加载提现记录</text>
+          <view wx:if="{{withdrawalsLoaded && withdrawals.length === 0 && !withdrawalsLoading && !withdrawalsError}}" class="list-empty">
+            <text class="list-empty__title">暂无提现记录</text>
+            <text class="list-empty__message">审核通过后由工作人员线下人工打款</text>
+          </view>
+          <view wx:for="{{withdrawals}}" wx:key="id" class="ledger-row ledger-row--withdrawal">
+            <view class="ledger-row__dot ledger-row__dot--withdrawal"></view>
+            <view class="ledger-row__main">
+              <text class="ledger-row__title">提现申请</text>
+              <text class="ledger-row__meta">{{item.requestNo}} · {{item.requestedAt}}</text>
+              <text class="ledger-row__note">{{item.statusLabel}}</text>
+              <text wx:if="{{item.reason}}" class="ledger-row__reason">{{item.reason}}</text>
+              <button
+                wx:if="{{item.canCancel}}"
+                class="cancel-command"
+                data-id="{{item.id}}"
+                data-version="{{item.version}}"
+                disabled="{{submitting || !withdrawalReady || recoveryPending || withdrawalsLoading}}"
+                bindtap="onCancelWithdrawal"
+                hover-class="control--hover"
+              >撤回申请</button>
+            </view>
+            <text class="amount-badge amount-badge--withdrawal">{{item.amount}}</text>
+          </view>
+          <button
+            wx:if="{{withdrawalsHasMore}}"
+            class="page-command load-more"
+            disabled="{{loadingMore}}"
+            bindtap="onLoadMore"
+          >{{loadingMore ? '加载中' : '加载更多'}}</button>
+        </view>
+      </view>
+
+      <!-- PSD：教师贡献度排名（周期 + 按课时费排名 + 6 行名次 + 查看更多） -->
+      <view class="rank-section">
+        <image class="rank-section__character" src="/pages/teacher/assets/profile-footer-mascot.png" mode="widthFix" aria-hidden="true" />
+        <view class="section-head">
+          <text class="section-title">教师贡献度排名</text>
+        </view>
+        <picker
+          mode="date"
+          fields="month"
+          value="{{rankingMonth}}"
+          bindchange="onRankingMonth"
         >
-          <text class="summary-item__label">{{item.label}}</text>
-          <text class="summary-item__value">{{item.value}}</text>
-        </view>
-      </view>
+          <view class="rank-section__period" aria-label="切换排名月份">
+            {{rankingPeriodLabel || '本月'}}
+          </view>
+        </picker>
 
-      <view class="status-strip" aria-label="收益资金状态">
-        <view wx:for="{{statusItems}}" wx:key="key" class="status-strip__item">
-          <text class="status-strip__label">{{item.label}}</text>
-          <text class="status-strip__value">{{item.value}}</text>
-        </view>
-      </view>
-
-      <view class="rule-panel">
-        <view class="section-heading">
-          <text class="section-heading__title">当前计费规则</text>
-          <text class="section-heading__tag">内部预计</text>
-        </view>
-        <view class="rule-panel__main">
-          <text class="rule-panel__basis">{{rule.basisLabel}}</text>
-          <text class="rule-panel__amount">{{rule.unitAmount}}</text>
-        </view>
-        <view class="rule-panel__meta">
-          <text>{{rule.settlementLabel}}</text>
-          <text wx:if="{{rule.configured}}">{{rule.scopeLabel}} · {{rule.effectiveFrom}} 生效</text>
-        </view>
-      </view>
-
-      <view class="earnings-toolbar">
-        <view class="segment" role="tablist" aria-label="收益记录类型">
+        <view wx:if="{{rankingOpen}}" class="rank-card {{rankingExpanded ? 'rank-card--expanded' : ''}}">
+          <view class="rank-card__head">
+            <text wx:if="{{!rankingExpanded}}" class="rank-card__caption">按{{rankingMetricLabel}}排名</text>
+            <button wx:else
+              class="rank-card__caption rank-card__caption--interactive"
+              disabled="{{rankingLoading}}"
+              bindtap="onToggleRankingMetric"
+              hover-class="control--hover"
+            >按{{rankingMetricLabel}}排名</button>
+            <button
+              wx:if="{{rankingState === 'error' || rankingState === 'conflict'}}"
+              class="section-link"
+              bindtap="onRankingRefresh"
+              hover-class="control--hover"
+            >刷新</button>
+          </view>
+          <text wx:if="{{rankingExpanded}}" class="rank-own-detail">{{rankingOwnLabel}}</text>
+          <text wx:if="{{rankingLoading && rankingRows.length === 0}}" class="list-empty">正在加载月榜</text>
+          <text wx:elif="{{rankingError}}" class="list-empty">{{rankingError}}</text>
+          <view wx:elif="{{rankingState === 'ready' && rankingRows.length === 0}}" class="list-empty">
+            <text class="list-empty__title">本月暂无排名</text>
+            <text class="list-empty__message">完成课次后按{{rankingMetricLabel}}生成排名</text>
+          </view>
+          <view wx:for="{{rankingRows}}" wx:if="{{rankingExpanded || index < 6}}" wx:key="position" class="rank-row {{item.isSelf ? 'rank-row--self' : ''}}">
+            <view class="rank-row__dot"></view>
+            
+            <text class="rank-row__name">{{item.displayName}}</text>
+            <text class="rank-row__change">{{item.rankDelta === null ? '—' : (item.rankDelta > 0 ? '+' : '') + item.rankDelta}}</text>
+          </view>
           <button
-            class="segment__item {{selectedTab === 'earnings' ? 'segment__item--active' : ''}}"
-            data-tab="earnings"
-            bindtap="onTabTap"
+            wx:if="{{rankingExpanded && rankingHasMore}}"
+            class="rank-card__more"
+            disabled="{{rankingLoading}}"
+            bindtap="onRankingMoreTap"
             hover-class="control--hover"
-          >收益明细</button>
-          <button
-            class="segment__item {{selectedTab === 'withdrawals' ? 'segment__item--active' : ''}}"
-            data-tab="withdrawals"
-            bindtap="onTabTap"
-            hover-class="control--hover"
-          >提现记录</button>
+          >{{rankingLoading ? '加载中' : '查看更多'}}</button>
+          <button wx:if="{{!rankingExpanded && rankingState === 'ready' && rankingRows.length}}" class="rank-card__more rank-preview-more" bindtap="onExpandRankings">查看更多</button>
         </view>
         <button
-          class="withdraw-command"
-          disabled="{{submitting || !canWithdraw}}"
-          bindtap="onOpenWithdrawal"
+          wx:else
+          class="rank-section__more"
+          bindtap="onOpenRankings"
           hover-class="control--hover"
-        >申请提现</button>
+        >查看更多</button>
       </view>
 
-      <text wx:if="{{listError}}" class="list-error">{{listError}}</text>
 
-      <view wx:if="{{selectedTab === 'earnings'}}" class="financial-list">
-        <view wx:if="{{earnings.length === 0}}" class="list-empty">
-          <text class="list-empty__title">暂无收益明细</text>
-          <text class="list-empty__message">完成课次后由系统记录内部预计收益</text>
-        </view>
-        <view wx:for="{{earnings}}" wx:key="id" class="financial-row">
-          <view class="financial-row__head">
-            <view class="financial-row__identity">
-              <text class="financial-row__course">{{item.courseName}}</text>
-              <text class="financial-row__kind">{{item.entryTypeLabel}}</text>
-            </view>
-            <text class="financial-row__amount">{{item.amount}}</text>
-          </view>
-          <view class="financial-row__meta">
-            <text>{{item.timeLabel}}</text>
-            <text class="status-chip status-chip--{{item.statusTone}}">{{item.statusLabel}}</text>
-          </view>
-          <text class="financial-row__basis">{{item.basisLabel}} · {{item.basisDetail}}</text>
-          <text wx:if="{{item.reason}}" class="financial-row__reason">{{item.reason}}</text>
-        </view>
-        <button
-          wx:if="{{earningsHasMore}}"
-          class="page-command load-more"
-          disabled="{{loadingMore}}"
-          bindtap="onLoadMore"
-        >{{loadingMore ? '加载中' : '加载更多'}}</button>
-      </view>
-
-      <view wx:else class="financial-list">
-        <view wx:if="{{withdrawals.length === 0 && !loadingMore}}" class="list-empty">
-          <text class="list-empty__title">暂无提现记录</text>
-          <text class="list-empty__message">审核通过后由工作人员线下人工打款</text>
-        </view>
-        <view wx:for="{{withdrawals}}" wx:key="id" class="financial-row">
-          <view class="financial-row__head">
-            <view class="financial-row__identity">
-              <text class="financial-row__course">提现申请</text>
-              <text class="financial-row__kind">{{item.requestNo}}</text>
-            </view>
-            <text class="financial-row__amount">{{item.amount}}</text>
-          </view>
-          <view class="financial-row__meta">
-            <text>{{item.requestedAt}}</text>
-            <text class="status-chip status-chip--{{item.statusTone}}">{{item.statusLabel}}</text>
-          </view>
-          <text wx:if="{{item.reason}}" class="financial-row__reason">{{item.reason}}</text>
-          <button
-            wx:if="{{item.canCancel}}"
-            class="cancel-command"
-            data-id="{{item.id}}"
-            data-version="{{item.version}}"
-            disabled="{{submitting}}"
-            bindtap="onCancelWithdrawal"
-            hover-class="control--hover"
-          >取消申请</button>
-        </view>
-        <button
-          wx:if="{{withdrawalsHasMore}}"
-          class="page-command load-more"
-          disabled="{{loadingMore}}"
-          bindtap="onLoadMore"
-        >{{loadingMore ? '加载中' : '加载更多'}}</button>
-      </view>
     </block>
+  </view>
+
+  <view wx:if="{{showAccountDetails}}" class="filter-layer" catchtouchmove="noop"><view class="filter-backdrop" bindtap="onAccountDetails"></view><view class="filter-sheet" role="dialog" aria-label="账户详情">      <view class="account-details">
+        <text class="account-details__title">收益状态</text>
+        <view class="account-card__status">
+          <view wx:for="{{statusItems}}" wx:key="key" class="account-card__status-item">
+            <text class="account-card__status-label">{{item.label}}</text>
+            <text class="account-card__status-value">{{item.value}}</text>
+          </view>
+        </view>
+        <text class="page-head__hint">内部预计 · 人工审核与线下打款</text>
+      </view><button class="dialog-command dialog-command--primary" bindtap="onAccountDetails">完成</button></view></view>
+
+  <!-- 筛选面板：承载收益明细 / 提现记录的切换（PSD 的「筛选」入口） -->
+  <view wx:if="{{showFilterSheet}}" class="filter-layer" catchtouchmove="noop">
+    <view class="filter-backdrop" bindtap="onToggleFilter"></view>
+    <view class="filter-sheet" role="dialog" aria-label="筛选课时流水">
+      <text class="filter-sheet__title">筛选</text>
+      <view class="segment" role="tablist" aria-label="收益记录类型">
+        <button
+          class="segment__item {{selectedTab === 'earnings' ? 'segment__item--active' : ''}}"
+          data-tab="earnings"
+          bindtap="onTabTap"
+          hover-class="control--hover"
+        >收益明细</button>
+        <button
+          class="segment__item {{selectedTab === 'withdrawals' ? 'segment__item--active' : ''}}"
+          data-tab="withdrawals"
+          bindtap="onTabTap"
+          hover-class="control--hover"
+        >提现记录</button>
+      </view>
+      <button
+        class="dialog-command dialog-command--primary"
+        bindtap="onToggleFilter"
+        hover-class="control--hover"
+      >完成</button>
+    </view>
   </view>
 
   <view wx:if="{{showWithdrawalModal}}" class="modal-layer" catchtouchmove="noop">
@@ -154,6 +260,14 @@
     <view class="withdrawal-dialog" role="dialog" aria-label="申请提现">
       <text class="withdrawal-dialog__title">申请提现</text>
       <text class="withdrawal-dialog__note">提交后由超级管理员审核并线下人工打款</text>
+      <view wx:if="{{ruleLoaded}}" class="withdrawal-dialog__rule">
+        <text class="withdrawal-dialog__rule-line">计费规则：{{rule.basisLabel}} · {{rule.unitAmount}}</text>
+        <text class="withdrawal-dialog__rule-line">{{rule.settlementLabel}}</text>
+      </view>
+      <view wx:if="{{ruleError}}" class="withdrawal-dialog__rule">
+        <text class="withdrawal-dialog__rule-line">{{ruleError}}</text>
+        <button class="page-command" data-section="rule" bindtap="onRetrySection">重试规则</button>
+      </view>
       <view class="amount-field">
         <text class="amount-field__currency">¥</text>
         <input
@@ -163,6 +277,7 @@
           placeholder="请输入金额"
           maxlength="12"
           bindinput="onAmountInput"
+          disabled="{{submitting || recoveryPending || !withdrawalReady}}"
           focus="{{true}}"
         />
       </view>
@@ -175,10 +290,10 @@
         >取消</button>
         <button
           class="dialog-command dialog-command--primary"
-          disabled="{{submitting || !amountYuan}}"
+          disabled="{{submitting || !withdrawalReady || !amountYuan}}"
           loading="{{submitting}}"
           bindtap="onSubmitWithdrawal"
-        >{{submitting ? '提交中' : '确认申请'}}</button>
+        >{{submitting ? '提交中' : recoveryPending ? '核对原申请' : '确认申请'}}</button>
       </view>
     </view>
   </view>

@@ -21,11 +21,20 @@ const detail: TeacherLessonDetail = {
     ABSENT: { consumesLessonUnits: false },
   },
   students: [
-    { id: 'student-1', displayName: '林同学', attendanceStatus: null, expectedConsumeUnits: 0, feedback: null, feedbackImages: [] },
-    { id: 'student-2', displayName: '安同学', attendanceStatus: null, expectedConsumeUnits: 0, feedback: null, feedbackImages: [] },
+    { id: 'student-1', displayName: '林同学', canEditFeedback: false, attendanceStatus: null, expectedConsumeUnits: 0, feedback: null, feedbackImages: [] },
+    { id: 'student-2', displayName: '安同学', canEditFeedback: false, attendanceStatus: null, expectedConsumeUnits: 0, feedback: null, feedbackImages: [] },
   ],
   canComplete: true,
   canReverse: false,
+};
+
+const feedbackDetail: TeacherLessonDetail = {
+  ...detail,
+  version: 2,
+  status: 'COMPLETED',
+  canComplete: false,
+  canReverse: true,
+  students: detail.students.map((student) => ({ ...student, canEditFeedback: true })),
 };
 
 const attendance = [
@@ -56,6 +65,19 @@ function service(overrides: Record<string, jest.Mock> = {}): WorkflowService {
 }
 
 describe('teacher lesson workflow', () => {
+  it('includes the rating in feedback submission and rotates the key only when the draft changes', async () => {
+    const saveFeedback = jest.fn(async (_input: unknown, _key: string) => ({
+      status: 'error' as const, statusCode: 503, code: 'INTERNAL_SERVER_ERROR', message: '稍后重试',
+    }));
+    const workflow = new TeacherLessonWorkflow(service({ saveFeedback }));
+    const submit = workflow.feedback.bind(workflow);
+    await submit(feedbackDetail, 'student-1', '课堂认真', [], 9);
+    await submit(feedbackDetail, 'student-1', '课堂认真', [], 9);
+    await submit(feedbackDetail, 'student-1', '课堂认真', [], 10);
+    expect(saveFeedback.mock.calls[0][0]).toMatchObject({ performanceRating: 9 });
+    expect(saveFeedback.mock.calls[0][1]).toBe(saveFeedback.mock.calls[1][1]);
+    expect(saveFeedback.mock.calls[2][1]).not.toBe(saveFeedback.mock.calls[0][1]);
+  });
   it('requires the exact active roster before submission', () => {
     expect(validateLessonAttendance(detail, attendance)).toBeNull();
     expect(validateLessonAttendance(detail, attendance.slice(0, 1))).toBe(
@@ -169,8 +191,8 @@ describe('teacher lesson workflow', () => {
       });
     const source = service({ saveFeedback });
     const workflow = new TeacherLessonWorkflow(source, { createIdempotencyKey: () => 'feedback-key' });
-    expect(await workflow.feedback({ ...detail, status: 'COMPLETED' }, 'student-1', ' 有进步 ')).toMatchObject({ status: 'error' });
-    expect(await workflow.feedback({ ...detail, status: 'COMPLETED' }, 'student-1', ' 有进步 ')).toMatchObject({ status: 'success' });
+    expect(await workflow.feedback(feedbackDetail, 'student-1', ' 有进步 ')).toMatchObject({ status: 'error' });
+    expect(await workflow.feedback(feedbackDetail, 'student-1', ' 有进步 ')).toMatchObject({ status: 'success' });
     expect(saveFeedback.mock.calls.map((call) => call[1])).toEqual(['feedback-key', 'feedback-key']);
   });
 });

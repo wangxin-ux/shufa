@@ -1,0 +1,56 @@
+<partner-approved-role-badge blocked="{{viewState === 'forbidden'}}" />
+<partner-page-shell markTitle="月榜" markIcon="/pages/partner/assets/lesson-account-mark-glyph.png" showBack="{{true}}" surfacePage="{{true}}">
+  <view class="partner-workspace ranking-page">
+    <text class="ranking-title">校区月榜</text>
+    <view class="ranking-metrics" aria-label="月榜指标">
+      <button wx:for="{{metricOptions}}" wx:key="value" class="ranking-metric {{metric === item.value ? 'ranking-metric--active' : ''}}" data-metric="{{item.value}}" bindtap="onMetricTap" disabled="{{viewState === 'forbidden'}}">{{item.label}}</button>
+    </view>
+    <view class="ranking-month">
+      <picker mode="date" fields="month" start="1000-01" value="{{month}}" end="{{monthMax}}" bindchange="onMonthChange" disabled="{{viewState === 'forbidden'}}">
+        <view class="ranking-month__picker" aria-label="选择榜单月份"><text>{{month}}</text><text class="ranking-month__hint">选择月份</text></view>
+      </picker>
+      <button class="ranking-month__current" bindtap="onCurrentMonth" disabled="{{viewState === 'forbidden' || month === monthMax}}">本月</button>
+    </view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="ranking-state"><text>正在加载月榜</text></view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="ranking-state">
+      <text>{{errorMessage}}</text>
+      <button class="partner-command" bindtap="onLogin">重新登录</button>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="ranking-state">
+      <text>{{errorMessage}}</text>
+      <button class="partner-command" bindtap="onRetry">重试</button>
+    </view>
+    <block wx:else>
+      <view class="ranking-status"><text>{{availabilityLabel}}</text><text wx:if="{{refreshing}}">刷新中</text></view>
+      <text wx:if="{{asOfLabel}}" class="ranking-meta">截至 {{asOfLabel}} · 北京时间</text>
+      <view wx:if="{{refreshError}}" class="ranking-state ranking-state--compact">
+        <text>{{refreshError}}</text>
+        <button class="partner-command" bindtap="onRetry">重试刷新</button>
+      </view>
+      <view wx:if="{{ownCampus}}" class="ranking-own">
+        <text class="ranking-own__label">本校区</text>
+        <view class="ranking-row ranking-row--own">
+          <text class="ranking-row__rank">{{ownCampus.rank}}</text>
+          <text class="ranking-row__name">{{ownCampus.campusName}}</text>
+          <text class="ranking-row__delta">{{ownCampus.deltaLabel}}</text>
+        </view>
+      </view>
+      <text wx:elif="{{viewState !== 'unavailable'}}" class="ranking-meta">本校区暂无排名</text>
+      <view wx:if="{{viewState === 'unavailable'}}" class="ranking-state"><text>{{unavailableMessage}}</text></view>
+      <view wx:elif="{{viewState === 'empty'}}" class="ranking-state"><text>该月暂无排名</text></view>
+      <block wx:else>
+        <view class="ranking-list-head"><text>校区排名</text><text>共 {{total}} 个校区</text></view>
+        <view class="ranking-row ranking-row--head"><text class="ranking-row__rank">名次</text><text class="ranking-row__name">校区</text><text class="ranking-row__delta">较上月</text></view>
+        <view wx:for="{{rows}}" wx:key="campusId" class="ranking-row {{item.isOwnCampus ? 'ranking-row--own' : ''}}">
+          <text class="ranking-row__rank">{{item.rank}}</text>
+          <view class="ranking-row__name"><text>{{item.campusName}}</text><text wx:if="{{item.isOwnCampus}}" class="ranking-row__own-label">本校区</text></view>
+          <text class="ranking-row__delta">{{item.deltaLabel}}</text>
+        </view>
+        <text wx:if="{{pageError}}" class="ranking-error">{{pageError}}</text>
+        <button wx:if="{{hasMore}}" class="partner-command ranking-more" loading="{{loadingMore}}" disabled="{{loadingMore || refreshing || refreshError}}" bindtap="onLoadMore">{{loadingMore ? '加载中' : pageError ? '重试加载' : '加载更多'}}</button>
+        <text wx:elif="{{rows.length}}" class="ranking-meta ranking-end">已显示全部排名</text>
+      </block>
+    </block>
+  </view>
+</partner-page-shell>

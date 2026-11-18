@@ -4,7 +4,7 @@ export type ParentPageSnapshot<T> =
   | { status: 'loading' }
   | { status: 'ready'; data: T }
   | { status: 'empty'; data: T }
-  | { status: 'error'; message: string };
+  | { status: 'error'; message: string; statusCode?: number; code?: string };
 
 function toPageSnapshot<T>(state: RequestState<T>): ParentPageSnapshot<T> {
   if (state.status === 'success') {
@@ -14,7 +14,12 @@ function toPageSnapshot<T>(state: RequestState<T>): ParentPageSnapshot<T> {
     return { status: 'empty', data: state.data };
   }
   if (state.status === 'error') {
-    return { status: 'error', message: state.message };
+    return {
+      status: 'error',
+      message: state.message,
+      ...(state.statusCode === undefined ? {} : { statusCode: state.statusCode }),
+      ...(state.code === undefined ? {} : { code: state.code }),
+    };
   }
   return { status: 'loading' };
 }

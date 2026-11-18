@@ -53,6 +53,7 @@ describe('teacher students presenter', () => {
       displayName: '姓名很长但必须保持可读的学员同学',
       classLabel: '创意基础 A 班、周末综合材料班',
       nextLessonLabel: '9月1日 周二 09:00',
+      nextLessonShortLabel: '9月1日 09:00',
       latestFeedbackLabel: '8月28日 10:00',
     });
     expect(Object.keys(model)).not.toEqual(
@@ -87,7 +88,7 @@ describe('teacher students presenter', () => {
     expect(`${markup}\n${logic}`).not.toMatch(/phone|mobile|手机号|电话/i);
     expect(markup).toContain("viewState === 'empty'");
     expect(markup).toContain("viewState === 'error'");
-    expect(logic).toMatch(/onRetry\(\)\s*\{\s*void this\.loadStudents\(true\)/s);
+    expect(logic).toMatch(/onRetry\(\)\s*\{\s*this\.searchDebouncer\?\.cancel\(\);\s*void this\.loadStudents\(!this\.data\.loadMoreError\)/s);
   });
 
   it('opens a scoped read-only teaching detail from each student card', () => {
@@ -113,18 +114,18 @@ describe('teacher students presenter', () => {
     const detailSource = ['index.ts', 'index.wxml', 'index.wxss']
       .map((name) => fs.readFileSync(path.join(detailDir, name), 'utf8'))
       .join('\n');
-    expect(detailSource).toContain('teacherService.loadStudent');
+    expect(detailSource).toContain('this.runtime.loadStudent');
     expect(detailSource).toContain('下一次课程');
     expect(detailSource).toContain('近期出勤');
-    expect(detailSource).toContain('最近反馈');
-    expect(detailSource).not.toMatch(/phone|mobile|手机号|电话|住址|课时余额|报名金额/i);
+    expect(detailSource).toContain('逐课反馈');
+    expect(detailSource).not.toMatch(/phone|mobile|手机号|电话|住址/i);
     expect(
       app.subPackages.find(({ root: packageRoot }) => packageRoot === 'pages/teacher')
         ?.pages,
     ).toContain('student-detail/index');
   });
 
-  it('builds a teaching-only student detail model without sensitive fields', () => {
+  it('builds the approved read-only archive without private contact fields', () => {
     const presenter = require('../services/teacher-students.presenter') as Record<
       string,
       unknown
@@ -174,7 +175,83 @@ describe('teacher students presenter', () => {
       attendanceSummary: '出勤 8 次 · 请假 1 次 · 缺勤 1 次',
       attendanceRateLabel: '80%',
       latestFeedbackContent: '本节课构图完整，课堂参与积极。',
+      originalMainLabel: '待核对',
+      originalGiftLabel: '待核对',
+      receivedLabel: '待核对',
+      availableMainLabel: '待核对',
+      availableGiftLabel: '待核对',
     });
-    expect(JSON.stringify(model)).not.toMatch(/phone|mobile|address|balance/i);
+    expect(JSON.stringify(model)).not.toMatch(/phone|mobile|address|birthDate|paymentProof/i);
+  });
+
+  it('shows the total remaining lessons from the existing balance contract field', () => {
+    const presenter = require('../services/teacher-students.presenter') as Record<
+      string,
+      unknown
+    >;
+    const buildDetail = presenter.buildTeacherStudentDetailPageModel;
+    expect(typeof buildDetail).toBe('function');
+    if (typeof buildDetail !== 'function') return;
+
+    const model = buildDetail({
+      ...student(),
+      classes: [],
+      nextLesson: null,
+      attendance: {
+        presentCount: 0,
+        leaveCount: 0,
+        absentCount: 0,
+        recordedCount: 0,
+        attendanceRateBasisPoints: 0,
+      },
+      recentAttendance: [],
+      archive: {
+        photo: null,
+        age: 9,
+        enrollment: {
+          initialMainUnits: 5000,
+          initialGiftUnits: 1000,
+          receivedAmountFen: 100000,
+          pendingIssuanceCount: 0,
+        },
+        balance: {
+          mainAvailableUnits: 4250,
+          giftAvailableUnits: 500,
+          availableTotalUnits: 4750,
+          totalBalanceUnits: 5000,
+          isWarning: false,
+          asOf: '2026-09-01T00:00:00.000Z',
+        },
+      },
+    });
+
+    // availableTotalUnits 已存在于契约与后端返回，页面此前未渲染这一行。
+    expect(model.remainingTotalLabel).toBe('47.5课时');
+    expect(model.availableMainLabel).toBe('42.5课时');
+    expect(model.availableGiftLabel).toBe('5课时');
+  });
+
+  it('falls back to 待核对 when the archive carries no total balance', () => {
+    const presenter = require('../services/teacher-students.presenter') as Record<
+      string,
+      unknown
+    >;
+    const buildDetail = presenter.buildTeacherStudentDetailPageModel;
+    if (typeof buildDetail !== 'function') return;
+
+    const model = buildDetail({
+      ...student(),
+      classes: [],
+      nextLesson: null,
+      attendance: {
+        presentCount: 0,
+        leaveCount: 0,
+        absentCount: 0,
+        recordedCount: 0,
+        attendanceRateBasisPoints: 0,
+      },
+      recentAttendance: [],
+    });
+    expect(model.remainingTotalLabel).toBe('待核对');
   });
 });

@@ -185,19 +185,19 @@ describe('persisted lesson reservation write protection', () => {
         reason: '预留测试调整',
       });
 
-  it('consumes available main then gift while ledger balances remain gross', async () => {
+  it('consumes available gift then main while ledger balances remain gross', async () => {
     const f = await fixture();
     expect(await consume(f, 250)).toMatchObject({
-      mainUnits: 100,
-      giftUnits: 150,
+      mainUnits: 50,
+      giftUnits: 200,
     });
     expect(
       await prisma.coursePackage.findUniqueOrThrow({
         where: { id: f.packageId },
       }),
     ).toMatchObject({
-      mainBalanceUnits: 1100,
-      giftBalanceUnits: 150,
+      mainBalanceUnits: 1150,
+      giftBalanceUnits: 100,
       mainReservedUnits: 1100,
       giftReservedUnits: 100,
     });
@@ -210,12 +210,12 @@ describe('persisted lesson reservation write protection', () => {
         expect.objectContaining({
           bucket: 'MAIN',
           balanceBeforeUnits: 1200,
-          balanceAfterUnits: 1100,
+          balanceAfterUnits: 1150,
         }),
         expect.objectContaining({
           bucket: 'GIFT',
           balanceBeforeUnits: 300,
-          balanceAfterUnits: 150,
+          balanceAfterUnits: 100,
         }),
       ]),
     );

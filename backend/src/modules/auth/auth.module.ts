@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PermissionsGuard } from '../../common/auth/permissions.guard';
 import { CampusManagerScopeService } from '../../common/auth/campus-manager-scope.service';
+import { OperatorScopeService } from '../../common/auth/operator-scope.service';
 import { TeacherScopeService } from '../../common/auth/teacher-scope.service';
 import { ParentScopeService } from '../../common/auth/parent-scope.service';
 import { PartnerScopeService } from '../../common/auth/partner-scope.service';
@@ -46,8 +47,10 @@ import { WechatStaffAuthService } from './wechat-staff-auth.service';
     ParentScopeService,
     PartnerScopeService,
     CampusManagerScopeService,
+    OperatorScopeService,
   ],
   exports: [
+    WECHAT_IDENTITY_GATEWAY,
     AccessTokenGuard,
     JwtModule,
     PermissionsGuard,
@@ -56,6 +59,7 @@ import { WechatStaffAuthService } from './wechat-staff-auth.service';
     ParentScopeService,
     PartnerScopeService,
     CampusManagerScopeService,
+    OperatorScopeService,
   ],
 })
 export class AuthModule {}

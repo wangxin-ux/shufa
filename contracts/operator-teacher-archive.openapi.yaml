@@ -1,0 +1,231 @@
+list:
+  get:
+    operationId: listOperatorTeacherArchives
+    summary: Search active teachers and teaching classes in the operator campus
+    description: >-
+      Requires OPERATOR_TEACHER_READ and one current single-campus OPERATOR role.
+      Reads active teacher profiles with active matching TEACHER accounts.
+      Only active own-campus teaching classes are disclosed. Search is by display
+      name; stable display-name/id ordering, count and page share one snapshot.
+      Rechecks the actor and every returned teacher in a fresh transaction.
+      Returns 404 if a returned teacher leaves the scope during the read.
+      Never includes telephone numbers, HR attachments, salary or payout accounts.
+    tags: [Operator]
+    parameters:
+      - $ref: "./openapi.yaml#/components/parameters/Page"
+      - $ref: "./openapi.yaml#/components/parameters/PageSize"
+      - name: query
+        in: query
+        schema: { type: string, maxLength: 100 }
+    responses:
+      "200":
+        description: Restricted teachers, including an empty page beyond the end.
+        content:
+          application/json:
+            schema: { $ref: "#/schemas/ListEnvelope" }
+      "400": { $ref: "./openapi.yaml#/components/responses/BadRequest" }
+      "401": { $ref: "./openapi.yaml#/components/responses/Unauthorized" }
+      "403": { $ref: "./openapi.yaml#/components/responses/Forbidden" }
+      "404": { $ref: "./openapi.yaml#/components/responses/ResourceNotFound" }
+      "500":
+        { $ref: "./openapi.yaml#/components/responses/InternalServerError" }
+performance:
+  get:
+    operationId: getOperatorTeacherPerformance
+    summary: Read monthly teaching counts and the partner-authored evaluation
+    description: >-
+      Requires OPERATOR_TEACHER_READ and current own-campus teacher scope.
+      The campus IANA timezone defines the natural month. Only lessons already
+      started as of asOf count; CANCELLED lessons do not count. Completed lessons
+      require a matching completed teaching record. Reversed lessons remain
+      scheduled but cease to be completed. An empty denominator yields null.
+      Evaluation ratings are independent half-star integers 1..10, with the
+      original author display name and version. This API never grants editing.
+      A fresh transaction rechecks the current actor and teacher before returning.
+    tags: [Operator]
+    parameters:
+      - $ref: "#/parameters/TeacherId"
+      - $ref: "#/parameters/Month"
+    responses:
+      "200":
+        description: Read-only monthly facts; no plan and no evaluation are explicit.
+        content:
+          application/json:
+            schema: { $ref: "#/schemas/PerformanceEnvelope" }
+      "400": { $ref: "./openapi.yaml#/components/responses/BadRequest" }
+      "401": { $ref: "./openapi.yaml#/components/responses/Unauthorized" }
+      "403": { $ref: "./openapi.yaml#/components/responses/Forbidden" }
+      "404": { $ref: "./openapi.yaml#/components/responses/ResourceNotFound" }
+      "500":
+        { $ref: "./openapi.yaml#/components/responses/InternalServerError" }
+history:
+  get:
+    operationId: getOperatorTeacherEvaluationHistory
+    summary: Read immutable monthly evaluation revisions without editing
+    description: >-
+      Same current actor and teacher scope checks as performance. Restricts
+      revisions by teacher, campus and evaluation month; orders by version/id
+      descending. Count and page share a repeatable snapshot. Author display name,
+      month, independent ratings and guidance retain their original meanings.
+      No author User ID, telephone, HR, earnings or payment data is disclosed.
+    tags: [Operator]
+    parameters:
+      - $ref: "#/parameters/TeacherId"
+      - $ref: "#/parameters/Month"
+      - $ref: "./openapi.yaml#/components/parameters/Page"
+      - $ref: "./openapi.yaml#/components/parameters/PageSize"
+    responses:
+      "200":
+        description: Evaluation revisions with envelope-level pagination.
+        content:
+          application/json:
+            schema: { $ref: "#/schemas/HistoryEnvelope" }
+      "400": { $ref: "./openapi.yaml#/components/responses/BadRequest" }
+      "401": { $ref: "./openapi.yaml#/components/responses/Unauthorized" }
+      "403": { $ref: "./openapi.yaml#/components/responses/Forbidden" }
+      "404": { $ref: "./openapi.yaml#/components/responses/ResourceNotFound" }
+      "500":
+        { $ref: "./openapi.yaml#/components/responses/InternalServerError" }
+parameters:
+  TeacherId:
+    name: teacherId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+  Month:
+    name: month
+    in: query
+    description: Campus natural month; omitted means the current campus month.
+    schema: { type: string, pattern: "^[1-9][0-9]{3}-(0[1-9]|1[0-2])$" }
+schemas:
+  TeachingClass:
+    type: object
+    required: [id, className, courseName]
+    properties:
+      id: { type: string, format: uuid }
+      className: { type: string }
+      courseName: { type: string }
+    additionalProperties: false
+  TeacherArchive:
+    type: object
+    required: [id, displayName, specialties, classes]
+    properties:
+      id: { type: string, format: uuid }
+      displayName: { type: string }
+      specialties: { type: array, items: { type: string } }
+      classes:
+        type: array
+        items: { $ref: "#/schemas/TeachingClass" }
+    additionalProperties: false
+  Evaluation:
+    type: object
+    required:
+      [
+        id,
+        teacherId,
+        periodMonth,
+        version,
+        teachingRating,
+        communicationRating,
+        attendanceRating,
+        overallRating,
+        guidance,
+        authorName,
+        canEdit,
+        createdAt,
+        updatedAt,
+      ]
+    properties:
+      id: { type: string, format: uuid }
+      teacherId: { type: string, format: uuid }
+      periodMonth: { type: string, pattern: "^[1-9][0-9]{3}-(0[1-9]|1[0-2])$" }
+      version: { type: integer, minimum: 1 }
+      teachingRating: { type: integer, minimum: 1, maximum: 10 }
+      communicationRating: { type: integer, minimum: 1, maximum: 10 }
+      attendanceRating: { type: integer, minimum: 1, maximum: 10 }
+      overallRating: { type: integer, minimum: 1, maximum: 10 }
+      guidance: { type: string, maxLength: 1000 }
+      authorName: { type: string }
+      canEdit: { type: boolean, const: false }
+      createdAt: { type: string, format: date-time }
+      updatedAt: { type: string, format: date-time }
+    additionalProperties: false
+  Performance:
+    type: object
+    required:
+      [
+        teacherId,
+        periodMonth,
+        timezone,
+        asOf,
+        scheduledLessonCount,
+        completedLessonCount,
+        completionRateBasisPoints,
+        evaluation,
+      ]
+    properties:
+      teacherId: { type: string, format: uuid }
+      periodMonth: { type: string, pattern: "^[1-9][0-9]{3}-(0[1-9]|1[0-2])$" }
+      timezone: { type: string }
+      asOf: { type: string, format: date-time }
+      scheduledLessonCount: { type: integer, minimum: 0 }
+      completedLessonCount: { type: integer, minimum: 0 }
+      completionRateBasisPoints:
+        { type: [integer, "null"], minimum: 0, maximum: 10000 }
+      evaluation:
+        oneOf:
+          - $ref: "#/schemas/Evaluation"
+          - type: "null"
+    additionalProperties: false
+  EvaluationRevision:
+    type: object
+    required:
+      [
+        periodMonth,
+        version,
+        teachingRating,
+        communicationRating,
+        attendanceRating,
+        overallRating,
+        guidance,
+        authorName,
+        savedAt,
+      ]
+    properties:
+      periodMonth: { type: string, pattern: "^[1-9][0-9]{3}-(0[1-9]|1[0-2])$" }
+      version: { type: integer, minimum: 1 }
+      teachingRating: { type: integer, minimum: 1, maximum: 10 }
+      communicationRating: { type: integer, minimum: 1, maximum: 10 }
+      attendanceRating: { type: integer, minimum: 1, maximum: 10 }
+      overallRating: { type: integer, minimum: 1, maximum: 10 }
+      guidance: { type: string, maxLength: 1000 }
+      authorName: { type: string }
+      savedAt: { type: string, format: date-time }
+    additionalProperties: false
+  ListEnvelope:
+    type: object
+    required: [data, meta, requestId]
+    properties:
+      data:
+        type: array
+        items: { $ref: "#/schemas/TeacherArchive" }
+      meta: { $ref: "./openapi.yaml#/components/schemas/PaginationMeta" }
+      requestId: { type: string }
+    additionalProperties: false
+  PerformanceEnvelope:
+    type: object
+    required: [data, requestId]
+    properties:
+      data: { $ref: "#/schemas/Performance" }
+      requestId: { type: string }
+    additionalProperties: false
+  HistoryEnvelope:
+    type: object
+    required: [data, meta, requestId]
+    properties:
+      data:
+        type: array
+        items: { $ref: "#/schemas/EvaluationRevision" }
+      meta: { $ref: "./openapi.yaml#/components/schemas/PaginationMeta" }
+      requestId: { type: string }
+    additionalProperties: false

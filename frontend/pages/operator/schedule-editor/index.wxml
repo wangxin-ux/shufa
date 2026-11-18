@@ -1,0 +1,174 @@
+<view class="shell">
+  <view class="shell__wave" aria-hidden="true"></view>
+  <view class="shell__header" style="padding-top: {{headerTopPx}}px;">
+    <view class="shell__header-inner" style="--operator-header-height: {{headerHeightPx}}px; min-height: {{headerHeightPx}}px; padding-right: {{headerRightPx}}px;">
+      <button class="shell__back" aria-label="返回上一页" catchtap="onBack"
+        disabled="{{submitting || confirming || navigating || viewState === 'forbidden' || (viewState === 'saved' && !verified)}}" hover-class="shell__back--hover">
+        <text class="shell__back-icon">‹</text>
+      </button>
+      <view class="shell__mark">
+        <view class="shell__mark-disc shell__mark-disc--glyph">
+          <image class="shell__mark-icon shell__mark-icon--glyph" src="/pages/operator/assets/page-mark-pdf.png" style="width:44rpx;height:44rpx" mode="aspectFit" aria-hidden="true" />
+        </view>
+        <text class="shell__mark-title">排课</text>
+      </view>
+    </view>
+  </view>
+  <view class="shell__body">
+  <view class="schedule-editor">
+    <text class="schedule-editor__title">{{title}}</text>
+    <view wx:if="{{viewState === 'loading'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">正在加载</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="schedule-control page-state__retry" bindtap="onLogin">重新登录</button>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="schedule-control page-state__retry" disabled="{{reading || navigating}}" bindtap="onRetry">重试</button>
+    </view>
+    <view wx:elif="{{viewState === 'saved'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">已保存 {{savedCount}} 节课</text>
+      <text wx:if="{{reading}}" class="page-state__message">正在读取最新课次</text>
+      <text wx:if="{{readbackError}}" class="schedule-form__error">{{readbackError}}</text>
+      <button wx:if="{{!verified}}" class="schedule-control page-state__retry" disabled="{{reading}}" bindtap="onRetryReadback">重试读取</button>
+      <button wx:else class="schedule-control page-state__retry" disabled="{{navigating}}" bindtap="onReturn">返回</button>
+    </view>
+    <view wx:else>
+      <view wx:if="{{viewState === 'empty'}}" class="schedule-notice" aria-live="polite">
+        <text class="schedule-notice__message">暂无可排课班级</text>
+        <button class="schedule-control page-state__retry" disabled="{{reading || confirming || navigating}}" bindtap="onRetry">重新加载</button>
+      </view>
+      <view class="schedule-form">
+        <image class="schedule-form__character" src="/pages/operator/assets/leave-character.png" mode="widthFix" aria-hidden="true" />
+        <text class="schedule-form__section-title">上课时间</text>
+        <view class="schedule-form__basic">
+<picker class="schedule-form__picker" range="{{classOptions}}" range-key="label" value="{{classIndex}}"
+            disabled="{{mode === 'edit' || submitting || recoveryAvailable || confirming || navigating || reading || readError !== '' || viewState !== 'ready'}}" bindchange="onClassChange">
+            <text class="schedule-form__value {{selectedClassLabel ? '' : 'schedule-form__value--placeholder'}}">{{selectedClassLabel || '请选择班级'}}</text>
+          </picker>
+          <button class="schedule-form__selector" bindtap="onOpenOptions" disabled="{{submitting || recoveryAvailable || confirming || navigating || reading}}"><text>{{scheduleMode === 'series' ? '周期' : '单次'}}</text><text>▼</text></button>
+          <button class="schedule-form__selector" bindtap="onOpenOptions" disabled="{{submitting || recoveryAvailable || confirming || navigating || reading}}"><text>{{startsAt}}–{{endsAt}}</text><text>▼</text></button>
+        </view>
+        <view class="schedule-form__roster-section"><text class="schedule-form__section-title">学员信息</text><button class="schedule-form__roster" bindtap="onRosterInfo"><text>{{selectedClassLabel ? '按所选班级名单' : '请先选择班级'}}</text><text>▼</text></button></view>
+        <text wx:if="{{selectedClassLabel}}" class="schedule-form__class-meta">{{selectedTeacherLabel}} · {{selectedLessonUnitsLabel}} · {{kindLabel}}</text>
+
+        
+        
+        
+        
+        
+        <view wx:if="{{readError}}" class="schedule-notice" aria-live="polite">
+          <text class="schedule-notice__message">{{readError}}</text>
+          <button class="schedule-control page-state__retry" disabled="{{reading || confirming || navigating}}" bindtap="onRetry">重试读取</button>
+        </view>
+        <text wx:if="{{stale}}" class="schedule-form__error">{{formError || '课次已变化或已开始，请重新载入后查看'}}</text>
+        <button wx:if="{{stale}}" class="schedule-control page-state__retry" disabled="{{reading || submitting || recoveryAvailable || confirming || navigating}}" bindtap="onReload">重新载入</button>
+        <text wx:if="{{formError && !stale}}" class="schedule-form__error" aria-live="polite">{{formError}}</text>
+        <view wx:if="{{recoveryAvailable}}" class="schedule-notice" aria-live="polite">
+          <text class="schedule-notice__message">操作结果待确认：{{recoveryMessage}}</text>
+          <button class="schedule-control page-state__retry" disabled="{{submitting || reading || confirming || navigating}}" bindtap="onRetryWrite">{{recoveryReady ? '重试原操作' : '核对最新课表'}}</button>
+        </view>
+        
+      <view class="schedule-form__actions">
+          <button wx:if="{{scheduleMode === 'single'}}" class="schedule-control schedule-form__submit"
+            disabled="{{submitting || recoveryAvailable || confirming || navigating || reading || readError !== '' || stale || viewState !== 'ready' || (mode === 'create' && classIndex < 0)}}"
+            bindtap="onSubmit">{{submitting ? '保存中' : '保存'}}</button>
+          <button wx:else class="schedule-control schedule-form__submit"
+            disabled="{{submitting || recoveryAvailable || confirming || navigating || reading || seriesBusy || readError || !seriesPreview || seriesPreview.conflictDates.length || viewState !== 'ready'}}"
+            bindtap="onSeriesCreate">{{submitting ? '保存中' : '保存'}}</button>
+        
+          <button class="schedule-control schedule-form__cancel" disabled="{{submitting || confirming || navigating}}" bindtap="onBack">返回</button>
+</view>
+      </view>
+      <view wx:if="{{optionsOpen}}" class="schedule-options-layer"><view class="schedule-options-backdrop" bindtap="onCloseOptions"></view><scroll-view class="schedule-options-sheet" scroll-y="{{true}}"><view class="schedule-options-heading"><text>排课设置</text><button bindtap="onCloseOptions">完成</button></view>
+        <text wx:if="{{formError}}" class="schedule-form__error" aria-live="polite">{{formError}}</text>
+<view wx:if="{{mode === 'create'}}" class="series-mode" role="tablist" aria-label="排课方式">
+          <button class="schedule-control series-mode__option {{scheduleMode === 'single' ? 'series-mode__option--selected' : ''}}"
+            role="tab" aria-selected="{{scheduleMode === 'single'}}" data-key="single" bindtap="onScheduleModeTap"
+            disabled="{{submitting || recoveryAvailable || navigating || reading}}">单次</button>
+          <button class="schedule-control series-mode__option {{scheduleMode === 'series' ? 'series-mode__option--selected' : ''}}"
+            role="tab" aria-selected="{{scheduleMode === 'series'}}" data-key="series" bindtap="onScheduleModeTap"
+            disabled="{{submitting || recoveryAvailable || navigating || reading}}">周期</button>
+        </view><view class="schedule-form__derived">
+          <view class="schedule-form__derived-item">
+            <text class="schedule-form__derived-label">授课教师</text>
+            <text class="schedule-form__derived-value">{{selectedTeacherLabel || '待选择'}}</text>
+          </view>
+          <view class="schedule-form__derived-item">
+            <text class="schedule-form__derived-label">课时量</text>
+            <text class="schedule-form__derived-value">{{selectedLessonUnitsLabel || '待选择'}}</text>
+          </view>
+        </view><view class="schedule-form__grid">
+          <view class="schedule-form__field schedule-form__field--wide">
+            <text class="schedule-form__label">{{scheduleMode === 'series' ? '开始日期' : '上课日期'}}</text>
+            <picker class="schedule-form__picker" mode="date" value="{{formDate}}" start="{{minDate}}" disabled="{{submitting || recoveryAvailable || confirming || navigating || reading}}" bindchange="onFormDateChange">
+              <text class="schedule-form__value">{{formDate}}</text>
+            </picker>
+          </view>
+          <block wx:if="{{scheduleMode === 'series'}}">
+            <view class="schedule-form__field schedule-form__field--wide">
+              <text class="schedule-form__label">结束日期（含当天）</text>
+              <picker class="schedule-form__picker" mode="date" value="{{seriesEndDate}}" start="{{formDate}}"
+                disabled="{{submitting || recoveryAvailable || navigating || reading}}" bindchange="onSeriesEndDateChange">
+                <text class="schedule-form__value">{{seriesEndDate || '请选择结束日期'}}</text>
+              </picker>
+            </view>
+            <view class="schedule-form__field schedule-form__field--wide">
+              <text class="schedule-form__label">重复间隔</text>
+              <picker class="schedule-form__picker" range="{{intervalOptions}}" value="{{intervalIndex}}"
+                disabled="{{submitting || recoveryAvailable || navigating || reading}}" bindchange="onIntervalChange">
+                <text class="schedule-form__value">{{intervalOptions[intervalIndex]}}</text>
+              </picker>
+            </view>
+            <view class="schedule-form__field schedule-form__field--wide">
+              <text class="schedule-form__label">上课星期</text>
+              <checkbox-group class="series-weekdays" bindchange="onWeekdayChange">
+                <label wx:for="{{weekdayOptions}}" wx:key="value" class="series-weekdays__day">
+                  <checkbox value="{{item.value}}" checked="{{item.checked}}" color="#176a4b"
+                    disabled="{{submitting || recoveryAvailable || navigating || reading}}" />
+                  <text>{{item.label}}</text>
+                </label>
+              </checkbox-group>
+            </view>
+          </block>
+          <view class="schedule-form__field">
+            <text class="schedule-form__label">开始时间</text>
+            <picker class="schedule-form__picker" mode="time" value="{{startsAt}}" disabled="{{submitting || recoveryAvailable || confirming || navigating || reading}}" bindchange="onStartTimeChange">
+              <text class="schedule-form__value">{{startsAt}}</text>
+            </picker>
+          </view>
+          <view class="schedule-form__field">
+            <text class="schedule-form__label">结束时间</text>
+            <picker class="schedule-form__picker" mode="time" value="{{endsAt}}" disabled="{{submitting || recoveryAvailable || confirming || navigating || reading}}" bindchange="onEndTimeChange">
+              <text class="schedule-form__value">{{endsAt}}</text>
+            </picker>
+          </view>
+          <view class="schedule-form__field schedule-form__field--wide">
+            <text class="schedule-form__label">课程类型</text>
+            <picker class="schedule-form__picker" range="{{kindOptions}}" range-key="label" value="{{kindIndex}}" disabled="{{submitting || recoveryAvailable || confirming || navigating || reading}}" bindchange="onKindChange">
+              <text class="schedule-form__value">{{kindLabel}}</text>
+            </picker>
+          </view>
+        </view><view wx:if="{{scheduleMode === 'series'}}" class="series-preview">
+          <text class="series-preview__meta">上海时间 · 同日时段 · 最多84天、50节</text>
+          <text wx:if="{{intervalIndex === 1}}" class="series-preview__meta">隔周从开始日期所在周的周一计算</text>
+          <button class="schedule-control page-state__retry" bindtap="onSeriesPreview"
+            disabled="{{seriesBusy || submitting || recoveryAvailable || confirming || navigating || reading || readError || classIndex < 0}}">{{seriesBusy ? '正在预览' : '预览日期'}}</button>
+          <block wx:if="{{seriesPreview}}">
+            <text class="series-preview__title">全部 {{seriesPreview.sessions.length}} 节</text>
+            <text wx:if="{{seriesPreview.conflictDates.length}}" class="schedule-form__error">存在冲突，请调整条件后重新预览</text>
+            <view wx:for="{{seriesRows}}" wx:key="date" class="series-preview__row {{item.conflict ? 'series-preview__row--conflict' : ''}}">
+              <text>{{item.label}}</text><text wx:if="{{item.conflict}}">冲突</text>
+            </view>
+          </block>
+        </view>
+      </scroll-view></view>
+    </view>
+    <button wx:if="{{viewState === 'loading' || viewState === 'error'}}" class="schedule-control schedule-editor__back" disabled="{{confirming || navigating}}" bindtap="onBack">返回</button>
+  </view>
+  </view>
+</view>

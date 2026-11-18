@@ -1,41 +1,10 @@
-import {
-  AttendanceDraft,
-  CompleteLessonDraft,
-  CompleteLessonResult,
-  DatePageQuery,
-  FeedbackDraft,
-  FeedbackImage,
-  FeedbackImageUploadDraft,
-  LessonSessionQuery,
-  Page,
-  PageMeta,
-  ReverseLessonDraft,
-  StudentFeedback,
-  TeacherDashboard,
-  TeacherEarningEntry,
-  TeacherEarningQuery,
-  TeacherEarningRuleView,
-  TeacherEarningSummary,
-  TeacherLedgerRecord,
-  TeacherLessonDetail,
-  TeacherLessonSession,
-  TeacherProfile,
-  TeacherStudent,
-  TeacherStudentDetail,
-  TeacherStudentQuery,
-  TeacherWithdrawal,
-  TeacherWithdrawalQuery,
-  TeachingRecord,
-} from '../types/teacher';
-import {
-  GroupPage,
-  GroupPromotionCampaignQuery,
-  GroupPromotionCampaignView,
-} from '../types/group-buying';
+import type * as T from '../types/teacher';
+import type * as G from '../types/group-buying';
 import {
   TeacherDataSource,
   TeacherDataSourceError,
 } from './teacher-data-source';
+import type * as R from '../types/teacher-rankings';
 
 export interface TeacherHttpResponse {
   statusCode: number;
@@ -79,7 +48,7 @@ interface SuccessEnvelope<T> {
 }
 
 interface PageEnvelope<T> extends SuccessEnvelope<T[]> {
-  meta: PageMeta;
+  meta: T.PageMeta;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -130,18 +99,18 @@ export class ApiTeacherDataSource implements TeacherDataSource {
     this.uploadFile = options.uploadFile ?? defaultUploadFile;
   }
 
-  getDashboard(): Promise<TeacherDashboard> {
+  getDashboard(): Promise<T.TeacherDashboard> {
     return this.envelope('GET', '/teachers/me/dashboard');
   }
 
-  getProfile(): Promise<TeacherProfile> {
+  getProfile(): Promise<T.TeacherProfile> {
     return this.envelope('GET', '/teachers/me/profile');
   }
 
   listGroupPromotionCampaigns(
-    query: GroupPromotionCampaignQuery,
-  ): Promise<GroupPage<GroupPromotionCampaignView>> {
-    return this.page<GroupPromotionCampaignView>(
+    query: G.GroupPromotionCampaignQuery,
+  ): Promise<G.GroupPage<G.GroupPromotionCampaignView>> {
+    return this.page<G.GroupPromotionCampaignView>(
       '/teachers/me/group-campaigns',
       this.query([
         ['page', query.page],
@@ -155,16 +124,16 @@ export class ApiTeacherDataSource implements TeacherDataSource {
     }));
   }
 
-  getGroupPromotionCampaign(id: string): Promise<GroupPromotionCampaignView> {
-    return this.envelope<GroupPromotionCampaignView>(
+  getGroupPromotionCampaign(id: string): Promise<G.GroupPromotionCampaignView> {
+    return this.envelope<G.GroupPromotionCampaignView>(
       'GET',
       `/teachers/me/group-campaigns/${encodeURIComponent(id)}`,
     ).then((campaign) => this.mapGroupPromotionCampaign(campaign));
   }
 
   listLessonSessions(
-    query: LessonSessionQuery,
-  ): Promise<Page<TeacherLessonSession>> {
+    query: T.LessonSessionQuery,
+  ): Promise<T.Page<T.TeacherLessonSession>> {
     return this.page(
       '/teachers/me/lesson-sessions',
       this.query([
@@ -177,14 +146,14 @@ export class ApiTeacherDataSource implements TeacherDataSource {
     );
   }
 
-  getLessonSession(id: string): Promise<TeacherLessonDetail> {
-    return this.envelope<TeacherLessonDetail>(
+  getLessonSession(id: string): Promise<T.TeacherLessonDetail> {
+    return this.envelope<T.TeacherLessonDetail>(
       'GET',
       `/teachers/me/lesson-sessions/${encodeURIComponent(id)}`,
     ).then((detail) => this.mapLessonDetail(detail));
   }
 
-  listStudents(query: TeacherStudentQuery): Promise<Page<TeacherStudent>> {
+  listStudents(query: T.TeacherStudentQuery): Promise<T.Page<T.TeacherStudent>> {
     return this.page(
       '/teachers/me/students',
       this.query([
@@ -195,32 +164,47 @@ export class ApiTeacherDataSource implements TeacherDataSource {
     );
   }
 
-  getStudent(id: string): Promise<TeacherStudentDetail> {
-    return this.envelope(
+  getStudent(id: string, query?: T.TeacherStudentDetailQuery): Promise<T.TeacherStudentDetail> {
+    return this.envelope<T.TeacherStudentDetail>(
       'GET',
-      `/teachers/me/students/${encodeURIComponent(id)}`,
-    );
+      `/teachers/me/students/${encodeURIComponent(id)}${this.query([
+        ['feedbackPage', query?.feedbackPage],
+        ['feedbackPageSize', query?.feedbackPageSize],
+      ])}`,
+    ).then((student) => ({
+      ...student,
+      ...(student.archive ? { archive: {
+        ...student.archive,
+        photo: student.archive.photo ? this.mapFeedbackImage(student.archive.photo) : null,
+      } } : {}),
+      ...(student.feedbackHistory ? { feedbackHistory: {
+        ...student.feedbackHistory,
+        data: student.feedbackHistory.data.map((feedback) => ({
+          ...feedback, images: feedback.images.map((image) => this.mapFeedbackImage(image)),
+        })),
+      } } : {}),
+    }));
   }
 
   saveAttendance(
-    input: AttendanceDraft,
+    input: T.AttendanceDraft,
     idempotencyKey: string,
-  ): Promise<TeacherLessonDetail> {
+  ): Promise<T.TeacherLessonDetail> {
     const { lessonSessionId, ...body } = input;
-    return this.envelope(
+    return this.envelope<T.TeacherLessonDetail>(
       'PUT',
       `/teachers/me/lesson-sessions/${encodeURIComponent(
         lessonSessionId,
       )}/attendance`,
       body,
       idempotencyKey,
-    );
+    ).then((detail) => this.mapLessonDetail(detail));
   }
 
   completeLesson(
-    input: CompleteLessonDraft,
+    input: T.CompleteLessonDraft,
     idempotencyKey: string,
-  ): Promise<CompleteLessonResult> {
+  ): Promise<T.CompleteLessonResult> {
     const { lessonSessionId, ...body } = input;
     return this.envelope(
       'POST',
@@ -233,9 +217,9 @@ export class ApiTeacherDataSource implements TeacherDataSource {
   }
 
   reverseLesson(
-    input: ReverseLessonDraft,
+    input: T.ReverseLessonDraft,
     idempotencyKey: string,
-  ): Promise<CompleteLessonResult> {
+  ): Promise<T.CompleteLessonResult> {
     const { lessonSessionId, ...body } = input;
     return this.envelope(
       'POST',
@@ -248,11 +232,11 @@ export class ApiTeacherDataSource implements TeacherDataSource {
   }
 
   saveFeedback(
-    input: FeedbackDraft,
+    input: T.FeedbackDraft,
     idempotencyKey: string,
-  ): Promise<StudentFeedback> {
+  ): Promise<T.StudentFeedback> {
     const { lessonSessionId, studentId, ...body } = input;
-    return this.envelope<StudentFeedback>(
+    return this.envelope<T.StudentFeedback>(
       'PUT',
       `/teachers/me/lesson-sessions/${encodeURIComponent(
         lessonSessionId,
@@ -265,14 +249,14 @@ export class ApiTeacherDataSource implements TeacherDataSource {
     }));
   }
 
-  uploadFeedbackImage(input: FeedbackImageUploadDraft): Promise<FeedbackImage> {
+  uploadFeedbackImage(input: T.FeedbackImageUploadDraft): Promise<T.FeedbackImage> {
     const accessToken = this.accessToken().trim();
     if (!accessToken) {
       return Promise.reject(
         new TeacherDataSourceError(401, 'UNAUTHORIZED', '教师登录已失效'),
       );
     }
-    return new Promise<FeedbackImage>((resolve, reject) => {
+    return new Promise<T.FeedbackImage>((resolve, reject) => {
       this.uploadFile({
         url: `${this.baseUrl}/teachers/me/lesson-sessions/${encodeURIComponent(
           input.lessonSessionId,
@@ -296,7 +280,7 @@ export class ApiTeacherDataSource implements TeacherDataSource {
             isRecord(body) &&
             isRecord(body.data)
           ) {
-            resolve(this.mapFeedbackImage(body.data as unknown as FeedbackImage));
+            resolve(this.mapFeedbackImage(body.data as unknown as T.FeedbackImage));
             return;
           }
           reject(this.toError(response.statusCode, body));
@@ -313,7 +297,7 @@ export class ApiTeacherDataSource implements TeacherDataSource {
     });
   }
 
-  listTeachingRecords(query: DatePageQuery): Promise<Page<TeachingRecord>> {
+  listTeachingRecords(query: T.DatePageQuery): Promise<T.Page<T.TeachingRecord>> {
     return this.page(
       '/teachers/me/teaching-records',
       this.datePageQuery(query),
@@ -321,20 +305,27 @@ export class ApiTeacherDataSource implements TeacherDataSource {
   }
 
   listLessonLedger(
-    query: DatePageQuery,
-  ): Promise<Page<TeacherLedgerRecord>> {
+    query: T.DatePageQuery,
+  ): Promise<T.Page<T.TeacherLedgerRecord>> {
     return this.page('/teachers/me/lesson-ledger', this.datePageQuery(query));
   }
 
-  getEarningSummary(): Promise<TeacherEarningSummary> {
+  getEarningSummary(): Promise<T.TeacherEarningSummary> {
     return this.envelope('GET', '/teachers/me/earnings/summary');
   }
 
-  getCurrentEarningRule(): Promise<TeacherEarningRuleView | null> {
+  getRankings(query: R.TeacherRankingQuery): Promise<R.TeacherRankingPage> {
+    return this.envelope('GET', `/teachers/me/rankings${this.query([
+      ['metric', query.metric], ['month', query.month], ['page', query.page],
+      ['pageSize', query.pageSize], ['revision', query.revision],
+    ])}`);
+  }
+
+  getCurrentEarningRule(): Promise<T.TeacherEarningRuleView | null> {
     return this.envelope('GET', '/teachers/me/earning-rule');
   }
 
-  getEarnings(query: TeacherEarningQuery): Promise<Page<TeacherEarningEntry>> {
+  getEarnings(query: T.TeacherEarningQuery): Promise<T.Page<T.TeacherEarningEntry>> {
     return this.page(
       '/teachers/me/earnings',
       this.query([
@@ -348,8 +339,8 @@ export class ApiTeacherDataSource implements TeacherDataSource {
   }
 
   getWithdrawals(
-    query: TeacherWithdrawalQuery,
-  ): Promise<Page<TeacherWithdrawal>> {
+    query: T.TeacherWithdrawalQuery,
+  ): Promise<T.Page<T.TeacherWithdrawal>> {
     return this.page(
       '/teachers/me/withdrawals',
       this.query([
@@ -363,7 +354,7 @@ export class ApiTeacherDataSource implements TeacherDataSource {
   createWithdrawal(
     amountFen: number,
     idempotencyKey: string,
-  ): Promise<TeacherWithdrawal> {
+  ): Promise<T.TeacherWithdrawal> {
     return this.envelope(
       'POST',
       '/teachers/me/withdrawals',
@@ -376,7 +367,7 @@ export class ApiTeacherDataSource implements TeacherDataSource {
     id: string,
     expectedVersion: number,
     idempotencyKey: string,
-  ): Promise<TeacherWithdrawal> {
+  ): Promise<T.TeacherWithdrawal> {
     return this.envelope(
       'POST',
       `/teachers/me/withdrawals/${encodeURIComponent(id)}/cancel`,
@@ -399,7 +390,7 @@ export class ApiTeacherDataSource implements TeacherDataSource {
     ).then((response) => response.data);
   }
 
-  private page<T>(path: string, query: string): Promise<Page<T>> {
+  private page<T>(path: string, query: string): Promise<T.Page<T>> {
     return this.send<PageEnvelope<T>>(
       'GET',
       `${path}${query}`,
@@ -466,11 +457,12 @@ export class ApiTeacherDataSource implements TeacherDataSource {
     return new TeacherDataSourceError(statusCode, code, message, details);
   }
 
-  private mapLessonDetail(detail: TeacherLessonDetail): TeacherLessonDetail {
+  private mapLessonDetail(detail: T.TeacherLessonDetail): T.TeacherLessonDetail {
     return {
       ...detail,
       students: detail.students.map((student) => ({
         ...student,
+        photo: student.photo ? this.mapFeedbackImage(student.photo) : null,
         feedbackImages: student.feedbackImages.map((image) =>
           this.mapFeedbackImage(image),
         ),
@@ -478,7 +470,7 @@ export class ApiTeacherDataSource implements TeacherDataSource {
     };
   }
 
-  private mapFeedbackImage(image: FeedbackImage): FeedbackImage {
+  private mapFeedbackImage(image: T.FeedbackImage): T.FeedbackImage {
     return {
       ...image,
       accessUrl: /^https?:\/\//.test(image.accessUrl)
@@ -488,8 +480,8 @@ export class ApiTeacherDataSource implements TeacherDataSource {
   }
 
   private mapGroupPromotionCampaign(
-    campaign: GroupPromotionCampaignView,
-  ): GroupPromotionCampaignView {
+    campaign: G.GroupPromotionCampaignView,
+  ): G.GroupPromotionCampaignView {
     return {
       ...campaign,
       posterImages: campaign.posterImages.map((poster) => ({
@@ -509,7 +501,7 @@ export class ApiTeacherDataSource implements TeacherDataSource {
     };
   }
 
-  private datePageQuery(query: DatePageQuery): string {
+  private datePageQuery(query: T.DatePageQuery): string {
     return this.query([
       ['page', query.page],
       ['pageSize', query.pageSize],

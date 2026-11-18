@@ -1,40 +1,96 @@
+/*
+ * 学员详情页视觉依据：docs/verification/2026-11-16-teacher-psd-visual-alignment.md 的 P4 段，
+ * 画板映射见 docs/ui/teacher-ui-source.md §8。本地像素 -> rpx 按 750/1125 换算。
+ * 卡片圆角 43px≈29rpx（取 32rpx 对齐其它教师卡）、反馈卡 #fd8216、评分卡 #fd8d2a、
+ * 星级金色 #ffeb78、空星描边 #fdc257、点评条底 #fef3e9。
+ */
 .student-detail {
   padding-top: 28rpx;
   padding-bottom: 80rpx;
 }
 
+/* 学员横幅：整卡照片 + 左下姓名（PSD 卡高 396px≈264rpx，姓名墨高 123px≈82rpx） */
 .student-hero {
-  display: flex;
-  min-height: 220rpx;
-  flex-direction: column;
-  justify-content: center;
-  padding: 30rpx 34rpx;
-  box-sizing: border-box;
-  border-radius: 16rpx;
+  position: relative;
+  overflow: hidden;
+  height: 264rpx;
+  border-radius: 32rpx;
   background: var(--teacher-orange);
   box-shadow: var(--teacher-shadow);
-  color: #ffffff;
 }
 
-.student-hero__eyebrow {
-  font-size: 22rpx;
-  opacity: 0.78;
+.student-hero__photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.student-hero__photo--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.student-hero__scrim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 62%;
+  background: linear-gradient(180deg, rgba(28, 25, 29, 0) 0%, rgba(28, 25, 29, 0.52) 100%);
+  pointer-events: none;
+}
+
+.student-hero__identity {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0 32rpx 24rpx;
+  box-sizing: border-box;
+}
+
+.student-hero__name-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10rpx;
 }
 
 .student-hero__name {
-  margin-top: 8rpx;
-  overflow-wrap: anywhere;
+  max-width: 100%;
+  overflow: hidden;
   font-family: var(--teacher-font-display);
-  font-size: 54rpx;
-  font-weight: 700;
-  line-height: 1.12;
+  font-size: 88rpx;
+  font-weight: 400;
+  line-height: 1.08;
+  color: #ffffff;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 2rpx 10rpx rgba(28, 25, 29, 0.42);
+}
+
+.student-hero__age {
+  flex: none;
+  font-family: var(--teacher-font-display);
+  font-size: 60rpx;
+  font-weight: 400;
+  line-height: 1.08;
+  color: #ffffff;
+  text-shadow: 0 2rpx 10rpx rgba(28, 25, 29, 0.42);
 }
 
 .student-hero__class {
-  margin-top: 13rpx;
-  overflow-wrap: anywhere;
+  display: block;
+  margin-top: 8rpx;
+  overflow: hidden;
   font-size: 24rpx;
-  line-height: 1.45;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 2rpx 8rpx rgba(28, 25, 29, 0.42);
 }
 
 .section-head {
@@ -48,7 +104,7 @@
 .section-head__title {
   font-family: var(--teacher-font-display);
   font-size: 36rpx;
-  font-weight: 700;
+  font-weight: 400;
   color: var(--teacher-ink);
 }
 
@@ -58,13 +114,47 @@
   color: var(--teacher-muted);
 }
 
+.archive-facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24rpx 18rpx;
+  padding: 26rpx;
+  box-sizing: border-box;
+  border-radius: 32rpx;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--teacher-shadow);
+}
+
+.archive-facts__label,
+.archive-facts__value {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.archive-facts__label {
+  font-size: 23rpx;
+  color: var(--teacher-muted);
+}
+
+.archive-facts__value {
+  margin-top: 8rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--teacher-ink);
+}
+
+.archive-warning {
+  flex: none;
+  font-size: 23rpx;
+  color: var(--teacher-danger);
+}
+
 .next-lesson,
-.feedback-card,
 .attendance-summary,
 .detail-list,
 .empty-line {
-  border-radius: 16rpx;
-  background: rgba(255, 255, 255, 0.86);
+  border-radius: 32rpx;
+  background: rgba(255, 255, 255, 0.92);
   box-shadow: var(--teacher-shadow);
 }
 
@@ -74,7 +164,7 @@
   justify-content: space-between;
   gap: 22rpx;
   min-height: 150rpx;
-  padding: 24rpx 26rpx;
+  padding: 26rpx;
   box-sizing: border-box;
 }
 
@@ -86,7 +176,8 @@
 .next-lesson__title,
 .next-lesson__class,
 .feedback-card__content,
-.feedback-card__meta {
+.feedback-card__meta,
+.feedback-card__meta-line {
   display: block;
   max-width: 100%;
   overflow-wrap: anywhere;
@@ -108,7 +199,7 @@
   flex: none;
   max-width: 48%;
   padding: 12rpx 16rpx;
-  border-radius: 12rpx;
+  border-radius: 16rpx;
   background: rgba(255, 215, 94, 0.32);
   font-size: 23rpx;
   font-weight: 700;
@@ -121,9 +212,10 @@
   display: flex;
   align-items: center;
   min-height: 82rpx;
-  padding: 0 24rpx;
+  padding: 18rpx 26rpx;
   box-sizing: border-box;
   font-size: 23rpx;
+  line-height: 1.5;
   color: var(--teacher-muted);
 }
 
@@ -138,7 +230,7 @@
   justify-content: space-between;
   gap: 18rpx;
   min-height: 105rpx;
-  padding: 18rpx 22rpx;
+  padding: 18rpx 26rpx;
   box-sizing: border-box;
   border-bottom: 2rpx solid var(--teacher-line);
 }
@@ -190,27 +282,198 @@
   color: var(--teacher-danger);
 }
 
+/* 逐课反馈：PSD 上橙卡（照片 + 三行元信息 + 五星 + 正文），下评分卡（四项 + 点评条） */
+.feedback-block {
+  margin-top: 18rpx;
+}
+
 .feedback-card {
-  padding: 24rpx 26rpx;
+  padding: 24rpx 26rpx 28rpx;
+  box-sizing: border-box;
+  border-radius: 32rpx;
+  background: #fd8216;
+  box-shadow: var(--teacher-shadow);
+  color: #ffffff;
+}
+
+.feedback-card__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 48rpx;
+}
+
+.feedback-card__media {
+  flex: none;
+  width: 197rpx;
+  height: 263rpx;
+  border-radius: 16rpx;
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.feedback-card__media--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21rpx;
+  line-height: 1.4;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.feedback-card__meta-col {
+  flex: 1;
+  min-width: 0;
+  padding-top: 10rpx;
+}
+
+.feedback-card__meta-line {
+  font-size: 34rpx;
+  line-height: 1.5;
+  color: #ffffff;
+}
+
+.feedback-card__meta-line + .feedback-card__meta-line {
+  margin-top: 2rpx;
+}
+
+.feedback-card__meta-col .rating-stars {
+  margin-top: 14rpx;
+  justify-content: flex-end;
 }
 
 .feedback-card__content {
-  font-size: 25rpx;
-  line-height: 1.65;
-  color: var(--teacher-ink);
+  margin-top: 30rpx;
+  font-size: 28rpx;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  color: #ffffff;
+}
+
+.feedback-card__extra {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+  margin-top: 20rpx;
+}
+
+.feedback-card__extra-image {
+  display: block;
+  width: 100%;
+  height: 132rpx;
+  border-radius: 12rpx;
+  background: rgba(255, 255, 255, 0.24);
 }
 
 .feedback-card__meta {
-  margin-top: 14rpx;
-  font-size: 21rpx;
-  color: var(--teacher-muted);
+  margin-top: 20rpx;
+  font-size: 22rpx;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.rating-card {
+  margin-top: 25rpx;
+  padding: 18rpx 33rpx 16rpx;
+  box-sizing: border-box;
+  border-radius: 32rpx;
+  background: #fd8d2a;
+  box-shadow: var(--teacher-shadow);
+  color: #ffffff;
+}
+
+.rating-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+  min-height: 61rpx;
+  margin-bottom: 8rpx;
+}
+
+.rating-card__label {
+  flex: none;
+  font-size: 44rpx;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #ffffff;
+}
+
+.rating-card__hint {
+  display: block;
+  margin: 8rpx 0 12rpx;
+  font-size: 24rpx;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.rating-card__action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 94rpx;
+  margin: 16rpx 0 0;
+  padding: 0 27rpx;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 31rpx;
+  background: #fef3e9;
+  line-height: 1;
+}
+
+.rating-card__action::after {
+  border: 0;
+}
+
+.rating-card__action-label {
+  font-size: 28rpx;
+  color: #c9a887;
+}
+
+.rating-card__action-arrow {
+  font-size: 34rpx;
+  color: #d9bfa4;
+}
+
+/* 五星：PSD 单星 96px×91px≈64rpx×61rpx，槽距 108px≈72rpx */
+.rating-stars {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.rating-stars__slot {
+  position: relative;
+  width: 64rpx;
+  height: 61rpx;
+  font-size: 56rpx;
+  line-height: 61rpx;
+}
+
+.rating-stars__base,
+.rating-stars__fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 64rpx;
+  height: 61rpx;
+}
+
+.rating-stars__base {
+  filter: grayscale(1);
+  opacity: 0.25;
+}
+
+.rating-stars__slot--half .rating-stars__fill {
+  clip-path: inset(0 50% 0 0);
 }
 
 .empty-line {
   display: flex;
   align-items: center;
   min-height: 96rpx;
-  padding: 0 22rpx;
+  padding: 0 26rpx;
   box-sizing: border-box;
   font-size: 22rpx;
   color: var(--teacher-muted);
@@ -224,19 +487,21 @@
   justify-content: center;
   padding: 34rpx;
   box-sizing: border-box;
-  border-radius: 16rpx;
-  background: rgba(255, 255, 255, 0.76);
+  border-radius: 32rpx;
+  background: rgba(255, 255, 255, 0.88);
 }
 
 .page-state__title {
   font-family: var(--teacher-font-display);
   font-size: 40rpx;
-  font-weight: 700;
+  font-weight: 400;
+  color: var(--teacher-ink);
 }
 
 .page-state__message {
   margin-top: 14rpx;
   font-size: 24rpx;
+  line-height: 1.5;
   color: var(--teacher-muted);
 }
 
@@ -248,7 +513,7 @@
   margin: 24rpx 0 0;
   padding: 0 32rpx;
   border: 0;
-  border-radius: 16rpx;
+  border-radius: 20rpx;
   background: var(--teacher-orange);
   font-size: 25rpx;
   color: #ffffff;
@@ -256,6 +521,10 @@
 
 .page-state__retry::after {
   border: 0;
+}
+
+.page-state__retry[disabled] {
+  opacity: 0.6;
 }
 
 .control--hover {
@@ -272,4 +541,10 @@
     max-width: 100%;
     text-align: left;
   }
+
+  .feedback-card__top {
+    gap: 32rpx;
+  }
 }
+
+.student-hero__name--compact { font-size:52rpx; white-space:normal; overflow-wrap:anywhere; }

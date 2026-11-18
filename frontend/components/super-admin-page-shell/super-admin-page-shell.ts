@@ -1,6 +1,7 @@
 import { navigateSuperAdminBack } from '../../utils/super-admin-navigation';
 
 Component({
+  externalClasses: ['header'],
   properties: {
     markTitle: { type: String, value: '' },
     markIcon: { type: String, value: '' },

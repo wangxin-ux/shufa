@@ -26,11 +26,179 @@ tags:
     description: Read-only branch operating data scoped to one assigned partner campus
   - name: CampusManager
     description: Branch-campus administrator operations scoped to one assigned campus
+  - name: Operator
+    description: Independent single-campus operations and separately scoped headquarters read-only aggregates
   - name: Management
     description: Super-admin-only earning rule, review, and manual payout endpoints
 security:
   - bearerAuth: []
 paths:
+  /operators/me/headquarters/campuses:
+    $ref: './operator-headquarters.openapi.yaml#/paths/~1operators~1me~1headquarters~1campuses'
+  /operators/me/headquarters/campuses/{campusId}/summary:
+    $ref: './operator-headquarters.openapi.yaml#/paths/~1operators~1me~1headquarters~1campuses~1{campusId}~1summary'
+  /operators/me/headquarters/summary:
+    $ref: './operator-headquarters.openapi.yaml#/paths/~1operators~1me~1headquarters~1summary'
+  /management/operator-headquarters:
+    $ref: './operator-headquarters-management.openapi.yaml#/paths/~1management~1operator-headquarters'
+  /management/operator-headquarters/{userId}/campuses:
+    $ref: './operator-headquarters-management.openapi.yaml#/paths/~1management~1operator-headquarters~1{userId}~1campuses'
+  /management/operator-headquarters/{userId}/campuses/{campusId}:
+    $ref: './operator-headquarters-management.openapi.yaml#/paths/~1management~1operator-headquarters~1{userId}~1campuses~1{campusId}'
+  /operators/me/dashboard:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1dashboard'
+  /operators/me/profile:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1profile'
+  /operators/me/rankings:
+    $ref: './operator-rankings.openapi.yaml#/rankings'
+  /operators/me/lesson-account:
+    $ref: './operator-account.openapi.yaml#/account'
+  /operators/me/subjects:
+    $ref: './operator-account.openapi.yaml#/subjects'
+  /operators/me/earnings/summary:
+    $ref: './operator-earnings.openapi.yaml#/summary'
+  /operators/me/earnings:
+    $ref: './operator-earnings.openapi.yaml#/entries'
+  /operators/me/teacher-archives:
+    $ref: './operator-teacher-archive.openapi.yaml#/list'
+  /operators/me/teacher-archives/{teacherId}/performance:
+    $ref: './operator-teacher-archive.openapi.yaml#/performance'
+  /operators/me/teacher-archives/{teacherId}/evaluation-history:
+    $ref: './operator-teacher-archive.openapi.yaml#/history'
+  /operators/me/students:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1students'
+  /operators/me/students/{studentId}:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1students~1{studentId}'
+  /operators/me/students/{studentId}/archive:
+    $ref: './operator-student-archive.openapi.yaml#/archive'
+  /operators/me/students/{studentId}/archive/growth:
+    $ref: './operator-student-archive.openapi.yaml#/growth'
+  /operators/me/students/{studentId}/archive/media/{storedFileId}:
+    $ref: './operator-student-archive.openapi.yaml#/media'
+  /operators/me/scheduling-options:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1scheduling-options'
+  /operators/me/lesson-sessions:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1lesson-sessions'
+  /operators/me/lesson-series/preview:
+    $ref: './operator-lesson-series.openapi.yaml#/preview'
+  /operators/me/lesson-series:
+    $ref: './operator-lesson-series.openapi.yaml#/create'
+  /operators/me/lesson-sessions/{lessonSessionId}/cancellation-preview:
+    $ref: './operator-lesson-series.openapi.yaml#/cancellationPreview'
+  /operators/me/lesson-sessions/{lessonSessionId}/cancel-selection:
+    $ref: './operator-lesson-series.openapi.yaml#/cancel'
+  /operators/me/lesson-sessions/{lessonSessionId}:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1lesson-sessions~1{lessonSessionId}'
+  /operators/me/lesson-sessions/{lessonSessionId}/cancel:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1lesson-sessions~1{lessonSessionId}~1cancel'
+  /operators/me/lesson-sessions/{lessonSessionId}/members:
+    $ref: './operator-lesson-members.openapi.yaml#/members'
+  /operators/me/lesson-sessions/{lessonSessionId}/members/{studentId}/remove:
+    $ref: './operator-lesson-members.openapi.yaml#/remove'
+  /operators/me/leave-requests:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1leave-requests'
+  /operators/me/leave-requests/{leaveRequestId}/approve:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1leave-requests~1{leaveRequestId}~1approve'
+  /operators/me/leave-requests/{leaveRequestId}/reject:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1leave-requests~1{leaveRequestId}~1reject'
+  /operators/me/warnings:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1warnings'
+  /operators/me/campus:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1campus'
+  /operators/me/rosters/{kind}/template:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1rosters~1{kind}~1template'
+  /operators/me/rosters/{kind}/preview:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1rosters~1{kind}~1preview'
+  /operators/me/rosters/{kind}/import:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1rosters~1{kind}~1import'
+  /operators/me/rosters/{kind}/entries:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1rosters~1{kind}~1entries'
+  /operators/me/rosters/{kind}/export:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1rosters~1{kind}~1export'
+  /operators/me/rosters/teachers:
+    $ref: './operator.openapi.yaml#/paths/~1operators~1me~1rosters~1teachers'
+  /campus-managers/me/students/{studentId}/archive:
+    $ref: './campus-manager-student-archive.openapi.yaml#/archive'
+  /campus-managers/me/students/{studentId}/archive/growth:
+    $ref: './campus-manager-student-archive.openapi.yaml#/growth'
+  /campus-managers/me/students/{studentId}/archive/media/{storedFileId}:
+    $ref: './campus-manager-student-archive.openapi.yaml#/media'
+  /partners/me/campaign-drafts/{draftId}/images:
+    $ref: './partner-campaign-images.openapi.yaml#/detail'
+  /partners/me/campaign-drafts/{draftId}/images/{slot}:
+    $ref: './partner-campaign-images.openapi.yaml#/slot'
+  /media/partner-campaign-images/{storedFileId}:
+    $ref: './partner-campaign-images.openapi.yaml#/media'
+  /partners/me/withdrawal-summary:
+    $ref: './partner-withdrawals.openapi.yaml#/summary'
+  /partners/me/withdrawals:
+    $ref: './partner-withdrawals.openapi.yaml#/withdrawals'
+  /partners/me/withdrawals/{id}:
+    $ref: './partner-withdrawals.openapi.yaml#/detail'
+  /partners/me/withdrawals/{id}/cancel:
+    $ref: './partner-withdrawals.openapi.yaml#/cancel'
+  /partners/me/withdrawals/{id}/proof:
+    $ref: './partner-withdrawals.openapi.yaml#/proof'
+  /management/campuses/{campusId}/partner-settlement:
+    $ref: './partner-withdrawals.openapi.yaml#/settlement'
+  /management/campuses/{campusId}/partner-settlement/sources:
+    $ref: './partner-withdrawals.openapi.yaml#/sources'
+  /management/campuses/{campusId}/partner-settlement/sources/{earningId}:
+    $ref: './partner-withdrawals.openapi.yaml#/source'
+  /management/partner-withdrawals:
+    $ref: './partner-withdrawals.openapi.yaml#/managed'
+  /management/partner-withdrawals/{id}:
+    $ref: './partner-withdrawals.openapi.yaml#/managedDetail'
+  /management/partner-withdrawals/{id}/{action}:
+    $ref: './partner-withdrawals.openapi.yaml#/action'
+  /partners/me/rankings:
+    $ref: './partner-rankings.openapi.yaml#/rankings'
+  /partners/me/teachers/{teacherId}/performance:
+    $ref: './partner-teacher-performance.openapi.yaml#/performance'
+  /partners/me/teachers/{teacherId}/evaluation:
+    $ref: './partner-teacher-performance.openapi.yaml#/evaluation'
+  /partners/me/teachers/{teacherId}/evaluation-history:
+    $ref: './partner-teacher-performance.openapi.yaml#/history'
+  /partner-applicants/auth/wechat:
+    $ref: './partner-applicants.openapi.yaml#/login'
+  /partner-applicants/me:
+    $ref: './partner-applicants.openapi.yaml#/me'
+  /partner-applicants/auth/logout:
+    $ref: './partner-applicants.openapi.yaml#/logout'
+  /partner-applicants/me/application:
+    $ref: './partner-application.openapi.yaml#/application'
+  /partner-applicants/me/application/basic-information:
+    $ref: './partner-application.openapi.yaml#/basicInformation'
+  /partner-applicants/me/application/submit:
+    $ref: './partner-application.openapi.yaml#/submit'
+  /partner-applicants/me/application/bank-information:
+    $ref: './partner-application.openapi.yaml#/bankInformation'
+  /partner-applicants/me/application/materials:
+    $ref: './partner-application.openapi.yaml#/materials'
+  /partner-applicants/me/application/material-uploads:
+    $ref: './partner-application.openapi.yaml#/materialUploads'
+  /partner-applicants/me/application/material-uploads/{uploadId}:
+    $ref: './partner-application.openapi.yaml#/materialUploadFile'
+  /partner-applicants/me/application/materials/{storedFileId}/content:
+    $ref: './partner-application.openapi.yaml#/materialContent'
+  /partners/me/application:
+    $ref: './partner-application.openapi.yaml#/formalArchive'
+  /partner-applicants/me/application/history:
+    $ref: './partner-application-review.openapi.yaml#/history'
+  /partner-applicants/me/application/reopen:
+    $ref: './partner-application-review.openapi.yaml#/reopen'
+  /management/partner-applications:
+    $ref: './partner-application-review.openapi.yaml#/list'
+  /management/partner-applications/{applicationId}/submissions/{submissionId}:
+    $ref: './partner-application-review.openapi.yaml#/detail'
+  /management/partner-applications/{applicationId}/submissions/{submissionId}/bank-information:
+    $ref: './partner-application-review.openapi.yaml#/bank'
+  /management/partner-applications/{applicationId}/submissions/{submissionId}/materials/{storedFileId}/content:
+    $ref: './partner-application-review.openapi.yaml#/image'
+  /management/partner-applications/{applicationId}/submissions/{submissionId}/reject:
+    $ref: './partner-application-review.openapi.yaml#/reject'
+  /management/partner-applications/{applicationId}/submissions/{submissionId}/approve:
+    $ref: './partner-application-review.openapi.yaml#/approve'
   /finance/receipts/{receiptId}/corrections:
     $ref: './finance-corrections.openapi.yaml#/submit'
   /finance/corrections:
@@ -293,6 +461,8 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /teachers/me/rankings:
+    $ref: './teacher-rankings.openapi.yaml#/rankings'
   /teachers/me/dashboard:
     get:
       operationId: getTeacherDashboard
@@ -423,6 +593,7 @@ paths:
     post:
       operationId: completeTeacherLessonSession
       summary: Complete an assigned lesson and consume student lesson units
+      description: Consume available GIFT units across all eligible packages before MAIN units. Within each bucket order by earliest expiry (no expiry last), validFrom, then package ID. Refund reservations are excluded. Completion is transactional and idempotent; historical consumption is unchanged and reversal restores the original ledger buckets.
       tags:
         - Teacher
       parameters:
@@ -457,6 +628,7 @@ paths:
     post:
       operationId: reverseTeacherLessonSession
       summary: Reverse a completed lesson within the teacher reversal window
+      description: A new reversal is rejected with EARNING_ALREADY_REVIEWED if its teacher earning is already AVAILABLE. Reversal and earning review serialize on the source lesson; completed idempotent results replay before new eligibility checks.
       tags:
         - Teacher
       parameters:
@@ -596,14 +768,27 @@ paths:
   /teachers/me/students/{studentId}:
     get:
       operationId: getTeacherStudent
-      summary: Read teaching-only detail for one student assigned to the authenticated teacher
+      summary: Read the limited archive and own feedback history for one assigned student
       tags:
         - Teacher
       parameters:
         - $ref: '#/components/parameters/StudentId'
+        - name: feedbackPage
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: feedbackPageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
       responses:
         '200':
-          description: Student classes, next lesson, attendance and latest feedback within the teacher scope.
+          description: Same-snapshot assigned student archive, completed and unreversed attendance, and paginated own feedback ordered by lesson startsAt descending then feedback id descending. Age uses registered age or campus calendar; full birthday, contacts, payment proofs and other teachers' private feedback are omitted. Current balances exclude invalid packages and refund reservations; unknown original facts remain null. Reversed feedback is retained read-only.
           content:
             application/json:
               schema:
@@ -781,7 +966,7 @@ paths:
               $ref: '#/components/schemas/CreateTeacherWithdrawalRequest'
       responses:
         '200':
-          description: Created or idempotently replayed withdrawal request.
+          description: Created or idempotently replayed withdrawal request. Completed idempotency records are retained for original-key recovery across sessions; expiresAt does not invalidate a completed response. Replays retain the original amount and authenticated teacher/campus identity.
           content:
             application/json:
               schema:
@@ -815,7 +1000,7 @@ paths:
               $ref: '#/components/schemas/VersionedActionRequest'
       responses:
         '200':
-          description: Cancelled or idempotently replayed withdrawal request.
+          description: Cancelled or idempotently replayed withdrawal request. Completed idempotency records are retained for original-key recovery across sessions; expiresAt does not invalidate a completed response. Replays retain the original withdrawal ID, expectedVersion and authenticated teacher/campus identity.
           content:
             application/json:
               schema:
@@ -881,7 +1066,16 @@ paths:
   /management/staff-accounts:
     get:
       operationId: listStaffAccounts
-      summary: List pre-created staff accounts
+      summary: List manageable staff accounts including approved phone-less partners
+      description: >-
+        STAFF_ACCOUNT_MANAGE and a current ACTIVE exclusive null-campus
+        SUPER_ADMIN are required. Counts and paginates only valid single-role
+        staff scopes, including an exact null-campus OPERATOR headquarters account.
+        Recheck the current administrator before returning the repeatable-read page.
+        A phone-less partner requires an immutable approved
+        submission associated with the same User and role campus. Search matches
+        name, personal staff phone or frozen approved institution name.
+        Invalid role/provenance rows are excluded before pagination.
       tags: [Management]
       parameters:
         - $ref: '#/components/parameters/Page'
@@ -935,6 +1129,15 @@ paths:
     patch:
       operationId: updateStaffAccountStatus
       summary: Enable or disable one staff account
+      description: >-
+        Includes approved partners without a personal phone, subject to matching
+        immutable approval provenance and single-campus role. Lock target User,
+        verify expectedVersion, and commit status, accountVersion, audit and
+        idempotency atomically. Disabled accounts lose formal and restricted
+        applicant access immediately. Includes exact null-campus OPERATOR
+        headquarters targets without deleting their campus read grants.
+        Require an exclusive null-campus SUPER_ADMIN and recheck its current
+        ACTIVE identity under the ordered User locks before idempotency replay or writes.
       tags: [Management]
       parameters:
         - name: staffAccountId
@@ -963,6 +1166,14 @@ paths:
     post:
       operationId: unbindStaffAccountWechat
       summary: Remove the WeChat identity bound to one staff account
+      description: >-
+        Approved partners without a personal staff phone cannot remove their sole
+        WeChat login before a recovery path is authorized. Return 409
+        WECHAT_IDENTITY_CONFLICT without identity/version/audit changes.
+        Includes exact null-campus OPERATOR headquarters targets, retaining
+        non-WeChat identities and campus read grants. Require an exclusive
+        null-campus SUPER_ADMIN and recheck its current ACTIVE identity under
+        the ordered User locks before idempotency replay or writes.
       tags: [Management]
       parameters:
         - name: staffAccountId
@@ -1568,6 +1779,7 @@ paths:
     post:
       operationId: approveTeacherEarning
       summary: Approve a reviewable teacher earning entry
+      description: New reviews require a consistent completed teaching source and wait until both the saved reviewableAt and the 24-hour teacher reversal floor. Historical amounts, source snapshots and saved timestamps are retained; completed idempotent results replay before new eligibility checks.
       tags:
         - Management
       parameters:
@@ -1602,6 +1814,7 @@ paths:
     post:
       operationId: rejectTeacherEarning
       summary: Reject a reviewable teacher earning entry
+      description: New reviews require a consistent completed teaching source and wait until both the saved reviewableAt and the 24-hour teacher reversal floor. Historical amounts, source snapshots and saved timestamps are retained; completed idempotent results replay before new eligibility checks.
       tags:
         - Management
       parameters:
@@ -1872,6 +2085,12 @@ paths:
     get:
       operationId: getPartnerEarningSummary
       summary: Read internal earning totals for the authenticated partner campus
+      description: >-
+        Totals use one database snapshot. Rejected entries remain in the journal
+        but do not contribute to estimatedTotalFen. Original accruals and their
+        negative reversals offset each other. Periods retain the existing campus
+        timezone and original lesson completion date; these are internal earning
+        totals, not cash or withdrawable balances.
       tags: [Partner]
       parameters:
         - $ref: '#/components/parameters/PartnerReportPeriod'
@@ -2195,6 +2414,15 @@ paths:
         - Parent
       parameters:
         - $ref: '#/components/parameters/ParentStudentId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: courseName
+          in: query
+          schema: { type: string, maxLength: 200 }
+          description: Exact historical class course name. 未分类 selects entries without a lesson session.
+        - name: direction
+          in: query
+          schema: { type: string, enum: [all, debit, credit], default: all }
       responses:
         '200':
           description: Parent lesson balance and ledger data.
@@ -2266,6 +2494,52 @@ paths:
           $ref: '#/components/responses/Conflict'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /parents/me/profile-setup:
+    get:
+      operationId: getParentProfileSetup
+      summary: Read first-time profile completion for the primary already-bound student
+      tags: [Parent]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Required is false and student is null when no active student is bound; never creates a binding.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ParentProfileSetupEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /parents/me/students/{studentId}/profile-setup:
+    put:
+      operationId: completeParentProfileSetup
+      summary: Complete the existing bound student's name, birth date and photo exactly once
+      description: Requires PARENT_PROFILE_WRITE. Scoped to the authenticated campus and active parent binding. Uses version checking, a row lock, idempotency and audit in one transaction. Does not create students or bindings. Age is calculated on the Asia/Shanghai calendar after completion; old manual age is cleared. A leap-day birthday increments on March 1 in non-leap years.
+      tags: [Parent]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ParentProfileSetupRequest' }
+      responses:
+        '200':
+          description: Completed, or an identical idempotent replay.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ParentProfileSetupEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409':
+          description: STUDENT_PROFILE_VERSION_CONFLICT or PARENT_PROFILE_ALREADY_COMPLETED; the completed name cannot be overwritten.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
   /parents/me/profile:
     get:
       operationId: getParentProfile
@@ -2340,10 +2614,133 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /parents/me/students/{studentId}/photo-files:
+    post:
+      operationId: uploadParentStudentPhoto
+      summary: Stage a bound student JPEG or PNG photo
+      description: PARENT_PROFILE_WRITE. Maximum 3 MiB. Staged files are restricted to this student and uploader and have no public URL.
+      tags: [Parent]
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '200':
+          description: Staged file metadata.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StudentPhotoUploadEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '413': { description: Photo exceeds 3 MiB. }
+  /parents/me/students/{studentId}/photo:
+    put:
+      operationId: replaceParentStudentPhoto
+      summary: Attach or replace a bound student photo
+      description: PARENT_PROFILE_WRITE. Versioned and idempotent. Existing photo files are retained; previous photo URLs cease to resolve after replacement.
+      tags: [Parent]
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fileId, expectedVersion]
+              properties:
+                fileId: { type: string, format: uuid }
+                expectedVersion: { type: integer, minimum: 1 }
+              additionalProperties: false
+      responses:
+        '200':
+          description: Current student identity and photo.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ParentGrowthStudentEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /parents/me/lesson-sessions/{lessonSessionId}/students/{studentId}/review:
+    post:
+      operationId: submitParentLessonReview
+      summary: Submit the single immutable parent review for a student lesson
+      description: PARENT_REVIEW_WRITE. Requires a bound active student, same campus, completed lesson and PRESENT attendance. Unique per student and lesson across guardians; serializes against teacher reversal. Reversed lesson reviews remain readable with valid=false. No edit or delete endpoint.
+      tags: [Parent]
+      parameters:
+        - name: lessonSessionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: studentId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ParentLessonReviewRequest' }
+      responses:
+        '200':
+          description: Immutable review.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ParentLessonReviewEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/ResourceNotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /media/student-photos/{storedFileId}:
+    get:
+      operationId: readStudentPhoto
+      summary: Read a currently attached student photo with a short-lived capability
+      description: Signed URLs are issued only to authorized bound parents, assigned teachers, or partners with PARTNER_STUDENT_READ for active students in their authenticated campus. A staged or replaced file is never served. URLs expire after 15 minutes.
+      security: []
+      tags: [Media]
+      parameters:
+        - name: storedFileId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: expires
+          in: query
+          required: true
+          schema: { type: integer }
+        - name: signature
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Private photo bytes.
+          content:
+            image/jpeg: { schema: { type: string, format: binary } }
+            image/png: { schema: { type: string, format: binary } }
+        '404': { $ref: '#/components/responses/ResourceNotFound' }
   /partners/me/dashboard:
     get:
       operationId: getPartnerDashboard
       summary: Read the assigned campus operating dashboard
+      description: Attendance rate includes only same-campus records whose lesson session and teaching record are both COMPLETED; drafts, cancellations and reversals are excluded. An empty denominator returns null.
       tags: [Partner]
       responses:
         '200':
@@ -2380,6 +2777,18 @@ paths:
           in: query
           required: false
           schema: { type: string, maxLength: 100 }
+        - name: balanceBand
+          in: query
+          required: false
+          description: AND-combined with name search. Uses available MAIN plus GIFT units after refund reservations from active, currently valid packages; no valid packages means zero. One lesson is 100 units. This fixed five-lesson filter is independent of the campus warning threshold.
+          schema: { type: string, enum: [ALL, ZERO, LTE_FIVE, GT_FIVE], default: ALL }
+        - name: subjectId
+          in: query
+          required: false
+          description: AND-combined with name and balanceBand. Matches an explicitly linked subject on at least one active, currently valid package in the caller campus, including zero-balance packages and archived subject links. UNCLASSIFIED matches a currently valid package with no subject or a student with no currently valid packages. Omit for all subjects. Each student appears once. Balance bands and returned balances/enrollment summaries remain totals across all subjects, never subject-specific amounts.
+          schema:
+            type: string
+            pattern: '^(?:UNCLASSIFIED|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$'
       responses:
         '200':
           description: Partner campus student page.
@@ -2394,6 +2803,7 @@ paths:
     get:
       operationId: getPartnerStudent
       summary: Read one active student in the assigned campus
+      description: Personal attendance and recentAttendance include only same-campus records whose lesson session and teaching record are both COMPLETED. Drafts, cancellations and reversals are excluded; no effective records means a null attendance rate. Attendance and student detail are read in one database snapshot.
       tags: [Partner]
       parameters:
         - name: studentId
@@ -2410,10 +2820,35 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/ResourceNotFound' }
         '500': { $ref: '#/components/responses/InternalServerError' }
+  /partners/me/students/{studentId}/growth:
+    get:
+      operationId: getPartnerStudentGrowth
+      summary: Read paginated growth for an active student in the assigned campus
+      description: Requires PARTNER_STUDENT_READ. Only matching-campus COMPLETED or REVERSED lessons with matching teaching records and student attendance or feedback are included. Reversed reviews remain visible but invalid. Identity, count and rows share a RepeatableRead snapshot. No review or photo write is allowed. Private media URLs expire after 15 minutes.
+      tags: [Partner]
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Read-only student identity and growth page, including empty pages.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PartnerStudentGrowthEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/ResourceNotFound' }
+        '500': { $ref: '#/components/responses/InternalServerError' }
   /partners/me/operations-summary:
     get:
       operationId: getPartnerOperationsSummary
       summary: Read period operating statistics for the assigned campus
+      description: Attendance includes only same-campus records whose lesson session and teaching record are both COMPLETED, filtered by recordedAt in the half-open reporting interval. Drafts, cancellations and reversals are excluded.
       tags: [Partner]
       parameters:
         - $ref: '#/components/parameters/PartnerReportPeriod'
@@ -2454,6 +2889,7 @@ paths:
     get:
       operationId: getPartnerAttendance
       summary: Read attendance summary and recent records for the assigned campus
+      description: Summary, total and paginated rows use one database snapshot and the same same-campus attendance predicate. Only records whose lesson session and teaching record are both COMPLETED are counted; drafts, cancellations and reversals are excluded. Empty counts return a null attendance rate.
       tags: [Partner]
       parameters:
         - $ref: '#/components/parameters/Page'
@@ -2490,14 +2926,34 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '500': { $ref: '#/components/responses/InternalServerError' }
+  /partners/me/subjects:
+    $ref: './campus-subjects.openapi.yaml#/partner'
+  /management/campuses/{campusId}/subjects:
+    $ref: './campus-subjects.openapi.yaml#/management'
+  /management/campuses/{campusId}/subjects/{subjectId}:
+    $ref: './campus-subjects.openapi.yaml#/subject'
+  /management/campuses/{campusId}/subjects/links:
+    $ref: './campus-subjects.openapi.yaml#/links'
+  /management/campuses/{campusId}/subjects/links/{kind}/{id}:
+    $ref: './campus-subjects.openapi.yaml#/binding'
   /partners/me/lesson-account:
     get:
       operationId: getPartnerLessonAccount
       summary: Read campus lesson balances and immutable ledger entries
+      description: entryType and subjectId filter ledger items and pagination totals only, combined with AND before pagination. Campus balances remain unfiltered. subjectId accepts a campus subject UUID or UNCLASSIFIED for null historical attribution; omit it for all subjects. Unknown or another campus subject returns 404. Attribution is frozen from the actual package at ledger insertion; reversal entries copy the original including null, and legacy entries are never backfilled from names or current associations.
       tags: [Partner]
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
+        - name: entryType
+          in: query
+          required: false
+          schema: { $ref: '#/components/schemas/LessonLedgerEntryType' }
+        - name: subjectId
+          in: query
+          schema:
+            type: string
+            pattern: '^(UNCLASSIFIED|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$'
       responses:
         '200':
           description: Partner campus lesson account.
@@ -2507,6 +2963,7 @@ paths:
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/ResourceNotFound' }
         '500': { $ref: '#/components/responses/InternalServerError' }
   /campus-managers/me/dashboard:
     get:
@@ -2728,6 +3185,13 @@ paths:
     get:
       operationId: listCampusManagerLeaveRequests
       summary: List current-campus leave requests
+      description: >-
+        Lists only the authenticated manager's campus. With reviewedOnly=true,
+        includes APPROVED and REJECTED requests ordered by reviewedAt descending
+        (nulls last), then id descending. Otherwise preserves createdAt descending,
+        then id descending. Total and rows use one consistent database snapshot.
+        reviewedOnly and status cannot be supplied together, even when
+        reviewedOnly=false; invalid combinations or boolean values return HTTP 400.
       tags: [CampusManager]
       parameters:
         - $ref: '#/components/parameters/Page'
@@ -2735,8 +3199,19 @@ paths:
         - name: status
           in: query
           required: false
+          description: Single-status filter, mutually exclusive with reviewedOnly.
           schema:
             $ref: '#/components/schemas/ParentLeaveStatus'
+        - name: reviewedOnly
+          in: query
+          required: false
+          description: >-
+            True selects all reviewed requests as one globally ordered page.
+            Accepts only true or false and cannot be combined with status.
+            Omit this parameter to use a single-status filter.
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: Campus leave request page.
@@ -2870,6 +3345,24 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '409': { $ref: '#/components/responses/Conflict' }
         '500': { $ref: '#/components/responses/InternalServerError' }
+  /parents/me/course-catalog:
+    get:
+      operationId: listParentCourseCatalog
+      tags: [Parents]
+      summary: Public campus course catalog grouped by course name
+      description: Active products from map-visible campuses with complete public addresses and coordinates only. Primary quote prefers learning/regular class, then campus name and product ID; never computes a minimum across different lesson bases.
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - in: query
+          name: courseName
+          schema: { type: string, maxLength: 200 }
+          description: Optional exact course-name filter.
+      responses:
+        '200': { description: Public catalog page, content: { application/json: { schema: { $ref: '#/components/schemas/ParentCourseCatalogPageEnvelope' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
   /parents/me/course-products:
     get:
       operationId: listParentCourseProducts
@@ -3171,22 +3664,78 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/ResourceNotFound' }
+  /partners/me/campaign-drafts:
+    $ref: './partner-campaign-drafts.openapi.yaml#/collection'
+  /partners/me/campaign-drafts/{draftId}:
+    $ref: './partner-campaign-drafts.openapi.yaml#/detail'
+  /partners/me/campaign-drafts/{draftId}/basic-information:
+    $ref: './partner-campaign-drafts.openapi.yaml#/basicInformation'
+  /partners/me/campaign-drafts/{draftId}/content:
+    $ref: './partner-campaign-drafts.openapi.yaml#/activityContent'
+  /partners/me/campaign-drafts/{draftId}/registration-form:
+    $ref: './partner-campaign-drafts.openapi.yaml#/registrationForm'
+  /partners/me/campaign-drafts/{draftId}/free-registration:
+    $ref: './free-campaigns.openapi.yaml#/configuration'
+  /partners/me/campaign-drafts/{draftId}/submit:
+    $ref: './free-campaigns.openapi.yaml#/submission'
+  /partners/me/campaign-drafts/{draftId}/versions:
+    $ref: './free-campaigns.openapi.yaml#/versions'
+  /partners/me/campaign-drafts/{draftId}/registrations:
+    $ref: './free-campaigns.openapi.yaml#/partnerRegistrations'
+  /management/campaign-reviews:
+    $ref: './free-campaigns.openapi.yaml#/reviews'
+  /management/campaign-reviews/{versionId}:
+    $ref: './free-campaigns.openapi.yaml#/reviewDetail'
+  /management/campaign-reviews/{versionId}/approve:
+    $ref: './free-campaigns.openapi.yaml#/approve'
+  /management/campaign-reviews/{versionId}/reject:
+    $ref: './free-campaigns.openapi.yaml#/reject'
+  /management/campaigns/{campaignId}/close:
+    $ref: './free-campaigns.openapi.yaml#/close'
+  /partners/me/free-campaigns:
+    $ref: './free-campaigns.openapi.yaml#/partnerCampaigns'
+  /parents/me/free-campaigns:
+    $ref: './free-campaigns.openapi.yaml#/parentCampaigns'
+  /parents/me/free-campaigns/{campaignId}:
+    $ref: './free-campaigns.openapi.yaml#/parentCampaign'
+  /parents/me/free-campaigns/{campaignId}/registrations:
+    $ref: './free-campaigns.openapi.yaml#/register'
+  /parents/me/campaign-registrations:
+    $ref: './free-campaigns.openapi.yaml#/parentRegistrations'
+  /parents/me/campaign-registrations/{registrationId}:
+    $ref: './free-campaigns.openapi.yaml#/parentRegistration'
+  /parents/me/campaign-registrations/{registrationId}/cancel:
+    $ref: './free-campaigns.openapi.yaml#/cancel'
   /partners/me/group-campaigns:
     get:
       operationId: listPartnerGroupCampaigns
-      summary: List active group campaigns for the authenticated partner's campus
+      summary: List ongoing or ended legacy campaigns in the authenticated partner campus
+      description: >
+        ONGOING is ACTIVE with startsAt <= server time < endsAt. ENDED is CLOSED
+        or ACTIVE with endsAt <= server time. DRAFT, CANCELLED and future ACTIVE
+        campaigns are excluded. Ended records are read-only history; this query
+        does not publish new campaign types or enable registration or promotion.
       tags: [Partner]
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
+        - name: phase
+          in: query
+          schema: { type: string, enum: [ONGOING, ENDED], default: ONGOING }
       responses:
-        '200': { description: Partner promotion campaign page, content: { application/json: { schema: { $ref: '#/components/schemas/GroupPromotionCampaignsPageEnvelope' } } } }
+        '200': { description: Partner campaign page, content: { application/json: { schema: { $ref: '#/components/schemas/PartnerPromotionCampaignsPageEnvelope' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
   /partners/me/group-campaigns/{campaignId}:
     get:
       operationId: getPartnerGroupCampaign
-      summary: Read one active group campaign for the authenticated partner's campus
+      summary: Read one ongoing or ended legacy campaign in the authenticated partner campus
+      description: >
+        DRAFT, CANCELLED and future ACTIVE records remain inaccessible. canPromote
+        is computed from current server status and time. An ended detail is
+        read-only history; share, invitation poster and registration availability
+        remain protected by their existing server checks.
       tags: [Partner]
       parameters:
         - name: campaignId
@@ -3194,7 +3743,7 @@ paths:
           required: true
           schema: { type: string, format: uuid }
       responses:
-        '200': { description: Partner promotion campaign detail, content: { application/json: { schema: { $ref: '#/components/schemas/GroupPromotionCampaignEnvelope' } } } }
+        '200': { description: Partner campaign detail, content: { application/json: { schema: { $ref: '#/components/schemas/PartnerPromotionCampaignEnvelope' } } } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/ResourceNotFound' }
@@ -3237,6 +3786,7 @@ paths:
     post:
       operationId: createParentGroupTeam
       summary: Create a group team and a pending payment member
+      description: Real WeChat payments require the parent's server-bound WeChat identity. Merchant order numbers fit the 32-character provider limit and payment expiry follows the existing member reservation.
       tags: [Parent]
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
@@ -3247,6 +3797,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '409': { $ref: '#/components/responses/Conflict' }
+        '503': { $ref: '#/components/responses/PaymentProviderUnavailable' }
   /parents/me/group-teams/{teamId}/members:
     post:
       operationId: joinParentGroupTeam
@@ -3266,6 +3817,7 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/ResourceNotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
+        '503': { $ref: '#/components/responses/PaymentProviderUnavailable' }
   /parents/me/group-members/{memberId}/prepay:
     post:
       operationId: retryParentGroupMemberPrepay
@@ -3284,6 +3836,7 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/ResourceNotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
+        '503': { $ref: '#/components/responses/PaymentProviderUnavailable' }
   /parents/me/group-members/{memberId}/mock-payment-confirmation:
     post:
       operationId: confirmParentGroupMemberMockPayment
@@ -3305,9 +3858,35 @@ paths:
   /payments/wechat/notifications:
     post:
       operationId: handleWechatPaymentNotification
-      summary: Verify and apply a WeChat Pay payment or refund notification
+      summary: Verify and apply a WeChat Pay successful payment notification
+      description: >
+        In wechat mode, verify the exact raw request body with the configured WeChat Pay
+        public key and matching ID (or the legacy platform certificate), enforce a
+        five-minute signature timestamp window, decrypt the AES-256-GCM resource,
+        and validate merchant, AppID, JSAPI type, CNY currency and order amount.
+        All four signature headers below are mandatory in wechat mode; mock mode
+        retains its synthetic JSON notification format. Real refund notifications
+        are not implemented. Missing credentials fail closed with
+        PAYMENT_PROVIDER_UNAVAILABLE; failed verification returns PAYMENT_NOTIFICATION_INVALID.
       tags: [Payment]
       security: []
+      parameters:
+        - name: Wechatpay-Serial
+          in: header
+          description: Required in wechat mode; must match the configured public key ID or platform certificate serial.
+          schema: { type: string }
+        - name: Wechatpay-Signature
+          in: header
+          description: Required in wechat mode; Base64 RSA-SHA256 signature over timestamp, nonce and the exact raw body.
+          schema: { type: string }
+        - name: Wechatpay-Timestamp
+          in: header
+          description: Required in wechat mode; Unix timestamp in seconds.
+          schema: { type: string, pattern: '^[0-9]{1,12}$' }
+        - name: Wechatpay-Nonce
+          in: header
+          description: Required in wechat mode; signature nonce.
+          schema: { type: string }
       requestBody:
         required: true
         content:
@@ -3316,6 +3895,8 @@ paths:
       responses:
         '200': { description: Notification accepted }
         '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '503': { $ref: '#/components/responses/PaymentProviderUnavailable' }
   /management/group-campaigns:
     get:
       operationId: listManagementGroupCampaigns
@@ -3763,6 +4344,11 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
 components:
   securitySchemes:
+    partnerApplicantAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Restricted partner_application kind and audience; never a formal role access token.
     bearerAuth:
       type: http
       scheme: bearer
@@ -3982,6 +4568,15 @@ components:
           schema: { $ref: '#/components/schemas/TeacherRosterPageEnvelope' }
     BadRequest:
       description: Request validation failed.
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    PaymentProviderUnavailable:
+      description: PAYMENT_PROVIDER_UNAVAILABLE. Merchant configuration, bound payer identity or a verified provider response is unavailable. No success is inferred from the client callback.
       headers:
         X-Request-Id:
           $ref: '#/components/headers/RequestId'
@@ -4282,6 +4877,39 @@ components:
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
       additionalProperties: false
+    PartnerPromotionCampaignView:
+      type: object
+      required: [id, code, campusId, campusName, courseProductId, courseName, title, description, priceFen, maxPaidMembers, startsAt, endsAt, status, canPromote, posterImages, customerService, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string }
+        campusId: { type: string, format: uuid }
+        campusName: { type: string }
+        courseProductId: { type: string, format: uuid }
+        courseName: { type: string }
+        title: { type: string }
+        description: { type: string }
+        priceFen: { type: integer, minimum: 1 }
+        maxPaidMembers: { type: integer, minimum: 3, maximum: 3 }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        status: { type: string, enum: [ACTIVE, CLOSED] }
+        canPromote: { type: boolean, description: 'True only for ACTIVE and startsAt <= server time < endsAt.' }
+        posterImages:
+          type: array
+          maxItems: 6
+          items: { $ref: '#/components/schemas/GroupCampaignPosterImage' }
+        customerService:
+          type: object
+          required: [name, phone, qrCodeUrl]
+          properties:
+            name: { type: string }
+            phone: { type: string }
+            qrCodeUrl: { oneOf: [{ type: string }, { type: 'null' }] }
+          additionalProperties: false
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      additionalProperties: false
     GroupCampaignPosterImage:
       type: object
       required: [id, storedFileId, sortOrder, mimeType, sizeBytes, accessUrl, accessUrlExpiresAt]
@@ -4436,6 +5064,19 @@ components:
             data:
               type: array
               items: { $ref: '#/components/schemas/GroupPromotionCampaignView' }
+    PartnerPromotionCampaignEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties: { data: { $ref: '#/components/schemas/PartnerPromotionCampaignView' } }
+    PartnerPromotionCampaignsPageEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/PaginatedSuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/PartnerPromotionCampaignView' }
     GroupOrderEnvelope:
       allOf:
         - $ref: '#/components/schemas/SuccessEnvelope'
@@ -4473,6 +5114,8 @@ components:
         campusId: { type: string, format: uuid }
         campusName: { type: string }
         name: { type: string }
+        courseName: { type: string, description: 'Catalog course name; legacy products fall back to name.' }
+        classType: { type: string, description: 'Class type; legacy products fall back to regular class.' }
         summary: { type: string }
         coverFileId: { oneOf: [{ type: string, format: uuid }, { type: 'null' }] }
         priceFen: { type: integer, minimum: 0 }
@@ -4485,18 +5128,65 @@ components:
         updatedAt: { type: string, format: date-time }
     CourseProductMutationRequest:
       type: object
-      required: [campusId, name, summary, priceFen, mainUnits, giftUnits, validityDays]
+      required: [campusId, name, courseName, classType, summary, priceFen, mainUnits, giftUnits, validityDays]
       properties:
         campusId: { type: string, format: uuid }
         name: { type: string, minLength: 1, maxLength: 200 }
+        courseName: { type: string, minLength: 1, maxLength: 200 }
+        classType: { type: string, minLength: 1, maxLength: 50 }
         summary: { type: string, minLength: 1, maxLength: 1000 }
-        coverFileId: { oneOf: [{ type: string, format: uuid }, { type: 'null' }] }
         priceFen: { type: integer, minimum: 0 }
         mainUnits: { type: integer, minimum: 0 }
         giftUnits: { type: integer, minimum: 0 }
         validityDays: { type: integer, minimum: 1, maximum: 3650 }
-      additionalProperties: false
+      description: Course metadata and quotes only; cover-file upload is not enabled.
+    ParentCourseCatalogQuote:
+      type: object
+      required: [productId, productName, classType, priceFen, mainUnits, giftUnits, validityDays, campus]
+      properties:
+        productId: { type: string, format: uuid }
+        productName: { type: string }
+        classType: { type: string }
+        priceFen: { type: integer, minimum: 0 }
+        mainUnits: { type: integer, minimum: 0 }
+        giftUnits: { type: integer, minimum: 0 }
+        validityDays: { type: integer, minimum: 1 }
+        campus:
+          type: object
+          required: [id, name, address, contactPhone, latitude, longitude]
+          properties:
+            id: { type: string, format: uuid }
+            name: { type: string }
+            address: { type: string }
+            contactPhone: { oneOf: [{ type: string }, { type: 'null' }] }
+            latitude: { type: number, minimum: -90, maximum: 90 }
+            longitude: { type: number, minimum: -180, maximum: 180 }
+    ParentCourseCatalogItem:
+      type: object
+      required: [courseName, primaryQuote, classTypes]
+      properties:
+        courseName: { type: string }
+        primaryQuote: { $ref: '#/components/schemas/ParentCourseCatalogQuote' }
+        classTypes:
+          type: array
+          items:
+            type: object
+            required: [name, quotes]
+            properties:
+              name: { type: string }
+              quotes:
+                type: array
+                items: { $ref: '#/components/schemas/ParentCourseCatalogQuote' }
+    ParentCourseCatalogPageEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/PaginatedSuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/ParentCourseCatalogItem' }
     VersionedCourseProductMutationRequest:
+      unevaluatedProperties: false
       allOf:
         - $ref: '#/components/schemas/CourseProductMutationRequest'
         - type: object
@@ -4686,6 +5376,7 @@ components:
         - FEEDBACK_NOT_ALLOWED
         - FEEDBACK_IMAGE_INVALID
         - FEEDBACK_IMAGE_CONFLICT
+        - FEEDBACK_VERSION_CONFLICT
         - GROUP_CAMPAIGN_POSTER_INVALID
         - CUSTOMER_SERVICE_QR_INVALID
         - IDEMPOTENCY_CONFLICT
@@ -4863,10 +5554,10 @@ components:
       additionalProperties: false
     ManageableStaffRole:
       type: string
-      enum: [TEACHER, CAMPUS_MANAGER, PARTNER, HR, FINANCE]
+      enum: [TEACHER, CAMPUS_MANAGER, PARTNER, OPERATOR, HR, FINANCE]
     DirectlyCreatableStaffRole:
       type: string
-      enum: [CAMPUS_MANAGER, PARTNER, HR, FINANCE]
+      enum: [CAMPUS_MANAGER, PARTNER, OPERATOR, HR, FINANCE]
     StaffAccountStatus:
       type: string
       enum: [ACTIVE, DISABLED]
@@ -4875,7 +5566,7 @@ components:
       enum: [BOUND, UNBOUND]
     CreateStaffAccountRequest:
       type: object
-      description: 总端创建单角色账号；人力/财务为总部账号，campusId 必须为 null；管理员/合作方必须选择校区。
+      description: 总端创建单角色账号；人力/财务为总部账号，campusId 必须为 null；管理员/合作方/普通运营必须选择校区。本入口不创建只读运营总号。
       required: [displayName, phone, roleCode, campusId]
       properties:
         displayName: { type: string, minLength: 1, maxLength: 100, pattern: '.*\S.*' }
@@ -4884,7 +5575,7 @@ components:
         campusId: { type: [string, 'null'], format: uuid }
       oneOf:
         - properties:
-            roleCode: { enum: [CAMPUS_MANAGER, PARTNER] }
+            roleCode: { enum: [CAMPUS_MANAGER, PARTNER, OPERATOR] }
             campusId: { type: string, format: uuid }
         - properties:
             roleCode: { enum: [HR, FINANCE] }
@@ -4909,7 +5600,10 @@ components:
       properties:
         id: { type: string, format: uuid }
         displayName: { type: string, minLength: 1, maxLength: 100 }
-        maskedPhone: { type: string, pattern: '^\+86\*{4}[0-9]{4}$' }
+        maskedPhone:
+          type: string
+          description: Approved partners without a personal staff phone use the literal label and cannot unbind their sole WeChat login.
+          pattern: '^(\+86\*{4}[0-9]{4}|未绑定个人手机号)$'
         roleCode: { $ref: '#/components/schemas/ManageableStaffRole' }
         campusId: { type: [string, 'null'], format: uuid }
         campusName: { type: string, minLength: 1, maxLength: 200 }
@@ -4993,6 +5687,31 @@ components:
           minLength: 1
           maxLength: 200
       additionalProperties: false
+    TeacherLessonRosterSummary:
+      type: object
+      description: Expected members use current membership before completion and saved attendance after completion/reversal. Leave and current-balance warning counts can overlap; warnings are calculated at asOf, including on historical lessons.
+      required: [expectedCount, leaveCount, warningCount, thresholdUnits, asOf, source]
+      properties:
+        expectedCount:
+          type: integer
+          minimum: 0
+        leaveCount:
+          type: integer
+          minimum: 0
+        warningCount:
+          type: integer
+          minimum: 0
+        thresholdUnits:
+          type: integer
+          minimum: 0
+          description: Campus warning threshold in hundredths of one lesson.
+        asOf:
+          type: string
+          format: date-time
+        source:
+          type: string
+          enum: [CURRENT, HISTORICAL_ATTENDANCE]
+      additionalProperties: false
     TeacherLessonSessionSummary:
       type: object
       required:
@@ -5040,6 +5759,8 @@ components:
         studentCount:
           type: integer
           minimum: 0
+        rosterSummary:
+          $ref: '#/components/schemas/TeacherLessonRosterSummary'
       additionalProperties: false
     TeacherDashboardView:
       type: object
@@ -5121,6 +5842,13 @@ components:
         - expectedConsumeUnits
         - feedback
         - feedbackImages
+        - performanceRating
+        - photo
+        - parentReview
+        - teacherRatings
+        - feedbackVersion
+        - feedbackAuthorName
+        - canEditFeedback
       properties:
         id:
           type: string
@@ -5146,27 +5874,93 @@ components:
           maxItems: 3
           items:
             $ref: '#/components/schemas/FeedbackImageView'
+        performanceRating:
+          $ref: '#/components/schemas/NullablePerformanceRating'
+        photo:
+          oneOf:
+            - $ref: '#/components/schemas/StudentPhotoView'
+            - type: 'null'
+        parentReview:
+          oneOf:
+            - $ref: '#/components/schemas/ParentLessonReviewView'
+            - type: 'null'
+        teacherRatings:
+          $ref: '#/components/schemas/NullableTeacherFeedbackRatings'
+        feedbackVersion:
+          type: integer
+          minimum: 0
+        feedbackAuthorName:
+          oneOf:
+            - type: string
+            - type: 'null'
+        canEditFeedback:
+          type: boolean
+          description: 仅已完成的本人课次、当前有效在班学员且无其他反馈作者时可编辑；历史名单保留只读。服务端保存及上传仍独立校验。
       additionalProperties: false
     TeacherLessonSessionDetail:
-      allOf:
-        - $ref: '#/components/schemas/TeacherLessonSessionSummary'
-        - type: object
-          required:
-            - attendancePolicy
-            - students
-            - canComplete
-            - canReverse
-          properties:
-            attendancePolicy:
-              $ref: '#/components/schemas/AttendancePolicy'
-            students:
-              type: array
-              items:
-                $ref: '#/components/schemas/TeacherLessonStudent'
-            canComplete:
-              type: boolean
-            canReverse:
-              type: boolean
+      type: object
+      required:
+        - id
+        - version
+        - className
+        - courseName
+        - campusName
+        - startsAt
+        - endsAt
+        - lessonUnits
+        - status
+        - studentCount
+        - attendancePolicy
+        - students
+        - canComplete
+        - canReverse
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          minimum: 1
+        className:
+          type: string
+          minLength: 1
+          maxLength: 200
+        courseName:
+          type: string
+          minLength: 1
+          maxLength: 200
+        campusName:
+          type: string
+          minLength: 1
+          maxLength: 200
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        lessonUnits:
+          type: integer
+          minimum: 1
+          description: Lesson units in hundredths of one lesson.
+        status:
+          $ref: '#/components/schemas/LessonSessionStatus'
+        studentCount:
+          type: integer
+          minimum: 0
+        rosterSummary:
+          $ref: '#/components/schemas/TeacherLessonRosterSummary'
+        attendancePolicy:
+          $ref: '#/components/schemas/AttendancePolicy'
+        students:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeacherLessonStudent'
+        canComplete:
+          type: boolean
+        canReverse:
+          type: boolean
+      additionalProperties: false
     TeacherStudentSummary:
       type: object
       required:
@@ -5246,27 +6040,67 @@ components:
         updatedAt: { type: string, format: date-time }
       additionalProperties: false
     TeacherStudentDetail:
-      allOf:
-        - $ref: '#/components/schemas/TeacherStudentSummary'
-        - type: object
-          required: [classes, nextLesson, attendance, recentAttendance, latestFeedback]
-          properties:
-            classes:
-              type: array
-              items: { $ref: '#/components/schemas/TeacherStudentClass' }
-            nextLesson:
-              oneOf:
-                - $ref: '#/components/schemas/TeacherStudentNextLesson'
-                - type: 'null'
-            attendance: { $ref: '#/components/schemas/TeacherStudentAttendanceSummary' }
-            recentAttendance:
-              type: array
-              items: { $ref: '#/components/schemas/TeacherStudentAttendanceRecord' }
-            latestFeedback:
-              oneOf:
-                - $ref: '#/components/schemas/TeacherStudentFeedbackSummary'
-                - type: 'null'
-          additionalProperties: false
+      type: object
+      required:
+        - id
+        - displayName
+        - classNames
+        - nextLessonAt
+        - latestFeedbackAt
+        - classes
+        - nextLesson
+        - attendance
+        - recentAttendance
+        - latestFeedback
+        - archive
+        - feedbackHistory
+      properties:
+        id:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        classNames:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 200
+        nextLessonAt:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: 'null'
+        latestFeedbackAt:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: 'null'
+        classes:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeacherStudentClass'
+        nextLesson:
+          oneOf:
+            - $ref: '#/components/schemas/TeacherStudentNextLesson'
+            - type: 'null'
+        attendance:
+          $ref: '#/components/schemas/TeacherStudentAttendanceSummary'
+        recentAttendance:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeacherStudentAttendanceRecord'
+        latestFeedback:
+          oneOf:
+            - $ref: '#/components/schemas/TeacherStudentFeedbackSummary'
+            - type: 'null'
+        archive:
+          $ref: '#/components/schemas/TeacherStudentArchive'
+        feedbackHistory:
+          $ref: '#/components/schemas/TeacherStudentFeedbackHistoryPage'
+      additionalProperties: false
     AttendanceItem:
       type: object
       required:
@@ -5372,7 +6206,204 @@ components:
           items:
             type: string
             format: uuid
+        performanceRating:
+          description: Teacher-authored classroom performance; omitted updates preserve the existing value, explicit null clears it.
+          $ref: '#/components/schemas/NullablePerformanceRating'
+        expectedVersion:
+          description: Required for four-score writes and all subsequent writes after upgrade. Zero creates; otherwise must match the loaded feedback version. Missing or stale versions return FEEDBACK_VERSION_CONFLICT. Exact idempotent replay returns its original result.
+          type: integer
+          minimum: 0
+        teacherRatings:
+          description: All four keys are required; explicit null clears one score. Omitted legacy writes preserve existing scores and require a version once four scores have been recorded. Only the original feedback author may revise a completed lesson.
+          $ref: '#/components/schemas/TeacherFeedbackRatings'
       additionalProperties: false
+    TeacherStudentArchive:
+      type: object
+      required:
+        - age
+        - photo
+        - enrollment
+        - balance
+      properties:
+        age:
+          oneOf:
+            - type: integer
+              minimum: 0
+            - type: 'null'
+        photo:
+          oneOf:
+            - $ref: '#/components/schemas/FeedbackImageView'
+            - type: 'null'
+        enrollment:
+          type: object
+          required:
+            - initialMainUnits
+            - initialGiftUnits
+            - receivedAmountFen
+            - pendingIssuanceCount
+          properties:
+            initialMainUnits:
+              oneOf:
+                - type: integer
+                  minimum: 0
+                - type: 'null'
+            initialGiftUnits:
+              oneOf:
+                - type: integer
+                  minimum: 0
+                - type: 'null'
+            receivedAmountFen:
+              description: Verified cumulative receipts in integer fen, not net of refunds.
+              oneOf:
+                - type: integer
+                  minimum: 0
+                - type: 'null'
+            pendingIssuanceCount:
+              type: integer
+              minimum: 0
+          additionalProperties: false
+        balance:
+          $ref: '#/components/schemas/TeacherStudentBalance'
+      additionalProperties: false
+    TeacherStudentBalance:
+      type: object
+      required:
+        - mainAvailableUnits
+        - giftAvailableUnits
+        - availableTotalUnits
+        - thresholdUnits
+        - isWarning
+        - asOf
+      properties:
+        mainAvailableUnits:
+          type: integer
+          minimum: 0
+        giftAvailableUnits:
+          type: integer
+          minimum: 0
+        availableTotalUnits:
+          type: integer
+          minimum: 0
+        thresholdUnits:
+          type: integer
+          minimum: 0
+        isWarning:
+          type: boolean
+        asOf:
+          type: string
+          format: date-time
+      additionalProperties: false
+    TeacherStudentFeedbackHistoryPage:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/TeacherStudentFeedbackHistory'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+      additionalProperties: false
+    TeacherStudentFeedbackHistory:
+      type: object
+      required:
+        - id
+        - lessonSessionId
+        - className
+        - courseName
+        - startsAt
+        - updatedAt
+        - lessonStatus
+        - content
+        - performanceRating
+        - images
+        - teacherRatings
+        - feedbackVersion
+        - feedbackAuthorName
+      properties:
+        id:
+          type: string
+          format: uuid
+        lessonSessionId:
+          type: string
+          format: uuid
+        className:
+          type: string
+        courseName:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        lessonStatus:
+          type: string
+          enum:
+            - COMPLETED
+            - REVERSED
+        content:
+          type: string
+          maxLength: 1000
+        performanceRating:
+          description: Legacy single score only; never reconstructed into four scores.
+          oneOf:
+            - type: integer
+              minimum: 1
+              maximum: 10
+            - type: 'null'
+        teacherRatings:
+          $ref: '#/components/schemas/NullableTeacherFeedbackRatings'
+        feedbackVersion:
+          type: integer
+          minimum: 1
+        feedbackAuthorName:
+          type: string
+        images:
+          type: array
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/FeedbackImageView'
+      additionalProperties: false
+    TeacherFeedbackRatings:
+      type: object
+      required:
+        - classroomPerformance
+        - workCompletion
+        - communication
+        - overall
+      properties:
+        classroomPerformance:
+          $ref: '#/components/schemas/NullableTeacherFeedbackRating'
+        workCompletion:
+          $ref: '#/components/schemas/NullableTeacherFeedbackRating'
+        communication:
+          $ref: '#/components/schemas/NullableTeacherFeedbackRating'
+        overall:
+          $ref: '#/components/schemas/NullableTeacherFeedbackRating'
+      additionalProperties: false
+    NullableTeacherFeedbackRating:
+      description: Independent teacher half-star units, 0 = zero stars and 10 = five stars; null means not rated. Never derived from legacy or parent scores.
+      oneOf:
+        - type: integer
+          minimum: 0
+          maximum: 10
+        - type: 'null'
+    NullableTeacherFeedbackRatings:
+      description: Null denotes a legacy feedback without four independent scores.
+      oneOf:
+        - $ref: '#/components/schemas/TeacherFeedbackRatings'
+        - type: 'null'
+    NullablePerformanceRating:
+      description: Integer half-star units, 1 = 0.5 stars and 10 = 5 stars; null means not rated.
+      oneOf:
+        - type: integer
+          minimum: 1
+          maximum: 10
+        - type: 'null'
     FeedbackImageView:
       type: object
       required:
@@ -5409,6 +6440,9 @@ components:
         - content
         - images
         - updatedAt
+        - performanceRating
+        - teacherRatings
+        - version
       properties:
         lessonSessionId:
           type: string
@@ -5428,6 +6462,13 @@ components:
         updatedAt:
           type: string
           format: date-time
+        performanceRating:
+          $ref: '#/components/schemas/NullablePerformanceRating'
+        teacherRatings:
+          $ref: '#/components/schemas/NullableTeacherFeedbackRatings'
+        version:
+          type: integer
+          minimum: 1
       additionalProperties: false
     TeachingRecordView:
       type: object
@@ -5668,7 +6709,9 @@ components:
         - reversedNetFen
         - currency
       properties:
-        estimatedTotalFen: { type: integer }
+        estimatedTotalFen:
+          type: integer
+          description: Net internal earnings excluding REJECTED entries, in fen.
         pendingReviewFen: { type: integer, minimum: 0 }
         availableFen: { type: integer, minimum: 0 }
         reversedNetFen: { type: integer }
@@ -5787,16 +6830,27 @@ components:
         status:
           $ref: '#/components/schemas/TeacherEarningStatus'
         basisType:
-          $ref: '#/components/schemas/TeacherEarningBasisType'
+          oneOf:
+            - $ref: '#/components/schemas/TeacherEarningBasisType'
+            - type: 'null'
         unitAmountFen:
-          type: integer
-          minimum: 1
+          oneOf:
+            - type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            - type: 'null'
         lessonUnits:
-          type: integer
-          minimum: 1
+          oneOf:
+            - type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            - type: 'null'
         attendeeCount:
-          type: integer
-          minimum: 0
+          oneOf:
+            - type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            - type: 'null'
         reviewableAt:
           type: string
           format: date-time
@@ -6179,7 +7233,13 @@ components:
         - nextLesson
         - remainingUnits
         - attendanceRatePercent
+        - teachers
+        - reminders
+        - profileSetupRequired
       properties:
+        profileSetupRequired:
+          type: boolean
+          description: True only when the primary active bound student has not completed first-time profile setup.
         student:
           oneOf:
             - $ref: '#/components/schemas/ParentStudentView'
@@ -6198,6 +7258,27 @@ components:
               minimum: 0
               maximum: 100
             - type: 'null'
+        teachers:
+          type: array
+          description: Active teachers in the bound student's own campus; public name and specialties only. Empty when no student is bound.
+          items:
+            $ref: '#/components/schemas/ParentPublicTeacherView'
+        reminders:
+          type: array
+          maxItems: 20
+          description: Earliest upcoming scheduled or ongoing lessons for the bound student, ordered by startsAt and ID. Read-only; no subscription messages.
+          items:
+            $ref: '#/components/schemas/ParentNextLessonView'
+      additionalProperties: false
+    ParentPublicTeacherView:
+      type: object
+      required: [id, name, specialties]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        specialties:
+          type: array
+          items: { type: string }
       additionalProperties: false
     ParentCampusMapView:
       type: object
@@ -6270,7 +7351,25 @@ components:
         - paidAmountFen
         - validUntil
         - entries
+        - grantedMainUnits
+        - grantedGiftUnits
+        - courseNames
+        - meta
       properties:
+        grantedMainUnits:
+          type: [integer, 'null']
+          minimum: 0
+          description: Original nonnegative MAIN GRANT sum for active packages; null if any package lacks reliable bucket history. Never inferred from balances.
+        grantedGiftUnits:
+          type: [integer, 'null']
+          minimum: 0
+          description: Original nonnegative GIFT GRANT sum for active packages; null if any package lacks reliable bucket history. Never inferred from balances.
+        courseNames:
+          type: array
+          items: { type: string }
+          description: Distinct course names from all authorized ledger history, including 未分类 when non-session entries exist.
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
         mainReservedUnits: { type: integer, minimum: 0 }
         giftReservedUnits: { type: integer, minimum: 0 }
         reservedTotalUnits: { type: integer, minimum: 0 }
@@ -6340,6 +7439,10 @@ components:
         - reviewedAt
         - reviewReason
       properties:
+        contactWarning:
+          oneOf:
+            - $ref: '#/components/schemas/ParentLeaveWeekWarning'
+            - type: 'null'
         id:
           type: string
           format: uuid
@@ -6379,6 +7482,21 @@ components:
               maxLength: 500
             - type: 'null'
       additionalProperties: false
+    ParentLeaveWeekWarning:
+      type: object
+      description: Informational only. Shanghai Monday-Sunday consecutive pending/approved leave, deduplicated by lesson; actual teacher non-leave attendance breaks continuity. Never rejects a request or changes approval.
+      required: [weekStart, weekEnd, consecutiveCount, lessonSessionIds, campusName, contactPhone]
+      properties:
+        weekStart: { type: string, format: date }
+        weekEnd: { type: string, format: date }
+        consecutiveCount: { type: integer, minimum: 2 }
+        lessonSessionIds:
+          type: array
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        campusName: { type: string, maxLength: 100 }
+        contactPhone: { type: [string, 'null'], maxLength: 30 }
+      additionalProperties: false
     ParentLeaveLessonView:
       type: object
       required:
@@ -6404,7 +7522,11 @@ components:
         - lessons
         - records
         - cutoffHours
+        - weeklyWarnings
       properties:
+        weeklyWarnings:
+          type: array
+          items: { $ref: '#/components/schemas/ParentLeaveWeekWarning' }
         students:
           type: array
           items:
@@ -6443,7 +7565,11 @@ components:
         - age
         - homeAddress
         - profileVersion
+        - profileSetupCompleted
       properties:
+        profileSetupCompleted:
+          type: boolean
+          description: Completed profiles have birthday-derived age; manual age editing is not permitted.
         id:
           type: string
           format: uuid
@@ -6467,7 +7593,6 @@ components:
     ParentProfileUpdateRequest:
       type: object
       required:
-        - age
         - homeAddress
         - expectedVersion
       properties:
@@ -6475,6 +7600,7 @@ components:
           type: integer
           minimum: 0
           maximum: 120
+          description: Legacy incomplete profiles only. Must be omitted after first-time profile completion; completed profile age cannot be overridden.
         homeAddress:
           type: string
           maxLength: 300
@@ -6482,6 +7608,52 @@ components:
           type: integer
           minimum: 1
       additionalProperties: false
+    ParentProfileSetupRequest:
+      type: object
+      required: [name, birthDate, fileId, expectedVersion]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100, pattern: '\S' }
+        birthDate:
+          type: string
+          format: date
+          description: Valid calendar date, not in the future on the Asia/Shanghai calendar, age at most 120.
+        fileId:
+          type: string
+          format: uuid
+          description: Current photo of this bound student, or a STUDENT_PROFILE_PHOTO uploaded by this parent specifically for this student.
+        expectedVersion: { type: integer, minimum: 1 }
+      additionalProperties: false
+    ParentProfileSetupView:
+      type: object
+      required: [required, student]
+      properties:
+        required: { type: boolean }
+        student:
+          oneOf:
+            - $ref: '#/components/schemas/ParentProfileSetupStudentView'
+            - type: 'null'
+      additionalProperties: false
+    ParentProfileSetupStudentView:
+      type: object
+      required: [id, name, age, birthDate, profileVersion, photo]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        age: { type: integer, minimum: 0 }
+        birthDate: { type: [string, 'null'], format: date }
+        profileVersion: { type: integer, minimum: 1 }
+        photo:
+          oneOf:
+            - $ref: '#/components/schemas/StudentPhotoView'
+            - type: 'null'
+      additionalProperties: false
+    ParentProfileSetupEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          required: [data]
+          properties:
+            data: { $ref: '#/components/schemas/ParentProfileSetupView' }
     ParentUpdateRecordView:
       type: object
       required:
@@ -6495,6 +7667,13 @@ components:
         - feedback
         - feedbackImages
         - feedbackUpdatedAt
+        - performanceRating
+        - campusName
+        - review
+        - canReview
+        - teacherRatings
+        - feedbackVersion
+        - feedbackAuthorName
       properties:
         lessonSessionId:
           type: string
@@ -6534,17 +7713,118 @@ components:
             - type: string
               format: date-time
             - type: 'null'
+        performanceRating:
+          $ref: '#/components/schemas/NullablePerformanceRating'
+        campusName:
+          type: string
+        canReview:
+          type: boolean
+        review:
+          oneOf:
+            - $ref: '#/components/schemas/ParentLessonReviewView'
+            - type: 'null'
+        teacherRatings:
+          $ref: '#/components/schemas/NullableTeacherFeedbackRatings'
+        feedbackVersion:
+          type: integer
+          minimum: 0
+        feedbackAuthorName:
+          oneOf:
+            - type: string
+            - type: 'null'
       additionalProperties: false
     ParentUpdatesView:
       type: object
       required:
         - records
+        - student
       properties:
         records:
           type: array
           items:
             $ref: '#/components/schemas/ParentUpdateRecordView'
+        student:
+          oneOf:
+            - $ref: '#/components/schemas/ParentGrowthStudentView'
+            - type: 'null'
       additionalProperties: false
+    StudentPhotoUploadView:
+      type: object
+      required: [id, mimeType, sizeBytes]
+      properties:
+        id: { type: string, format: uuid }
+        mimeType: { type: string, enum: [image/jpeg, image/png] }
+        sizeBytes: { type: integer, minimum: 1, maximum: 3145728 }
+      additionalProperties: false
+    StudentPhotoView:
+      type: object
+      required: [id, mimeType, sizeBytes, accessUrl, accessUrlExpiresAt]
+      properties:
+        id: { type: string, format: uuid }
+        mimeType: { type: string, enum: [image/jpeg, image/png] }
+        sizeBytes: { type: integer, minimum: 1, maximum: 3145728 }
+        accessUrl: { type: string }
+        accessUrlExpiresAt: { type: string, format: date-time }
+      additionalProperties: false
+    ParentGrowthStudentView:
+      type: object
+      required: [id, name, age, profileVersion, photo]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        age: { type: integer, minimum: 0 }
+        profileVersion: { type: integer, minimum: 1 }
+        photo:
+          oneOf:
+            - $ref: '#/components/schemas/StudentPhotoView'
+            - type: 'null'
+      additionalProperties: false
+    ParentLessonReviewRequest:
+      type: object
+      required: [teaching, communication, environment, overall]
+      properties:
+        teaching: { type: integer, minimum: 1, maximum: 10 }
+        communication: { type: integer, minimum: 1, maximum: 10 }
+        environment: { type: integer, minimum: 1, maximum: 10 }
+        overall: { type: integer, minimum: 1, maximum: 10 }
+        note: { type: string, maxLength: 500, default: '' }
+      additionalProperties: false
+    ParentLessonReviewView:
+      type: object
+      required: [id, lessonSessionId, studentId, teaching, communication, environment, overall, note, createdAt, valid]
+      properties:
+        id: { type: string, format: uuid }
+        lessonSessionId: { type: string, format: uuid }
+        studentId: { type: string, format: uuid }
+        teaching: { type: integer, minimum: 1, maximum: 10 }
+        communication: { type: integer, minimum: 1, maximum: 10 }
+        environment: { type: integer, minimum: 1, maximum: 10 }
+        overall: { type: integer, minimum: 1, maximum: 10 }
+        note: { type: string, maxLength: 500 }
+        createdAt: { type: string, format: date-time }
+        valid: { type: boolean }
+      additionalProperties: false
+    StudentPhotoUploadEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          required: [data]
+          properties:
+            data: { $ref: '#/components/schemas/StudentPhotoUploadView' }
+    ParentGrowthStudentEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          required: [data]
+          properties:
+            data: { $ref: '#/components/schemas/ParentGrowthStudentView' }
+    ParentLessonReviewEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          required: [data]
+          properties:
+            data: { $ref: '#/components/schemas/ParentLessonReviewView' }
     CampusManagerCampusSummary:
       type: object
       required: [id, name]
@@ -6868,6 +8148,10 @@ components:
         lessonWarningThresholdUnits: { type: integer, minimum: 0 }
       additionalProperties: false
     PartnerWarningView:
+      allOf:
+        - $ref: '#/components/schemas/PartnerWarningBaseView'
+      unevaluatedProperties: false
+    PartnerWarningBaseView:
       type: object
       required: [studentId, studentName, classNames, mainBalanceUnits, giftBalanceUnits, totalBalanceUnits, thresholdUnits]
       properties:
@@ -6886,7 +8170,23 @@ components:
         giftBalanceUnits: { type: integer, minimum: 0 }
         totalBalanceUnits: { type: integer, minimum: 0 }
         thresholdUnits: { type: integer, minimum: 0 }
-      additionalProperties: false
+    PartnerDashboardHighlightView:
+      allOf:
+        - $ref: '#/components/schemas/PartnerWarningBaseView'
+        - type: object
+          required: [classes, attendance, enrollmentSummary]
+          properties:
+            classes:
+              type: array
+              description: 本学员当前未退班的本校区有效班级；教师关联亦须属于本校区。
+              items: { $ref: '#/components/schemas/PartnerStudentClassView' }
+            attendance:
+              description: 本学员全历史有效完课出勤；不是全校区出勤或教师本人考勤，无有效记录时出勤率为 null。
+              $ref: '#/components/schemas/PartnerStudentAttendanceSummary'
+            enrollmentSummary:
+              description: 与学员详情使用同一报名口径；与重点学员选择在同一读取快照内计算。
+              $ref: '#/components/schemas/PartnerEnrollmentSummary'
+      unevaluatedProperties: false
     PartnerDashboardView:
       type: object
       required:
@@ -6923,34 +8223,46 @@ components:
             - type: 'null'
         highlight:
           oneOf:
-            - $ref: '#/components/schemas/PartnerWarningView'
+            - $ref: '#/components/schemas/PartnerDashboardHighlightView'
             - type: 'null'
         serverTime: { type: string, format: date-time }
       additionalProperties: false
     PartnerProfileView:
       type: object
-      required: [displayName, roleCode, campus]
+      required: [displayName, roleCode, campus, activeStudentCount]
       properties:
         displayName: { type: string, minLength: 1, maxLength: 100 }
         roleCode: { type: string, enum: [PARTNER] }
+        activeStudentCount:
+          type: integer
+          minimum: 0
+          description: 当前账号所属校区的有效学员实体数，含无课包学员；不计班级成员或活动报名，不是月度历史快照。
         campus:
-          allOf:
-            - $ref: '#/components/schemas/PartnerCampusSummary'
-            - type: object
-              required: [contactPhone, address]
-              properties:
-                contactPhone:
-                  oneOf:
-                    - type: string
-                      maxLength: 30
-                    - type: 'null'
-                address:
-                  oneOf:
-                    - type: string
-                      maxLength: 300
-                    - type: 'null'
+          type: object
+          required: [id, code, name, timezone, lessonWarningThresholdUnits, contactPhone, address]
+          properties:
+            id: { $ref: '#/components/schemas/PartnerCampusSummary/properties/id' }
+            code: { $ref: '#/components/schemas/PartnerCampusSummary/properties/code' }
+            name: { $ref: '#/components/schemas/PartnerCampusSummary/properties/name' }
+            timezone: { $ref: '#/components/schemas/PartnerCampusSummary/properties/timezone' }
+            lessonWarningThresholdUnits: { $ref: '#/components/schemas/PartnerCampusSummary/properties/lessonWarningThresholdUnits' }
+            contactPhone:
+              oneOf:
+                - type: string
+                  maxLength: 30
+                - type: 'null'
+            address:
+              oneOf:
+                - type: string
+                  maxLength: 300
+                - type: 'null'
+          additionalProperties: false
       additionalProperties: false
     PartnerStudentView:
+      allOf:
+        - $ref: '#/components/schemas/PartnerStudentBaseView'
+      unevaluatedProperties: false
+    PartnerStudentBaseView:
       type: object
       required: [id, displayName, birthDate, classNames, mainBalanceUnits, giftBalanceUnits, totalBalanceUnits]
       properties:
@@ -6973,7 +8285,6 @@ components:
         mainBalanceUnits: { type: integer, minimum: 0 }
         giftBalanceUnits: { type: integer, minimum: 0 }
         totalBalanceUnits: { type: integer, minimum: 0 }
-      additionalProperties: false
     PartnerStudentClassView:
       type: object
       required: [id, className, courseName, teacherName]
@@ -6998,12 +8309,43 @@ components:
               maximum: 10000
             - type: 'null'
       additionalProperties: false
+    PartnerEnrollmentSummary:
+      type: object
+      description: 本校区本学员的全部系统登记历史，含过期和停用课包。实收按已执行纠错后的有效收款，实际退款单列不冲减实收；未发包收款计入。金额为整数分、课时为整数最小单位。各可空字段独立表示来源待核对，不能将已知部分当作完整总额；无记录为0，不承诺系统外历史完整。
+      required: [receivedAmountFen, refundedAmountFen, initialMainUnits, initialGiftUnits, pendingIssuanceCount]
+      properties:
+        receivedAmountFen:
+          oneOf:
+            - { type: integer, minimum: 0, maximum: 9007199254740991 }
+            - { type: 'null' }
+        refundedAmountFen:
+          oneOf:
+            - { type: integer, minimum: 0, maximum: 9007199254740991 }
+            - { type: 'null' }
+        initialMainUnits:
+          oneOf:
+            - { type: integer, minimum: 0, maximum: 9007199254740991 }
+            - { type: 'null' }
+        initialGiftUnits:
+          oneOf:
+            - { type: integer, minimum: 0, maximum: 9007199254740991 }
+            - { type: 'null' }
+        pendingIssuanceCount:
+          type: integer
+          minimum: 0
+          description: 已确认收款但尚无课时发放事实的笔数，不从活动规格或订单报价推定待发课时。
+      additionalProperties: false
     PartnerStudentDetailView:
       allOf:
-        - $ref: '#/components/schemas/PartnerStudentView'
+        - $ref: '#/components/schemas/PartnerStudentBaseView'
         - type: object
-          required: [classes, attendance, recentAttendance, recentLessonLedger]
+          required: [photo, classes, attendance, recentAttendance, recentLessonLedger, enrollmentSummary]
           properties:
+            enrollmentSummary: { $ref: '#/components/schemas/PartnerEnrollmentSummary' }
+            photo:
+              oneOf:
+                - $ref: '#/components/schemas/StudentPhotoView'
+                - type: 'null'
             classes:
               type: array
               items: { $ref: '#/components/schemas/PartnerStudentClassView' }
@@ -7016,6 +8358,69 @@ components:
               type: array
               maxItems: 5
               items: { $ref: '#/components/schemas/PartnerLessonLedgerEntryView' }
+      unevaluatedProperties: false
+    PartnerStudentGrowthRecordView:
+      type: object
+      required: [lessonSessionId, studentId, courseName, campusName, teacherName, startsAt, lessonStatus, attendanceStatus, feedback, performanceRating, review, feedbackImages, feedbackUpdatedAt]
+      properties:
+        lessonSessionId: { type: string, format: uuid }
+        studentId: { type: string, format: uuid }
+        courseName: { type: string }
+        campusName: { type: string }
+        teacherName: { type: string }
+        startsAt: { type: string, format: date-time }
+        lessonStatus: { type: string, enum: [COMPLETED, REVERSED] }
+        attendanceStatus:
+          oneOf:
+            - $ref: '#/components/schemas/AttendanceStatus'
+            - type: 'null'
+        feedback:
+          oneOf:
+            - type: string
+              maxLength: 1000
+            - type: 'null'
+        performanceRating: { $ref: '#/components/schemas/NullablePerformanceRating' }
+        review:
+          oneOf:
+            - $ref: '#/components/schemas/ParentLessonReviewView'
+            - type: 'null'
+        feedbackImages:
+          type: array
+          maxItems: 3
+          items: { $ref: '#/components/schemas/FeedbackImageView' }
+        feedbackUpdatedAt:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: 'null'
+      additionalProperties: false
+    PartnerStudentGrowthView:
+      type: object
+      required: [student, items, meta]
+      properties:
+        student:
+          type: object
+          required: [id, displayName, photo]
+          properties:
+            id: { type: string, format: uuid }
+            displayName: { type: string }
+            photo:
+              oneOf:
+                - $ref: '#/components/schemas/StudentPhotoView'
+                - type: 'null'
+          additionalProperties: false
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/PartnerStudentGrowthRecordView' }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+      additionalProperties: false
+    PartnerStudentGrowthEnvelope:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          required: [data]
+          properties:
+            data: { $ref: '#/components/schemas/PartnerStudentGrowthView' }
     PartnerReportPeriod:
       type: string
       enum: [DAY, MONTH, QUARTER]
@@ -7112,14 +8517,46 @@ components:
         activeStudentCount: { type: integer, minimum: 0 }
         monthCompletedLessonCount: { type: integer, minimum: 0 }
       additionalProperties: false
+    PartnerLedgerTeachingContext:
+      type: object
+      description: Current names on the ledger's linked lesson class and assigned lesson teacher, not immutable historical name snapshots. lessonStartsAt is the linked lesson start time, not payment or ledger registration time. Only returned when lesson, class and teacher profile all belong to the requesting campus; inactive teachers and reversed lessons may retain legitimate ledger associations.
+      required: [courseName, teacherName, lessonStartsAt]
+      properties:
+        courseName: { type: string, minLength: 1, maxLength: 200 }
+        teacherName: { type: string, minLength: 1, maxLength: 100 }
+        lessonStartsAt: { type: string, format: date-time }
+      additionalProperties: false
+    PartnerLedgerPaymentContext:
+      description: Historical payment source of the ledger's own package, including reversed/refunded history. Receipt receivedOn is a calendar date and must not be shifted by timezone; paidAt is the unique successful group PAYMENT instant and is displayed in the campus timezone. Never inferred from registration, issuance, refund, lesson time or current balances. Missing, ambiguous or out-of-scope source returns null at the parent property.
+      oneOf:
+        - type: object
+          required: [receivedOn]
+          properties:
+            receivedOn: { type: string, format: date }
+          additionalProperties: false
+        - type: object
+          required: [paidAt]
+          properties:
+            paidAt: { type: string, format: date-time }
+          additionalProperties: false
     PartnerLessonLedgerEntryView:
       type: object
-      required: [id, studentId, studentName, packageName, entryType, bucket, deltaUnits, balanceBeforeUnits, balanceAfterUnits, reason, createdAt]
+      required: [id, studentId, studentName, packageName, entryType, bucket, deltaUnits, balanceBeforeUnits, balanceAfterUnits, reason, createdAt, teachingContext, paymentContext]
       properties:
         id: { type: string, format: uuid }
         studentId: { type: string, format: uuid }
         studentName: { type: string, minLength: 1, maxLength: 100 }
         packageName: { type: string, minLength: 1, maxLength: 200 }
+        subject:
+          description: Immutable attribution when returned by the campus account. Null means unclassified, including legacy facts; never inferred from current class or package name.
+          oneOf:
+            - type: object
+              additionalProperties: false
+              required: [id, name]
+              properties:
+                id: { type: string, format: uuid }
+                name: { type: string, minLength: 1, maxLength: 80 }
+            - type: 'null'
         entryType: { $ref: '#/components/schemas/LessonLedgerEntryType' }
         bucket: { $ref: '#/components/schemas/LessonUnitBucket' }
         deltaUnits: { type: integer }
@@ -7131,6 +8568,15 @@ components:
               maxLength: 500
             - type: 'null'
         createdAt: { type: string, format: date-time }
+        teachingContext:
+          description: Null when there is no linked lesson or its teaching relations cannot be safely disclosed for this campus. Never inferred from the student's current class or package name.
+          oneOf:
+            - $ref: '#/components/schemas/PartnerLedgerTeachingContext'
+            - type: 'null'
+        paymentContext:
+          oneOf:
+            - $ref: '#/components/schemas/PartnerLedgerPaymentContext'
+            - type: 'null'
       additionalProperties: false
     PartnerLessonAccountView:
       type: object

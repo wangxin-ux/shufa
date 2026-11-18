@@ -1,3 +1,6 @@
+import { TeacherFeedbackRatings } from './teacher-feedback';
+import { ParentLessonReview } from './parent';
+
 export type LessonSessionStatus =
   | 'SCHEDULED'
   | 'IN_PROGRESS'
@@ -83,10 +86,17 @@ export interface AttendancePolicy {
 export interface TeacherLessonStudent {
   id: string;
   displayName: string;
+  canEditFeedback: boolean;
   attendanceStatus: AttendanceStatus | null;
   expectedConsumeUnits: number;
   feedback: string | null;
   feedbackImages: FeedbackImage[];
+  performanceRating?: number | null;
+  teacherRatings?: TeacherFeedbackRatings | null;
+  feedbackVersion?: number;
+  feedbackAuthorName?: string | null;
+  photo?: FeedbackImage | null;
+  parentReview?: ParentLessonReview | null;
 }
 
 export interface TeacherLessonDetail extends TeacherLessonSession {
@@ -105,6 +115,18 @@ export interface TeacherStudent {
 }
 
 export interface TeacherStudentDetail extends TeacherStudent {
+  archive?: {
+    age: number | null;
+    photo: FeedbackImage | null;
+    enrollment: {
+      initialMainUnits: number | null;
+      initialGiftUnits: number | null;
+      receivedAmountFen: number | null;
+      pendingIssuanceCount: number;
+    };
+    balance: TeacherStudentBalance;
+  };
+  feedbackHistory?: Page<TeacherStudentFeedbackHistory>;
   classes: Array<{
     id: string;
     className: string;
@@ -135,6 +157,36 @@ export interface TeacherStudentDetail extends TeacherStudent {
     courseName: string;
     updatedAt: string;
   } | null;
+}
+
+export interface TeacherStudentBalance {
+  mainAvailableUnits: number;
+  giftAvailableUnits: number;
+  availableTotalUnits: number;
+  thresholdUnits: number;
+  isWarning: boolean;
+  asOf: string;
+}
+
+export interface TeacherStudentFeedbackHistory {
+  id: string;
+  lessonSessionId: string;
+  courseName: string;
+  className: string;
+  startsAt: string;
+  updatedAt: string;
+  lessonStatus: 'COMPLETED' | 'REVERSED';
+  content: string;
+  performanceRating: number | null;
+  teacherRatings?: TeacherFeedbackRatings | null;
+  feedbackVersion?: number;
+  feedbackAuthorName?: string | null;
+  images: FeedbackImage[];
+}
+
+export interface TeacherStudentDetailQuery {
+  feedbackPage?: number;
+  feedbackPageSize?: number;
 }
 
 export interface PageQuery {
@@ -179,6 +231,9 @@ export interface FeedbackDraft {
   studentId: string;
   content: string;
   imageFileIds: string[];
+  performanceRating?: number | null;
+  teacherRatings?: TeacherFeedbackRatings;
+  expectedVersion?: number;
 }
 
 export interface FeedbackImageUploadDraft {
@@ -211,6 +266,9 @@ export interface StudentFeedback {
   lessonSessionId: string;
   studentId: string;
   content: string;
+  performanceRating?: number | null;
+  teacherRatings?: TeacherFeedbackRatings | null;
+  version?: number;
   images: FeedbackImage[];
   updatedAt: string;
 }
@@ -279,10 +337,10 @@ export interface TeacherEarningEntry {
   entryType: TeacherEarningEntryType;
   amountFen: number;
   status: TeacherEarningStatus;
-  basisType: TeacherEarningBasisType;
-  unitAmountFen: number;
-  lessonUnits: number;
-  attendeeCount: number;
+  basisType: TeacherEarningBasisType | null;
+  unitAmountFen: number | null;
+  lessonUnits: number | null;
+  attendeeCount: number | null;
   reviewableAt: string;
   reviewedAt: string | null;
   rejectionReason: string | null;

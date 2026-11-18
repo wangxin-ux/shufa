@@ -4,6 +4,22 @@ import {
 } from '../data/api-partner-data-source';
 
 describe('partner API data source', () => {
+  it('loads the profile count with a token and without a client campus parameter', async () => {
+    const requests: Parameters<PartnerHttpRequest>[0][] = [];
+    const source = new ApiPartnerDataSource({
+      baseUrl: 'https://example.test/api/',
+      accessToken: () => 'partner-token',
+      request: (options) => {
+        requests.push(options);
+        options.success({ statusCode: 200, data: { data: { activeStudentCount: 0 } } });
+      },
+    });
+    await expect(source.getProfile()).resolves.toMatchObject({ activeStudentCount: 0 });
+    expect(requests[0]).toMatchObject({
+      method: 'GET', url: 'https://example.test/api/partners/me/profile',
+      header: { Authorization: 'Bearer partner-token' },
+    });
+  });
   it('loads the dashboard with the current bearer token', async () => {
     const requests: Parameters<PartnerHttpRequest>[0][] = [];
     const source = new ApiPartnerDataSource({
@@ -101,6 +117,25 @@ describe('partner API data source', () => {
       'https://example.test/partners/me/operations-summary?period=QUARTER&anchorDate=2026-09-01',
     ]);
     expect(requests.every(({ url }) => !url.includes('campusId'))).toBe(true);
+  });
+
+  it('sends a balance band with name search and pagination, never a campus override', async () => {
+    const requests: Parameters<PartnerHttpRequest>[0][] = [];
+    const source = new ApiPartnerDataSource({
+      baseUrl: 'https://example.test',
+      accessToken: 'partner-token',
+      request: (options) => {
+        requests.push(options);
+        options.success({
+          statusCode: 200,
+          data: { data: [], meta: { page: 1, pageSize: 20, total: 0, totalPages: 0 } },
+        });
+      },
+    });
+    await source.listStudents({ page: 1, pageSize: 20, query: '林', balanceBand: 'LTE_FIVE' });
+    expect(requests[0].url).toContain('balanceBand=LTE_FIVE');
+    expect(requests[0].url).toContain('query=%E6%9E%97');
+    expect(requests[0].url).not.toContain('campusId');
   });
 
   it('maps forbidden and internal responses to Chinese messages', async () => {

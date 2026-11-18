@@ -1,1 +1,1 @@
-{"usingComponents":{"super-admin-page-shell":"/components/super-admin-page-shell/super-admin-page-shell"}}
+{"usingComponents":{"super-admin-page-shell":"/components/super-admin-page-shell/super-admin-page-shell","campus-subjects":"../components/campus-subjects/index"}}

@@ -1,0 +1,64 @@
+[
+{
+  "source-standard": {
+    "student": { "id": "synthetic-home-student", "name": "林小禾", "age": 9 },
+    "nextLesson": {
+      "id": "synthetic-home-lesson",
+      "dateLabel": "9月26日 周六",
+      "timeLabel": "14:00-15:30",
+      "campusName": "上谷校区",
+      "courseName": "硬笔书法",
+      "teacherName": "林老师"
+    },
+    "remainingHoursLabel": "48",
+    "attendanceRateLabel": "100%",
+    "teachers": [{ "id": "synthetic-home-teacher", "name": "林老师", "specialties": ["书法"] }],
+    "reminders": [{
+      "id": "synthetic-home-lesson",
+      "dateLabel": "9月26日 周六",
+      "timeLabel": "14:00-15:30",
+      "campusName": "上谷校区",
+      "courseName": "硬笔书法",
+      "teacherName": "林老师"
+    }]
+  },
+  "single-date": {
+    "student": { "id": "synthetic-home-student", "name": "林小禾", "age": 9 },
+    "nextLesson": {
+      "id": "synthetic-home-lesson",
+      "dateLabel": "10月7日 周三",
+      "timeLabel": "14:00-15:30",
+      "campusName": "上谷校区",
+      "courseName": "硬笔书法",
+      "teacherName": "林老师"
+    },
+    "remainingHoursLabel": "999",
+    "attendanceRateLabel": "100%",
+    "teachers": [],
+    "reminders": []
+  },
+  "long-content": {
+    "student": { "id": "synthetic-home-student", "name": "林小禾林小禾林小禾", "age": 12 },
+    "nextLesson": {
+      "id": "synthetic-home-lesson",
+      "dateLabel": "8月31日 周一",
+      "timeLabel": "14:00-15:30",
+      "campusName": "京南一品儿童美术综合教学中心校区",
+      "courseName": "专业美术综合教学专业美术综合教学",
+      "teacherName": "林老师"
+    },
+    "remainingHoursLabel": "999",
+    "attendanceRateLabel": "100%",
+    "teachers": [],
+    "reminders": []
+  },
+  "no-course": {
+    "student": { "id": "synthetic-home-student", "name": "林小禾", "age": 9 },
+    "nextLesson": null,
+    "remainingHoursLabel": "0",
+    "attendanceRateLabel": "--",
+    "teachers": [],
+    "reminders": []
+  }
+}
+]

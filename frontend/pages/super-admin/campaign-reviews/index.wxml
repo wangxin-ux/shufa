@@ -1,0 +1,30 @@
+<super-admin-page-shell header="free-campaign-header" show-back mark-title="审核" mark-icon="/pages/super-admin/assets/profile-mark-glyph.png" fallback-url="/pages/super-admin/group-campaigns/index">
+  <view class="free-campaign-header-space" style="height: calc({{headerTopPx}}px + 150rpx);" aria-hidden="true"></view>
+  <view class="workspace free-reviews">
+    <view class="workspace__head"><text class="workspace__title">免费活动审核</text></view>
+    <text wx:if="{{simulated}}" class="notice">合成演示数据</text>
+    <view class="toolbar">
+      <picker range="{{statuses}}" range-key="label" value="{{statusIndex}}" bindchange="onStatus"><view class="select">{{statuses[statusIndex].label}}</view></picker>
+      <button class="button button--ghost" disabled="{{loading}}" loading="{{loading}}" bindtap="onRetry">刷新</button>
+    </view>
+    <text wx:if="{{message}}" class="free-reviews__message" aria-live="polite">{{message}}</text>
+    <view wx:if="{{viewState === 'loading'}}" class="state"><text class="state__title">正在读取审核记录</text></view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="state"><text class="state__title">无法访问审核记录</text><button class="button" bindtap="onLogin">重新登录</button></view>
+    <view wx:elif="{{viewState === 'error'}}" class="state"><text class="state__title">读取失败</text><button class="button" bindtap="onRetry">重试</button></view>
+    <view wx:elif="{{viewState === 'empty'}}" class="state"><text class="state__title">暂无匹配的活动</text></view>
+    <view wx:else class="list">
+      <text wx:if="{{refreshError}}" class="free-reviews__message" aria-live="polite">{{refreshError}}</text>
+      <button wx:for="{{rows}}" wx:key="versionId" class="row free-reviews__row" data-id="{{item.versionId}}" disabled="{{loading}}" bindtap="onOpen">
+        <view class="row__main">
+          <text class="row__title">{{item.title}}</text>
+          <text class="row__meta">送审第 {{item.sequence}} 版 · 审核版本 {{item.version}}</text>
+          <text class="row__meta">送审时间（UTC）{{item.submittedLabel}}</text>
+          <text wx:if="{{item.reviewReason}}" class="row__meta">{{item.reviewReason}}</text>
+        </view>
+        <text class="status {{item.status === 'APPROVED' ? 'status--success' : item.status === 'REJECTED' ? 'status--danger' : ''}}">{{item.statusLabel}}</text>
+      </button>
+      <text wx:if="{{paginationError}}" class="free-reviews__message" aria-live="polite">{{paginationError}}</text>
+      <button wx:if="{{more}}" class="button button--ghost" disabled="{{loading}}" loading="{{loading}}" bindtap="onMore">更多记录</button>
+    </view>
+  </view>
+</super-admin-page-shell>

@@ -3,6 +3,11 @@ import { Prisma } from '@prisma/client';
 import type { LessonKind } from '../earning/earning-calculator';
 import { calculatePartnerEarning } from './partner-earning-calculator';
 import {
+  invalidatePartnerSettlementSource,
+  lockPartnerSettlementCampus,
+} from '../partner-withdrawal/partner-settlement-account';
+import { isPartnerWithdrawalSimulation } from '../partner-withdrawal/partner-withdrawal-rules';
+import {
   PartnerEarningRuleService,
   toPartnerEarningRuleSnapshot,
 } from './partner-earning-rule.service';
@@ -19,6 +24,7 @@ export interface CompletedPartnerEarningInput {
 export interface ReversedPartnerEarningInput {
   teachingRecordId: string;
   reversedAt: Date;
+  actorUserId?: string;
 }
 
 @Injectable()
@@ -41,6 +47,7 @@ export class PartnerEarningRecordingService {
       where: {
         campusId: input.campusId,
         lessonSessionId: input.lessonSessionId,
+        includedInFinalRoster: true,
       },
       orderBy: { studentId: 'asc' },
       select: { studentId: true, status: true },
@@ -135,6 +142,14 @@ export class PartnerEarningRecordingService {
     transaction: Prisma.TransactionClient,
     input: ReversedPartnerEarningInput,
   ): Promise<void> {
+    if (isPartnerWithdrawalSimulation()) {
+      const identity = await transaction.partnerEarningBasis.findUnique({
+        where: { teachingRecordId: input.teachingRecordId },
+        select: { campusId: true },
+      });
+      if (identity)
+        await lockPartnerSettlementCampus(transaction, identity.campusId);
+    }
     const basis = await transaction.partnerEarningBasis.findUnique({
       where: { teachingRecordId: input.teachingRecordId },
       include: {
@@ -152,7 +167,7 @@ export class PartnerEarningRecordingService {
       ({ entryType }) => entryType === 'ACCRUAL',
     );
     if (original && !original.reversedBy) {
-      await transaction.partnerEarningEntry.create({
+      const reversal = await transaction.partnerEarningEntry.create({
         data: {
           campusId: original.campusId,
           earningBasisId: original.earningBasisId,
@@ -168,6 +183,16 @@ export class PartnerEarningRecordingService {
         where: { id: original.id },
         data: { status: 'REVERSED', version: { increment: 1 } },
       });
+      if (isPartnerWithdrawalSimulation()) {
+        if (!input.actorUserId)
+          throw new Error('Settlement reversal requires the acting user');
+        await invalidatePartnerSettlementSource(
+          transaction,
+          original.id,
+          reversal.id,
+          input.actorUserId,
+        );
+      }
     }
     await transaction.partnerEarningBasis.update({
       where: { id: basis.id },

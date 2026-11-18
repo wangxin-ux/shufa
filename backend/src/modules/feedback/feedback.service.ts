@@ -16,6 +16,7 @@ import {
   type UploadedStoredFile,
 } from '../file/stored-file.service';
 import type { FeedbackUpsertDto } from './dto/feedback.dto';
+import { toTeacherFeedbackRatings } from './feedback.models';
 
 @Injectable()
 export class FeedbackService {
@@ -53,6 +54,7 @@ export class FeedbackService {
           403,
         );
       }
+      await this.assertFinalMember(transaction, scope.campusId, lessonSessionId, studentId);
     });
 
     const stored = await this.storedFileService.store(
@@ -102,13 +104,29 @@ export class FeedbackService {
           403,
         );
       }
+      await this.assertFinalMember(transaction, scope.campusId, lessonSessionId, studentId);
 
       const existingFeedback = await transaction.studentFeedback.findUnique({
         where: {
           lessonSessionId_studentId: { lessonSessionId, studentId },
         },
-        select: { id: true },
+        include: { images: { orderBy: { sortOrder: 'asc' } } },
       });
+      if (existingFeedback && existingFeedback.teacherId !== scope.teacherProfileId) {
+        throw new DomainError(ErrorCode.FORBIDDEN, 'Only the feedback author may revise it', 403);
+      }
+      const currentVersion = existingFeedback?.version ?? 0;
+      const requiresVersion = dto.teacherRatings !== undefined ||
+        existingFeedback?.teacherRatings != null;
+      if ((requiresVersion && dto.expectedVersion === undefined) ||
+        (dto.expectedVersion !== undefined && dto.expectedVersion !== currentVersion)) {
+        throw new DomainError(
+          ErrorCode.FEEDBACK_VERSION_CONFLICT,
+          '反馈已更新，请重新加载后再保存',
+          409,
+          { currentVersion },
+        );
+      }
       const imageFiles = dto.imageFileIds.length
         ? await transaction.storedFile.findMany({
             where: {
@@ -151,7 +169,9 @@ export class FeedbackService {
         },
         update: {
           content: dto.content,
-          teacherId: scope.teacherProfileId,
+          version: { increment: 1 },
+          ...(dto.teacherRatings === undefined ? {} : { teacherRatings: { ...dto.teacherRatings } }),
+          ...(dto.performanceRating === undefined ? {} : { performanceRating: dto.performanceRating }),
         },
         create: {
           campusId: scope.campusId,
@@ -159,12 +179,19 @@ export class FeedbackService {
           studentId,
           teacherId: scope.teacherProfileId,
           content: dto.content,
+          performanceRating: dto.performanceRating ?? null,
+          ...(dto.teacherRatings === undefined ? {} : { teacherRatings: { ...dto.teacherRatings } }),
         },
         select: {
           id: true,
           lessonSessionId: true,
           studentId: true,
           content: true,
+          performanceRating: true,
+          teacherRatings: true,
+          version: true,
+          teacherId: true,
+          campusId: true,
           updatedAt: true,
         },
       });
@@ -180,11 +207,41 @@ export class FeedbackService {
           })),
         });
       }
+      // Snapshot a legacy pre-version row before its first revision as well.
+      if (existingFeedback) {
+        await transaction.studentFeedbackRevision.createMany({
+          data: {
+            feedbackId: existingFeedback.id, campusId: existingFeedback.campusId,
+            teacherId: existingFeedback.teacherId, version: existingFeedback.version,
+            createdAt: existingFeedback.updatedAt,
+            snapshot: {
+              content: existingFeedback.content,
+              performanceRating: existingFeedback.performanceRating,
+              teacherRatings: existingFeedback.teacherRatings,
+              imageFileIds: existingFeedback.images.map(({ storedFileId }) => storedFileId),
+            },
+          },
+          skipDuplicates: true,
+        });
+      }
+      await transaction.studentFeedbackRevision.create({
+        data: {
+          feedbackId: feedback.id, campusId: feedback.campusId,
+          teacherId: feedback.teacherId, version: feedback.version,
+          snapshot: {
+            content: feedback.content, performanceRating: feedback.performanceRating,
+            teacherRatings: feedback.teacherRatings, imageFileIds: dto.imageFileIds,
+          },
+        },
+      });
       const imageById = new Map(imageFiles.map((image) => [image.id, image]));
       const result = {
         lessonSessionId: feedback.lessonSessionId,
         studentId: feedback.studentId,
         content: feedback.content,
+        performanceRating: feedback.performanceRating,
+        teacherRatings: toTeacherFeedbackRatings(feedback.teacherRatings),
+        version: feedback.version,
         images: dto.imageFileIds.map((id) =>
           this.storedFileService.toFeedbackImageView(
             imageById.get(id) as {
@@ -204,7 +261,8 @@ export class FeedbackService {
           resourceType: 'StudentFeedback',
           resourceId: `${lessonSessionId}:${studentId}`,
           outcome: 'SUCCESS',
-          details: { lessonSessionId, studentId },
+          details: { lessonSessionId, studentId, previousVersion: currentVersion,
+            version: feedback.version },
         },
       });
       await this.idempotencyService.complete(transaction, {
@@ -216,5 +274,24 @@ export class FeedbackService {
       });
       return result;
     });
+  }
+
+  private async assertFinalMember(
+    transaction: Prisma.TransactionClient,
+    campusId: string,
+    lessonSessionId: string,
+    studentId: string,
+  ): Promise<void> {
+    const attendance = await transaction.attendanceRecord.findFirst({
+      where: { campusId, lessonSessionId, studentId, includedInFinalRoster: true },
+      select: { id: true },
+    });
+    if (!attendance) {
+      throw new DomainError(
+        ErrorCode.FORBIDDEN,
+        'The student is outside the final lesson roster',
+        403,
+      );
+    }
   }
 }

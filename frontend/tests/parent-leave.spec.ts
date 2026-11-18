@@ -37,6 +37,9 @@ function createSource(
   getLeavePage: ParentDataSource['getLeavePage'] = async () => leavePage,
 ): ParentDataSource {
   return {
+    listCourseCatalog: async () => {
+      throw new Error('not used');
+    },
     listCampuses: async () => {
       throw new Error('not used');
     },
@@ -51,12 +54,17 @@ function createSource(
     getProfile: async () => {
       throw new Error('not used');
     },
+    getProfileSetup: async () => { throw new Error('not used'); },
+    completeProfileSetup: async () => { throw new Error('not used'); },
     updateProfile: async () => {
       throw new Error('not used');
     },
     getUpdates: async () => {
       throw new Error('not used');
     },
+    uploadStudentPhoto: async () => { throw new Error('not used'); },
+    replaceStudentPhoto: async () => { throw new Error('not used'); },
+    submitLessonReview: async () => { throw new Error('not used'); },
     listGroupCampaigns: async () => {
       throw new Error('not used');
     },
@@ -139,8 +147,11 @@ describe('parent leave submission', () => {
 
   it('rejects submissions after the configured cutoff', () => {
     expect(
-      validateLeaveDraft(validDraft, leavePage, new Date('2026-08-29T04:00:00.000Z')),
+      validateLeaveDraft(validDraft, leavePage, new Date('2026-08-29T04:00:00.001Z')),
     ).toBe('该课程已超过请假截止时间');
+  });
+  it('accepts exactly two hours before class, matching the backend cutoff', () => {
+    expect(validateLeaveDraft(validDraft, leavePage, new Date('2026-08-29T04:00:00.000Z'))).toBeNull();
   });
 
   it('reuses one in-flight submission for repeated clicks', async () => {
@@ -190,7 +201,9 @@ describe('parent leave submission', () => {
       status: 'success',
       nextDraft: { studentId: '', lessonId: '', reason: '' },
     });
-    expect(createIdempotencyKey).toHaveBeenCalledTimes(2);
+    expect(createIdempotencyKey).toHaveBeenCalledTimes(1);
+    expect(submitLeave).toHaveBeenNthCalledWith(1, validDraft, 'key-1');
+    expect(submitLeave).toHaveBeenNthCalledWith(2, validDraft, 'key-1');
     expect(getLeavePage).toHaveBeenCalledTimes(1);
   });
 
@@ -219,6 +232,30 @@ describe('parent leave submission', () => {
     ]);
   });
 
+  it.each([
+    ['pending', '8月29日 待审核'],
+    ['approved', '8月29日 已批准 不扣课时'],
+    ['rejected', '8月29日 已驳回'],
+  ] as const)('summarizes the actual %s leave result like the reference', (status, subtitle) => {
+    const model = buildParentLeavePageModel({
+      ...leavePage,
+      records: [{ ...submittedRecord, status }],
+    });
+
+    expect(model.records[0].subtitle).toBe(subtitle);
+    expect(model.records[0].reason).toBe(validDraft.reason);
+    expect(model.records[0]).toMatchObject({ reviewNote: '' });
+  });
+
+  it('preserves an unrecognized date label instead of inventing a leave date', () => {
+    const model = buildParentLeavePageModel({
+      ...leavePage,
+      records: [{ ...submittedRecord, lessonTimeLabel: '日期待核对' }],
+    });
+
+    expect(model.records[0].subtitle).toBe('日期待核对 待审核');
+  });
+
   it('shows the manager review reason in the parent leave history', () => {
     const model = buildParentLeavePageModel({
       ...leavePage,
@@ -233,6 +270,29 @@ describe('parent leave submission', () => {
       ],
     });
 
-    expect(model.records[0].subtitle).toContain('驳回说明：超过可审批时段');
+    expect(model.records[0].subtitle).toBe('8月29日 已驳回');
+    expect(model.records[0]).toMatchObject({ reviewNote: '驳回说明：超过可审批时段' });
+  });
+
+  it('keeps an approval explanation separate from the compact result line', () => {
+    const model = buildParentLeavePageModel({
+      ...leavePage,
+      records: [{ ...submittedRecord, status: 'approved', reviewReason: '已联系校区' }],
+    });
+
+    expect(model.records[0].subtitle).toBe('8月29日 已批准 不扣课时');
+    expect(model.records[0]).toMatchObject({ reviewNote: '审批说明：已联系校区' });
+  });
+  it('formats the backend week and contact hint without re-counting client records', () => {
+    const model = buildParentLeavePageModel({
+      ...leavePage, weeklyWarnings: [{
+        weekStart: '2026-10-05', weekEnd: '2026-10-11', consecutiveCount: 3,
+        lessonSessionIds: ['one', 'two', 'three'], campusName: '启明东校区', contactPhone: '0731-88886666',
+      }],
+    } as LeavePageView);
+    expect(model).toMatchObject({
+      contactWarning: { consecutiveCount: 3, contactPhone: '0731-88886666' },
+      contactWarningText: '2026-10-05 至 2026-10-11 连续请假3次，须电话沟通联系校区',
+    });
   });
 });

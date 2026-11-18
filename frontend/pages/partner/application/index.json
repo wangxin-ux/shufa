@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "partner-approved-role-badge": "/pages/partner/components/approved-role-badge/index"
+  },
+  "enablePullDownRefresh": true
+}

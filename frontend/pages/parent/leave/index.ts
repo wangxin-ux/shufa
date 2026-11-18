@@ -1,12 +1,9 @@
-import { buildParentLeavePageModel } from '../../../services/parent-leave.presenter';
+import { loadParentPdfDisplayFont } from '../runtime/parent-pdf-font';
+import { buildParentLeavePageModel, formatLeaveContactWarning } from '../../../services/parent-leave.presenter';
 import { ParentLeaveWorkflow } from '../../../services/parent-leave.workflow';
-import { ParentPageLoader } from '../../../services/parent-page-loader';
 import { parentService } from '../../../services/parent-runtime';
-import { LeaveDraft, LeavePageView } from '../../../types/parent';
-
-const leaveLoader = new ParentPageLoader(() => parentService.loadLeavePage());
-const leaveWorkflow = new ParentLeaveWorkflow(parentService);
-let currentLeavePage: LeavePageView | null = null;
+import { sessionService } from '../../../services/session.service';
+import { LeaveDraft, LeavePageView, LeaveWeekWarning } from '../../../types/parent';
 
 const EMPTY_DRAFT: LeaveDraft = { studentId: '', lessonId: '', reason: '' };
 
@@ -24,68 +21,104 @@ Page({
     draft: { ...EMPTY_DRAFT },
     submitStatus: 'idle',
     submitMessage: '',
+    refreshError: '',
+    contactWarning: null as LeaveWeekWarning | null,
+    contactWarningText: '',
   },
+  currentLeavePage: null as LeavePageView | null,
+  workflow: null as ParentLeaveWorkflow | null,
+  activeStudentId: '',
+  disposed: false,
+  requestVersion: 0,
+  refreshTimer: null as ReturnType<typeof setInterval> | null,
 
   onLoad() {
+    void loadParentPdfDisplayFont();
+    this.workflow = new ParentLeaveWorkflow(parentService);
     void this.loadLeavePage();
+  },
+  onShow() {
+    this.stopRefresh();
+    if (this.currentLeavePage) void this.loadLeavePage(true);
+    this.refreshTimer = setInterval(() => { void this.loadLeavePage(true); }, 30000);
+  },
+  onHide() { this.stopRefresh(); this.requestVersion += 1; },
+  onUnload() { this.disposed = true; this.onHide(); },
+  stopRefresh() {
+    if (this.refreshTimer !== null) clearInterval(this.refreshTimer);
+    this.refreshTimer = null;
   },
 
   onPullDownRefresh() {
-    void this.loadLeavePage().finally(() => wx.stopPullDownRefresh());
+    void this.loadLeavePage(Boolean(this.currentLeavePage)).finally(() => wx.stopPullDownRefresh());
   },
 
-  async loadLeavePage() {
-    this.setData({ viewState: 'loading', errorMessage: '' });
-    const snapshot = await leaveLoader.load();
+  handleAuthError(state: { statusCode?: number; code?: string }): boolean {
+    if (state.statusCode !== 401 && state.code !== 'UNAUTHORIZED') return false;
+    this.disposed = true;
+    this.stopRefresh();
+    sessionService.logout();
+    wx.reLaunch({ url: '/pages/bootstrap/index' });
+    return true;
+  },
 
-    if (snapshot.status === 'ready' || snapshot.status === 'empty') {
-      currentLeavePage = snapshot.data;
+  async loadLeavePage(silent = false) {
+    if (this.disposed || this.data.submitStatus === 'submitting') return;
+    const version = ++this.requestVersion;
+    if (!silent) this.setData({ viewState: 'loading', errorMessage: '' });
+    const snapshot = await parentService.loadLeavePage(this.data.draft.studentId || this.activeStudentId || undefined);
+    if (this.disposed || version !== this.requestVersion) return;
+    if (snapshot.status === 'success' || snapshot.status === 'empty') {
+      const firstLoad = this.currentLeavePage === null;
+      this.currentLeavePage = snapshot.data;
       const model = buildParentLeavePageModel(snapshot.data);
-      const studentIndex = model.students.length > 0 ? 0 : -1;
-      const lessonIndex = model.lessons.length > 0 ? 0 : -1;
+      const selectedId = this.data.draft.studentId || this.activeStudentId;
+      const studentIndex = selectedId ? model.students.findIndex((student) => student.id === selectedId) :
+        model.students.length ? 0 : -1;
+      const lessonIndex = this.data.draft.lessonId ? model.lessons.findIndex((lesson) => lesson.id === this.data.draft.lessonId) :
+        firstLoad && model.lessons.length ? 0 : -1;
+      this.activeStudentId = studentIndex >= 0 ? model.students[studentIndex].id : '';
       this.setData({
-        ...model,
-        viewState: 'ready',
-        errorMessage: '',
-        studentIndex,
-        lessonIndex,
+        ...model, viewState: 'ready', errorMessage: '', refreshError: '', studentIndex, lessonIndex,
         draft: {
-          studentId: studentIndex >= 0 ? model.students[studentIndex].id : '',
+          studentId: this.activeStudentId,
           lessonId: lessonIndex >= 0 ? model.lessons[lessonIndex].id : '',
-          reason: '',
+          reason: this.data.draft.reason,
         },
-        submitStatus: 'idle',
-        submitMessage: '',
       });
       return;
     }
 
     if (snapshot.status === 'error') {
-      this.setData({ viewState: 'error', errorMessage: snapshot.message });
+      if (this.handleAuthError(snapshot)) return;
+      this.setData(silent && this.currentLeavePage ? { refreshError: snapshot.message } :
+        { viewState: 'error', errorMessage: snapshot.message });
     }
   },
 
   onRetry() {
-    void this.loadLeavePage();
+    void this.loadLeavePage(Boolean(this.currentLeavePage));
   },
 
   onStudentChange(e: WechatMiniprogram.CustomEvent<{ value: string }>) {
     const studentIndex = Number(e.detail.value);
     const student = this.data.students[studentIndex];
-    if (!student) {
+    if (!student || this.data.submitStatus === 'submitting') {
       return;
     }
+    this.activeStudentId = student.id;
     this.setData({
-      studentIndex,
-      draft: { ...this.data.draft, studentId: student.id },
+      studentIndex, lessonIndex: -1,
+      draft: { ...this.data.draft, studentId: student.id, lessonId: '' },
       submitMessage: '',
     });
+    void this.loadLeavePage();
   },
 
   onLessonChange(e: WechatMiniprogram.CustomEvent<{ value: string }>) {
     const lessonIndex = Number(e.detail.value);
     const lesson = this.data.lessons[lessonIndex];
-    if (!lesson) {
+    if (!lesson || this.data.submitStatus === 'submitting') {
       return;
     }
     this.setData({
@@ -103,31 +136,37 @@ Page({
   },
 
   async onSubmitTap() {
-    if (!currentLeavePage || this.data.submitStatus === 'submitting') {
+    if (!this.currentLeavePage || this.data.submitStatus === 'submitting') {
       return;
     }
 
+    this.requestVersion += 1;
     this.setData({ submitStatus: 'submitting', submitMessage: '' });
-    const outcome = await leaveWorkflow.submit(this.data.draft, currentLeavePage);
+    this.workflow ??= new ParentLeaveWorkflow(parentService);
+    const outcome = await this.workflow.submit(this.data.draft, this.currentLeavePage);
+    if (this.disposed) return;
 
     if (outcome.status === 'error') {
+      if (this.handleAuthError(outcome)) return;
       this.setData({ submitStatus: 'error', submitMessage: outcome.message });
       wx.showToast({ title: outcome.message, icon: 'none' });
       return;
     }
 
     if (outcome.refreshedPage.status === 'success' || outcome.refreshedPage.status === 'empty') {
-      currentLeavePage = outcome.refreshedPage.data;
-    } else {
-      currentLeavePage = {
-        ...currentLeavePage,
-        records: [outcome.record, ...currentLeavePage.records],
-      };
+      this.currentLeavePage = outcome.refreshedPage.data;
+    } else if (outcome.refreshedPage.status === 'error' && this.handleAuthError(outcome.refreshedPage)) {
+      return;
+    }
+    if (!this.currentLeavePage.records.some((record) => record.id === outcome.record.id)) {
+      this.currentLeavePage = { ...this.currentLeavePage, records: [outcome.record, ...this.currentLeavePage.records] };
     }
 
-    const model = buildParentLeavePageModel(currentLeavePage);
+    const model = buildParentLeavePageModel(this.currentLeavePage);
+    const contactWarning = outcome.record.contactWarning === undefined ?
+      model.contactWarning : outcome.record.contactWarning;
     this.setData({
-      ...model,
+      ...model, contactWarning, contactWarningText: formatLeaveContactWarning(contactWarning),
       studentIndex: -1,
       lessonIndex: -1,
       draft: outcome.nextDraft,
@@ -135,5 +174,26 @@ Page({
       submitMessage: '',
     });
     wx.showToast({ title: '请假申请已提交', icon: 'success' });
+    if (contactWarning) this.showContactWarning(contactWarning);
+  },
+
+  showContactWarning(warning: LeaveWeekWarning) {
+    const phone = warning.contactPhone;
+    wx.showModal({
+      title: '须电话沟通联系校区',
+      content: `${formatLeaveContactWarning(warning)}\n${warning.campusName}\n${phone ? `联系电话：${phone}` : '校区电话暂未登记，请联系校区工作人员'}`,
+      confirmText: phone ? '拨打电话' : '知道了',
+      showCancel: Boolean(phone),
+      success: (result) => { if (result.confirm && phone && !this.disposed) this.callCampus(phone); },
+    });
+  },
+  callCampus(phone: string) {
+    wx.makePhoneCall({ phoneNumber: phone,
+      fail: () => wx.showToast({ title: '暂无法拨打，请稍后联系校区', icon: 'none' }),
+    });
+  },
+  onContactCampusTap() {
+    if (this.data.contactWarning?.contactPhone) this.callCampus(this.data.contactWarning.contactPhone);
+    else wx.showToast({ title: '校区电话暂未登记，请联系工作人员', icon: 'none' });
   },
 });

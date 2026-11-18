@@ -1,0 +1,54 @@
+<operator-page-shell markTitle="收益" markIcon="/pages/operator/assets/home-mark-glyph.png" showBack="{{true}}" surfacePage="{{true}}">
+  <view class="earning-page">
+    <view class="earning-heading">
+      <text class="earning-title">内部收益</text>
+      <button class="earning-refresh" aria-label="刷新内部收益" bindtap="onRefresh" disabled="{{viewState === 'forbidden' || (summaryState === 'loading' && detailState === 'loading')}}" hover-class="control--hover"><text aria-hidden="true">↻</text></button>
+    </view>
+    <view wx:if="{{viewState === 'forbidden'}}" class="earning-state" aria-live="polite">
+      <text class="earning-section-title">无访问权限</text><text>{{errorMessage}}</text>
+      <button class="earning-command" bindtap="onLogin">重新登录</button>
+    </view>
+    <block wx:else>
+      <view class="earning-summary">
+        <image class="earning-summary__character" src="/pages/operator/assets/leave-character.png" mode="widthFix" aria-hidden="true" />
+        <text class="earning-section-title">校区预计收益</text>
+        <view wx:if="{{summaryState === 'loading'}}" class="earning-state" aria-live="polite"><text>正在加载收益汇总</text></view>
+        <view wx:elif="{{summaryState === 'error'}}" class="earning-notice" aria-live="polite">
+          <text>{{summaryError}}</text><button class="earning-command" bindtap="onRetrySummary">重试汇总</button>
+        </view>
+        <block wx:else>
+          <view class="earning-pair earning-pair--total"><text>累计预计收益</text><text class="earning-money {{summary.estimatedLabel.length > 10 ? 'earning-money--compact' : ''}}">{{summary.estimatedLabel}}</text></view>
+          <view class="earning-pair"><text>其中待审核</text><text class="earning-money">{{summary.pendingLabel}}</text></view>
+          <text class="earning-meta">校区汇总截至 {{summaryAsOfLabel}}</text>
+          <text class="earning-meta">时区 {{timezone}} · 人民币元</text>
+        </block>
+      </view>
+      <view class="earning-section">
+        <view class="earning-heading"><text class="earning-section-title">收益流水</text><text wx:if="{{detailState === 'ready' || detailState === 'empty'}}" class="earning-count">共 {{total}} 条</text></view>
+        <view class="earning-filters">
+          <picker class="earning-picker" mode="selector" range="{{statusOptions}}" range-key="label" value="{{statusIndex}}" bindchange="onStatusChange">
+            <view class="earning-picker-value"><text>{{statusLabel}}</text><text aria-hidden="true">⌄</text></view>
+          </picker>
+          <picker class="earning-picker" mode="selector" range="{{typeOptions}}" range-key="label" value="{{typeIndex}}" bindchange="onTypeChange">
+            <view class="earning-picker-value"><text>{{typeLabel}}</text><text aria-hidden="true">⌄</text></view>
+          </picker>
+        </view>
+        <text wx:if="{{detailAsOfLabel}}" class="earning-meta">流水截至 {{detailAsOfLabel}}</text>
+        <text wx:if="{{detailTimezone}}" class="earning-meta">时区 {{detailTimezone}} · 人民币元</text>
+        <view wx:if="{{detailState === 'loading'}}" class="earning-state" aria-live="polite"><text>正在加载收益流水</text></view>
+        <view wx:elif="{{detailState === 'empty'}}" class="earning-state"><text>暂无符合条件的收益流水</text></view>
+        <view wx:for="{{rows}}" wx:key="id" class="earning-row">
+          <view class="earning-row-heading"><text class="earning-row-type">{{item.typeLabel}}</text><text class="earning-money earning-money--{{item.negative ? 'negative' : 'positive'}}">{{item.amountLabel}}</text></view>
+          <text class="earning-status">{{item.statusLabel}}</text>
+          <text class="earning-meta">授课完成 {{item.completedLabel}}</text>
+          <text class="earning-meta">登记时间 {{item.createdLabel}}</text>
+        </view>
+        <view wx:if="{{detailError}}" class="earning-notice" aria-live="polite">
+          <text>{{detailError}}</text><button class="earning-command" bindtap="onRetryDetail">重试流水</button>
+        </view>
+        <button wx:if="{{hasMore && !detailError}}" class="earning-command earning-more" bindtap="onLoadMore" loading="{{loadingMore}}" disabled="{{loadingMore}}">{{loadingMore ? '加载中' : '加载更多'}}</button>
+        <text wx:elif="{{rows.length && !hasMore}}" class="earning-meta earning-end">已显示全部流水</text>
+      </view>
+    </block>
+  </view>
+</operator-page-shell>

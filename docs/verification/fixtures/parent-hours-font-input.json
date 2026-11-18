@@ -1,0 +1,60 @@
+[{
+  "cases": [
+  {
+    "name": "standard",
+    "remainingTotal": 37,
+    "paidHours": 37,
+    "giftHours": 0,
+    "grantedPaidHours": 48,
+    "grantedGiftHours": 12
+  },
+  {
+    "name": "wide-two",
+    "remainingTotal": 44,
+    "paidHours": 44,
+    "giftHours": 0,
+    "grantedPaidHours": 44,
+    "grantedGiftHours": 88
+  },
+  {
+    "name": "wide-many",
+    "remainingTotal": 444444,
+    "paidHours": 444444,
+    "giftHours": 0,
+    "grantedPaidHours": 444444,
+    "grantedGiftHours": 888888
+  },
+  {
+    "name": "decimal",
+    "remainingTotal": 4444.5,
+    "paidHours": 4444.5,
+    "giftHours": 0,
+    "grantedPaidHours": 4444.5,
+    "grantedGiftHours": 8888.5
+  },
+  {
+    "name": "zero",
+    "remainingTotal": 0,
+    "paidHours": 0,
+    "giftHours": 0,
+    "grantedPaidHours": 0,
+    "grantedGiftHours": 0
+  },
+  {
+    "name": "unknown",
+    "remainingTotal": 37,
+    "paidHours": 37,
+    "giftHours": 0,
+    "grantedPaidHours": null,
+    "grantedGiftHours": null
+  },
+  {
+    "name": "single",
+    "remainingTotal": 37,
+    "paidHours": 37,
+    "giftHours": null,
+    "grantedPaidHours": 48,
+    "grantedGiftHours": null
+  }
+  ]
+}]

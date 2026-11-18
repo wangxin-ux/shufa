@@ -7,6 +7,17 @@ import { MockParentDataSource } from '../data/mock-parent-data-source';
 import { ParentService } from '../services/parent.service';
 
 describe('parent data boundary', () => {
+  it('provides read-only teacher and reminder fixtures with the same next lesson', async () => {
+    const source = new MockParentDataSource({ scenario: 'normal' });
+    const home = await source.getHomeSummary();
+    expect(home.teachers).toEqual([
+      { id: 'teacher-lin', name: '林老师', specialties: ['创意书写'] },
+    ]);
+    expect(home.reminders).toEqual([home.nextLesson]);
+    const empty = await new MockParentDataSource({ scenario: 'empty' }).getHomeSummary();
+    expect(empty.teachers).toEqual([]);
+    expect(empty.reminders).toEqual([]);
+  });
   it('returns deterministic normal data without leaking fixture mutations', async () => {
     const source = new MockParentDataSource({ scenario: 'normal' });
     const first = await source.getHomeSummary();
@@ -50,6 +61,7 @@ describe('parent data boundary', () => {
 
   it('can still hide gift hours explicitly without recalculating the backend total', async () => {
     const source: ParentDataSource = {
+      listCourseCatalog: jest.fn(),
       listCampuses: jest.fn(),
       getHomeSummary: jest.fn(),
       getHoursView: jest.fn().mockResolvedValue({
@@ -71,8 +83,13 @@ describe('parent data boundary', () => {
       getLeavePage: jest.fn(),
       submitLeave: jest.fn(),
       getProfile: jest.fn(),
+      getProfileSetup: jest.fn(),
+      completeProfileSetup: jest.fn(),
       updateProfile: jest.fn(),
       getUpdates: jest.fn(),
+      uploadStudentPhoto: jest.fn(),
+      replaceStudentPhoto: jest.fn(),
+      submitLessonReview: jest.fn(),
       listGroupCampaigns: jest.fn(),
       getGroupCampaign: jest.fn(),
       listGroupOrders: jest.fn(),

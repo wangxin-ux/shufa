@@ -1,0 +1,21 @@
+[
+  {
+    "growthItems[0].courseName": "创意美术综合材料探索与硬笔书法周末提高班",
+    "growthItems[0].teacherName": "姓名很长也必须完整显示的测试老师",
+    "growthItems[0].feedbackLabel": "课堂表现进步，继续练习。课堂表现进步，继续练习。课堂表现进步，继续练习。课堂表现进步，继续练习。课堂表现进步，继续练习。课堂表现进步，继续练习。课堂表现进步，继续练习。课堂表现进步，继续练习。",
+    "growthItems[0].review.note": "谢谢老师。课堂表现进步，继续练习。谢谢老师。课堂表现进步，继续练习。谢谢老师。课堂表现进步，继续练习。",
+    "growthItems[1].review": {
+      "validLabel": "原评价已失效",
+      "note": "谢谢老师。原评价已失效，保留历史内容。",
+      "ratings": [
+        {"key":"teaching","label":"教学","value":"4.5 星"},
+        {"key":"communication","label":"课后沟通","value":"4 星"},
+        {"key":"environment","label":"环境","value":"5 星"},
+        {"key":"overall","label":"整体评价","value":"4.5 星"}
+      ]
+    },
+    "growthState": "error",
+    "growthError": "成长记录加载失败，请重试",
+    "growthHasMore": true
+  }
+]

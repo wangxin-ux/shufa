@@ -32,13 +32,15 @@ export interface SessionView {
 }
 
 export interface RoleBootstrapOption {
-  code: 'PARENT' | 'PARTNER' | 'TEACHER' | 'CAMPUS_MANAGER' | 'SUPER_ADMIN' | 'FINANCE' | 'HR';
+  code: SessionRoleCode;
   label: string;
   url:
     | '/pages/parent/home/index'
     | '/pages/partner/home/index'
     | '/pages/teacher/home/index'
     | '/pages/campus-manager/home/index'
+    | '/pages/operator/home/index'
+    | '/pages/operator/headquarters/index'
     | '/pages/super-admin/home/index'
     | '/pages/finance/home/index'
     | '/pages/hr/home/index';
@@ -68,7 +70,7 @@ export interface SessionHttpResponse {
 
 export interface SessionHttpRequestOptions {
   url: string;
-  method: 'GET' | 'POST';
+  method: 'GET' | 'POST' | 'PUT';
   header: Record<string, string>;
   data?: unknown;
   success(response: SessionHttpResponse): void;
@@ -101,35 +103,17 @@ export interface TeacherSettingsModel {
 
 const LOGGED_OUT_KEY = 'education.session.logged-out';
 const CURRENT_TEST_ACCOUNT_KEY = 'education.test-account.current';
+const HEADQUARTERS_ACCOUNT = 'OPERATOR_HEADQUARTERS';
 const ROLE_SELECTION_DESTINATION = '/pages/bootstrap/index' as const;
 let wechatBindSequence = 0;
 
 const ROLE_OPTIONS: ReadonlyArray<RoleBootstrapOption> = [
-  {
-    code: 'PARENT',
-    label: '家长端',
-    url: '/pages/parent/home/index',
-  },
-  {
-    code: 'PARTNER',
-    label: '合作方端',
-    url: '/pages/partner/home/index',
-  },
-  {
-    code: 'TEACHER',
-    label: '教师端',
-    url: '/pages/teacher/home/index',
-  },
-  {
-    code: 'CAMPUS_MANAGER',
-    label: '管理员端',
-    url: '/pages/campus-manager/home/index',
-  },
-  {
-    code: 'SUPER_ADMIN',
-    label: '总端',
-    url: '/pages/super-admin/home/index',
-  },
+  { code: 'PARENT', label: '家长端', url: '/pages/parent/home/index' },
+  { code: 'PARTNER', label: '合作方端', url: '/pages/partner/home/index' },
+  { code: 'TEACHER', label: '教师端', url: '/pages/teacher/home/index' },
+  { code: 'CAMPUS_MANAGER', label: '管理员端', url: '/pages/campus-manager/home/index' },
+  { code: 'OPERATOR', label: '运营端', url: '/pages/operator/home/index' },
+  { code: 'SUPER_ADMIN', label: '总端', url: '/pages/super-admin/home/index' },
   { code: 'HR', label: '人力端', url: '/pages/hr/home/index' },
   { code: 'FINANCE', label: '财务端', url: '/pages/finance/home/index' },
 ];
@@ -139,6 +123,8 @@ const MOCK_WECHAT_LOGIN_CODES: Record<TestAccountCode, string> = {
   PARTNER: 'mock-demo-east-partner',
   TEACHER: 'mock-demo-east-teacher',
   CAMPUS_MANAGER: 'mock-demo-east-campus-manager',
+  OPERATOR: 'mock-demo-east-operator',
+  OPERATOR_HEADQUARTERS: '',
   SUPER_ADMIN: 'mock-demo-super-admin',
   HR: 'mock-demo-hr',
   FINANCE: 'mock-demo-finance',
@@ -146,34 +132,22 @@ const MOCK_WECHAT_LOGIN_CODES: Record<TestAccountCode, string> = {
 
 const TEST_PHONE_CODE = '123456';
 
+function mockSession(
+  userId: string, displayName: string, code: SessionRoleCode, campusId: string | null,
+): SessionView {
+  return { userId, displayName, roles: [{ code, campusId }] };
+}
+
 const MOCK_SESSIONS: Record<TestAccountCode, SessionView> = {
-  HR: { userId: 'mock-hr-user', displayName: '何主管', roles: [{ code: 'HR', campusId: null }] },
-  FINANCE: { userId: 'mock-finance-user', displayName: '钱会计', roles: [{ code: 'FINANCE', campusId: null }] },
-  PARENT: {
-    userId: 'mock-parent-user',
-    displayName: '陈家长',
-    roles: [{ code: 'PARENT', campusId: 'campus-east' }],
-  },
-  PARTNER: {
-    userId: 'mock-partner-user',
-    displayName: '朱元璋',
-    roles: [{ code: 'PARTNER', campusId: 'campus-east' }],
-  },
-  TEACHER: {
-    userId: 'mock-teacher-user',
-    displayName: '林老师',
-    roles: [{ code: 'TEACHER', campusId: 'campus-east' }],
-  },
-  CAMPUS_MANAGER: {
-    userId: 'mock-campus-manager-user',
-    displayName: '周园长',
-    roles: [{ code: 'CAMPUS_MANAGER', campusId: 'campus-east' }],
-  },
-  SUPER_ADMIN: {
-    userId: 'mock-super-admin-user',
-    displayName: '系统管理员',
-    roles: [{ code: 'SUPER_ADMIN', campusId: null }],
-  },
+  HR: mockSession('mock-hr-user', '何主管', 'HR', null),
+  FINANCE: mockSession('mock-finance-user', '钱会计', 'FINANCE', null),
+  PARENT: mockSession('mock-parent-user', '陈家长', 'PARENT', 'campus-east'),
+  PARTNER: mockSession('mock-partner-user', '朱元璋', 'PARTNER', 'campus-east'),
+  TEACHER: mockSession('mock-teacher-user', '林老师', 'TEACHER', 'campus-east'),
+  CAMPUS_MANAGER: mockSession('mock-campus-manager-user', '周园长', 'CAMPUS_MANAGER', 'campus-east'),
+  OPERATOR: mockSession('mock-operator-user', '校区运营', 'OPERATOR', 'campus-east'),
+  OPERATOR_HEADQUARTERS: mockSession('72000000-0000-4000-8000-000000000900', '总部演示运营', 'OPERATOR', null),
+  SUPER_ADMIN: mockSession('mock-super-admin-user', '系统管理员', 'SUPER_ADMIN', null),
 };
 
 interface TestPhoneAccount {
@@ -183,87 +157,32 @@ interface TestPhoneAccount {
 }
 
 const WEST_MOCK_SESSIONS = {
-  PARENT: {
-    userId: 'mock-west-parent-user',
-    displayName: '何家长',
-    roles: [{ code: 'PARENT', campusId: 'campus-west' }],
-  },
-  TEACHER: {
-    userId: 'mock-west-teacher-user',
-    displayName: '周老师',
-    roles: [{ code: 'TEACHER', campusId: 'campus-west' }],
-  },
-  CAMPUS_MANAGER: {
-    userId: 'mock-west-campus-manager-user',
-    displayName: '赵园长',
-    roles: [{ code: 'CAMPUS_MANAGER', campusId: 'campus-west' }],
-  },
-  PARTNER: {
-    userId: 'mock-west-partner-user',
-    displayName: '孙经理',
-    roles: [{ code: 'PARTNER', campusId: 'campus-west' }],
-  },
+  PARENT: mockSession('mock-west-parent-user', '何家长', 'PARENT', 'campus-west'),
+  TEACHER: mockSession('mock-west-teacher-user', '周老师', 'TEACHER', 'campus-west'),
+  CAMPUS_MANAGER: mockSession('mock-west-campus-manager-user', '赵园长', 'CAMPUS_MANAGER', 'campus-west'),
+  PARTNER: mockSession('mock-west-partner-user', '孙经理', 'PARTNER', 'campus-west'),
 } satisfies Record<string, SessionView>;
 
-const TEST_PHONE_ACCOUNTS: Readonly<Record<string, TestPhoneAccount>> = {
-  '13800000001': {
-    roleCode: 'PARENT',
-    loginCode: 'mock-demo-east-parent',
-    mockSession: MOCK_SESSIONS.PARENT,
-  },
-  '13800000002': {
-    roleCode: 'PARTNER',
-    loginCode: 'mock-demo-east-partner',
-    mockSession: MOCK_SESSIONS.PARTNER,
-  },
-  '13800000003': {
-    roleCode: 'TEACHER',
-    loginCode: 'mock-demo-east-teacher',
-    mockSession: MOCK_SESSIONS.TEACHER,
-  },
-  '13800000004': {
-    roleCode: 'CAMPUS_MANAGER',
-    loginCode: 'mock-demo-east-campus-manager',
-    mockSession: MOCK_SESSIONS.CAMPUS_MANAGER,
-  },
-  '13800000005': {
-    roleCode: 'SUPER_ADMIN',
-    loginCode: 'mock-demo-super-admin',
-    mockSession: MOCK_SESSIONS.SUPER_ADMIN,
-  },
-  '13800000006': {
-    roleCode: 'HR',
-    loginCode: 'mock-demo-hr',
-    mockSession: MOCK_SESSIONS.HR,
-  },
-  '13800000007': {
-    roleCode: 'FINANCE',
-    loginCode: 'mock-demo-finance',
-    mockSession: MOCK_SESSIONS.FINANCE,
-  },
-  '13800000008': {
-    roleCode: 'PARENT',
-    loginCode: 'mock-demo-west-parent',
-    mockSession: WEST_MOCK_SESSIONS.PARENT,
-  },
-  '13800000009': {
-    roleCode: 'TEACHER',
-    loginCode: 'mock-demo-west-teacher',
-    mockSession: WEST_MOCK_SESSIONS.TEACHER,
-  },
-  '13800000010': {
-    roleCode: 'CAMPUS_MANAGER',
-    loginCode: 'mock-demo-west-campus-manager',
-    mockSession: WEST_MOCK_SESSIONS.CAMPUS_MANAGER,
-  },
-  '13800000011': {
-    roleCode: 'PARTNER',
-    loginCode: 'mock-demo-west-partner',
-    mockSession: WEST_MOCK_SESSIONS.PARTNER,
-  },
-};
+const TEST_PHONE_ACCOUNTS: Readonly<Record<string, TestPhoneAccount>> =
+  Object.fromEntries(([
+    ['13800000001', 'PARENT', MOCK_SESSIONS.PARENT],
+    ['13800000002', 'PARTNER', MOCK_SESSIONS.PARTNER],
+    ['13800000003', 'TEACHER', MOCK_SESSIONS.TEACHER],
+    ['13800000004', 'CAMPUS_MANAGER', MOCK_SESSIONS.CAMPUS_MANAGER],
+    ['13800000005', 'SUPER_ADMIN', MOCK_SESSIONS.SUPER_ADMIN],
+    ['13800000006', 'HR', MOCK_SESSIONS.HR],
+    ['13800000007', 'FINANCE', MOCK_SESSIONS.FINANCE],
+    ['13800000008', 'PARENT', WEST_MOCK_SESSIONS.PARENT, 'mock-demo-west-parent'],
+    ['13800000009', 'TEACHER', WEST_MOCK_SESSIONS.TEACHER, 'mock-demo-west-teacher'],
+    ['13800000010', 'CAMPUS_MANAGER', WEST_MOCK_SESSIONS.CAMPUS_MANAGER, 'mock-demo-west-campus-manager'],
+    ['13800000011', 'PARTNER', WEST_MOCK_SESSIONS.PARTNER, 'mock-demo-west-partner'],
+    ['13800000012', 'OPERATOR', MOCK_SESSIONS.OPERATOR],
+  ] satisfies Array<[string, TestAccountCode, SessionView, string?]>)
+    .map(([phone, roleCode, mockSession, code]) => [phone, {
+      roleCode, mockSession, loginCode: code ?? MOCK_WECHAT_LOGIN_CODES[roleCode],
+    }]));
 
-const defaultStorage: SessionStorage = {
+export const defaultStorage: SessionStorage = {
   get: (key) =>
     typeof wx === 'undefined' ? undefined : wx.getStorageSync(key),
   set: (key, value) => {
@@ -273,7 +192,7 @@ const defaultStorage: SessionStorage = {
   },
 };
 
-const defaultRequest: SessionHttpRequest = (options) =>
+export const defaultRequest: SessionHttpRequest = (options) =>
   wx.request({
     url: options.url,
     method: options.method,
@@ -287,7 +206,7 @@ const defaultRequest: SessionHttpRequest = (options) =>
     fail: options.fail,
   });
 
-const defaultLoginCodeProvider: SessionLoginCodeProvider = () =>
+export const defaultLoginCodeProvider: SessionLoginCodeProvider = () =>
   new Promise((resolve, reject) => {
     if (typeof wx === 'undefined') {
       reject(new Error('当前环境无法调用微信登录'));
@@ -331,20 +250,14 @@ function cloneSession(session: SessionView): SessionView {
   };
 }
 
-function cloneMockSession(code: TestAccountCode): SessionView {
-  return cloneSession(MOCK_SESSIONS[code]);
+function isTestAccountCode(value: unknown): value is TestAccountCode {
+  return typeof value === 'string' &&
+    Object.prototype.hasOwnProperty.call(MOCK_SESSIONS, value);
 }
 
-function isTestAccountCode(value: unknown): value is TestAccountCode {
-  return (
-    value === 'PARENT' ||
-    value === 'PARTNER' ||
-    value === 'TEACHER' ||
-    value === 'CAMPUS_MANAGER' ||
-    value === 'SUPER_ADMIN' ||
-    value === 'FINANCE' ||
-    value === 'HR'
-  );
+export function resolveLocalTestAccountCode(value: unknown): TestAccountCode | undefined {
+  if (isTestAccountCode(value)) return value;
+  return typeof value === 'string' ? TEST_PHONE_ACCOUNTS[value]?.roleCode : undefined;
 }
 
 function decodeAuthSessionEnvelope(value: unknown): {
@@ -387,6 +300,9 @@ export function resolveRoleBootstrap(
   }
 
   const role = session.roles[0];
+  if (role.code === 'OPERATOR' && role.campusId === null) {
+    return { kind: 'navigate', url: '/pages/operator/headquarters/index' };
+  }
   const route = ROLE_OPTIONS.find((option) => option.code === role.code);
   if (!route) {
     return { kind: 'forbidden' };
@@ -428,16 +344,16 @@ export class SessionService {
   private readonly loginCodeProvider: SessionLoginCodeProvider;
   private readonly testAccountSwitcherEnabled: boolean;
   private readonly mockWechatAccount: TestAccountCode;
+  private revision = 0;
+  private readonly auth: SessionService;
+  private recovery?: { revision: number; promise: Promise<SessionView | null> };
 
-  constructor(options: SessionServiceOptions) {
+  constructor(options: SessionServiceOptions, auth?: SessionService) {
+    this.auth = auth?.auth ?? this;
     this.dataDriver = options.dataDriver;
     this.apiBaseUrl = (options.apiBaseUrl ?? '').replace(/\/$/, '');
-    if (typeof options.accessToken === 'function') {
-      this.accessToken = options.accessToken;
-    } else {
-      const accessToken = options.accessToken ?? '';
-      this.accessToken = () => accessToken;
-    }
+    const token = options.accessToken ?? '';
+    this.accessToken = typeof token === 'function' ? token : () => token;
     this.storage = options.storage ?? defaultStorage;
     this.request = options.request ?? defaultRequest;
     this.loginCodeProvider =
@@ -453,22 +369,32 @@ export class SessionService {
     }
     if (this.dataDriver === 'mock') {
       const selected = this.storage.get(CURRENT_TEST_ACCOUNT_KEY);
+      if (selected === HEADQUARTERS_ACCOUNT && !this.canUseHeadquarters()) return null;
       if (isTestAccountCode(selected)) {
-        return cloneMockSession(selected);
+        return cloneSession(MOCK_SESSIONS[selected]);
       }
       if (typeof selected === 'string' && TEST_PHONE_ACCOUNTS[selected]) {
         return cloneSession(TEST_PHONE_ACCOUNTS[selected].mockSession);
       }
       return null;
     }
+    const revision = this.auth.revision;
     const cachedSession = await this.loadApiSession();
+    this.checkRevision(revision);
     if (cachedSession || this.testAccountSwitcherEnabled) {
       return cachedSession;
     }
-    return this.loginWechatSilently();
+    if (this.recovery?.revision !== revision) {
+      const promise = this.loginWechatSilently().finally(() => {
+        if (this.recovery?.promise === promise) this.recovery = undefined;
+      });
+      this.recovery = { revision, promise };
+    }
+    return this.recovery.promise;
   }
 
   logout(): void {
+    this.auth.revision += 1;
     this.storage.set(LOGGED_OUT_KEY, true);
     this.storage.set(CURRENT_TEST_ACCOUNT_KEY, '');
     if (this.dataDriver === 'api') this.persistAccessToken('');
@@ -485,19 +411,43 @@ export class SessionService {
     if (!normalizedPhoneCode) {
       throw new Error('未获取到微信手机号授权凭证');
     }
+    const revision = ++this.auth.revision;
     const code = await this.loginCodeProvider();
+    this.checkRevision(revision);
     const session = await this.requestWechatSession(
       '/auth/wechat/staff/bind-phone',
       { code, phoneCode: normalizedPhoneCode },
       idempotencyKey,
     );
-    this.storage.set(LOGGED_OUT_KEY, false);
-    this.persistAccessToken(session.accessToken);
-    return session.me;
+    return this.acceptSession(session, revision);
   }
 
   canSwitchTestAccount(): boolean {
     return this.testAccountSwitcherEnabled;
+  }
+
+  beginExplicitLogin(): () => boolean {
+    this.auth.revision++;
+    return this.sessionGuard();
+  }
+
+  sessionGuard(): () => boolean {
+    const revision = this.auth.revision;
+    return () => revision === this.auth.revision;
+  }
+
+  private canUseHeadquarters(): boolean {
+    const raw = this.storage.get(LOCAL_RUNTIME_STORAGE_KEY);
+    return this.dataDriver === 'mock' && isRecord(raw) && raw.enableTestAccountSwitcher === true;
+  }
+
+  private requireTestAccount(code: TestAccountCode): void {
+    if (!isTestAccountCode(code) || (code === HEADQUARTERS_ACCOUNT && !this.canUseHeadquarters()))
+      throw new Error('当前环境不支持此登录方式');
+  }
+
+  private checkRevision(revision: number) {
+    if (revision !== this.auth.revision) throw new Error('登录状态已更新，请重新登录');
   }
 
   usesMockWechatSimulation(): boolean {
@@ -505,28 +455,27 @@ export class SessionService {
   }
 
   async loginWithMockWechat(): Promise<SessionView> {
+    this.requireTestAccount(this.mockWechatAccount);
     if (!this.usesMockWechatSimulation()) {
       throw new Error('当前环境不支持模拟微信登录');
     }
+    const revision = ++this.auth.revision;
     if (this.dataDriver === 'mock') {
-      this.storage.set(LOGGED_OUT_KEY, false);
-      this.storage.set(CURRENT_TEST_ACCOUNT_KEY, this.mockWechatAccount);
-      return cloneMockSession(this.mockWechatAccount);
+      return this.selectMock(this.mockWechatAccount, MOCK_SESSIONS[this.mockWechatAccount]);
     }
     const session = await this.requestMockSession(
       MOCK_WECHAT_LOGIN_CODES[this.mockWechatAccount],
     );
-    this.storage.set(LOGGED_OUT_KEY, false);
-    this.storage.set(CURRENT_TEST_ACCOUNT_KEY, '');
-    this.persistAccessToken(session.accessToken);
-    return session.me;
+    return this.acceptSession(session, revision);
   }
 
   listTestAccounts(): TestAccountOption[] {
     if (!this.canSwitchTestAccount()) {
       return [];
     }
-    return ROLE_OPTIONS.map(({ code, label }) => ({ code, label }));
+    const accounts: TestAccountOption[] = ROLE_OPTIONS.map(({ code, label }) => ({ code, label }));
+    if (this.canUseHeadquarters()) accounts.push({ code: HEADQUARTERS_ACCOUNT, label: '总部运营端' });
+    return accounts;
   }
 
   needsTestAccountSelection(): boolean {
@@ -539,19 +488,16 @@ export class SessionService {
   }
 
   async switchTestAccount(code: TestAccountCode): Promise<SessionView> {
+    this.requireTestAccount(code);
     if (!this.canSwitchTestAccount()) {
       throw new Error('当前环境不支持此登录方式');
     }
+    const revision = ++this.auth.revision;
     if (this.dataDriver === 'mock') {
-      this.storage.set(LOGGED_OUT_KEY, false);
-      this.storage.set(CURRENT_TEST_ACCOUNT_KEY, code);
-      return cloneMockSession(code);
+      return this.selectMock(code, MOCK_SESSIONS[code]);
     }
     const session = await this.requestMockSession(MOCK_WECHAT_LOGIN_CODES[code]);
-    this.storage.set(LOGGED_OUT_KEY, false);
-    this.storage.set(CURRENT_TEST_ACCOUNT_KEY, '');
-    this.persistAccessToken(session.accessToken);
-    return session.me;
+    return this.acceptSession(session, revision);
   }
 
   async requestTestPhoneCode(
@@ -578,18 +524,30 @@ export class SessionService {
     if (!account || verificationCode.trim() !== TEST_PHONE_CODE) {
       throw new Error('手机号或验证码错误');
     }
-    this.storage.set(LOGGED_OUT_KEY, false);
+    const revision = ++this.auth.revision;
     if (this.dataDriver === 'mock') {
-      this.storage.set(CURRENT_TEST_ACCOUNT_KEY, normalizedPhone);
-      return cloneSession(account.mockSession);
+      return this.selectMock(normalizedPhone, account.mockSession);
     }
     const session = await this.requestMockSession(account.loginCode);
+    return this.acceptSession(session, revision);
+  }
+
+  private selectMock(code: string, session: SessionView): SessionView {
+    this.storage.set(LOGGED_OUT_KEY, false);
+    this.storage.set(CURRENT_TEST_ACCOUNT_KEY, code);
+    return cloneSession(session);
+  }
+
+  private acceptSession(session: { accessToken: string; me: SessionView }, revision: number): SessionView {
+    this.checkRevision(revision);
+    this.storage.set(LOGGED_OUT_KEY, false);
     this.storage.set(CURRENT_TEST_ACCOUNT_KEY, '');
     this.persistAccessToken(session.accessToken);
     return session.me;
   }
 
   private loadApiSession(): Promise<SessionView | null> {
+    const revision = this.auth.revision;
     const token = this.accessToken().trim();
     if (!token || !this.apiBaseUrl) {
       return Promise.resolve(null);
@@ -600,20 +558,19 @@ export class SessionService {
         method: 'GET',
         header: { Authorization: `Bearer ${token}` },
         success: (response) => {
-          if (response.statusCode === 401) {
-            this.persistAccessToken('');
-            resolve(null);
-            return;
-          }
-          if (response.statusCode >= 200 && response.statusCode < 300) {
-            try {
-              resolve(decodeSessionEnvelope(response.data));
-            } catch (error) {
-              reject(error);
+          try {
+            this.checkRevision(revision);
+            if (response.statusCode === 401) {
+              this.persistAccessToken('');
+              resolve(null);
+              return;
             }
-            return;
-          }
-          reject(new Error('会话加载失败'));
+            if (response.statusCode >= 200 && response.statusCode < 300) {
+              resolve(decodeSessionEnvelope(response.data));
+              return;
+            }
+            throw new Error('会话加载失败');
+          } catch (error) { reject(error); }
         },
         fail: (error) =>
           reject(
@@ -626,15 +583,19 @@ export class SessionService {
   }
 
   private async loginWechatSilently(): Promise<SessionView | null> {
+    const revision = this.auth.revision;
     const code = await this.loginCodeProvider();
     try {
+      this.checkRevision(revision);
       const session = await this.requestWechatSession(
         '/auth/wechat/login',
         { code },
       );
+      this.checkRevision(revision);
       this.persistAccessToken(session.accessToken);
       return session.me;
     } catch (error) {
+      this.checkRevision(revision);
       if (
         error instanceof SessionServiceError &&
         error.code === 'STAFF_PHONE_BINDING_REQUIRED'
@@ -649,6 +610,7 @@ export class SessionService {
     path: string,
     data: Record<string, string>,
     idempotencyKey?: string,
+    mock = false,
   ): Promise<{ accessToken: string; me: SessionView }> {
     if (!this.apiBaseUrl) {
       return Promise.reject(new Error('API 地址不能为空'));
@@ -671,19 +633,19 @@ export class SessionService {
             }
             return;
           }
-          reject(this.toWechatAuthError(response.statusCode, response.data));
+          reject(this.toWechatAuthError(response.statusCode, response.data, mock));
         },
         fail: (error) =>
           reject(
             new Error(
-              error instanceof Error ? error.message : '微信登录网络请求失败',
+              error instanceof Error ? error.message : mock ? '模拟微信登录网络请求失败' : '微信登录网络请求失败',
             ),
           ),
       });
     });
   }
 
-  private toWechatAuthError(statusCode: number, body: unknown): Error {
+  private toWechatAuthError(statusCode: number, body: unknown, mock = false): Error {
     const code =
       isRecord(body) && typeof body.code === 'string'
         ? body.code
@@ -695,10 +657,10 @@ export class SessionService {
       WECHAT_PROVIDER_RESPONSE_INVALID: '微信授权信息无效，请重试',
     };
     const message =
-      stableMessages[code] ??
+      (!mock && stableMessages[code]) ||
       (statusCode >= 500
         ? '服务器处理失败，请稍后重试'
-        : '微信登录失败，请重试');
+        : mock ? '模拟微信登录失败，请重试' : '微信登录失败，请重试');
     return new SessionServiceError(statusCode, code, message);
   }
 
@@ -718,47 +680,7 @@ export class SessionService {
   private requestMockSession(
     code: string,
   ): Promise<{ accessToken: string; me: SessionView }> {
-    if (!this.apiBaseUrl) {
-      return Promise.reject(new Error('API 地址不能为空'));
-    }
-    return new Promise((resolve, reject) => {
-      this.request({
-        url: `${this.apiBaseUrl}/auth/login`,
-        method: 'POST',
-        header: { 'Content-Type': 'application/json' },
-        data: { code },
-        success: (response) => {
-          if (response.statusCode >= 200 && response.statusCode < 300) {
-            try {
-              resolve(decodeAuthSessionEnvelope(response.data));
-            } catch (error) {
-              reject(error);
-            }
-            return;
-          }
-          reject(
-            new SessionServiceError(
-              response.statusCode,
-              isRecord(response.data) &&
-              typeof response.data.code === 'string'
-                ? response.data.code
-                : 'UNKNOWN_ERROR',
-              response.statusCode >= 500
-                ? '服务器处理失败，请稍后重试'
-                : '模拟微信登录失败，请重试',
-            ),
-          );
-        },
-        fail: (error) =>
-          reject(
-            new Error(
-              error instanceof Error
-                ? error.message
-                : '模拟微信登录网络请求失败',
-            ),
-          ),
-      });
-    });
+    return this.requestWechatSession('/auth/login', { code }, undefined, true);
   }
 }
 

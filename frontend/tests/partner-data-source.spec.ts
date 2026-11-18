@@ -2,6 +2,13 @@ import { MockPartnerDataSource } from '../data/mock-partner-data-source';
 import { PartnerService } from '../services/partner.service';
 
 describe('partner mock data source and service', () => {
+  it('returns a profile count and keeps a zero-student campus available', async () => {
+    await expect(new MockPartnerDataSource().getProfile()).resolves.toMatchObject({
+      activeStudentCount: 106,
+    });
+    await expect(new PartnerService(new MockPartnerDataSource({ scenario: 'empty' })).loadProfile())
+      .resolves.toMatchObject({ status: 'success', data: { activeStudentCount: 0 } });
+  });
   it('returns deterministic Chinese campus facts', async () => {
     const source = new MockPartnerDataSource();
     await expect(source.getDashboard()).resolves.toMatchObject({
@@ -32,6 +39,27 @@ describe('partner mock data source and service', () => {
       status: 'error',
       message: '合作方端数据加载失败，请稍后重试',
     });
+  });
+
+  it('filters mock available totals before pagination and AND-combines the name', async () => {
+    const source = new MockPartnerDataSource();
+    const all = await source.listStudents({ page: 1, pageSize: 100 });
+    for (const balanceBand of ['ZERO', 'LTE_FIVE', 'GT_FIVE'] as const) {
+      const expected = all.data.filter((student) => {
+        const available = student.availableTotalUnits ?? (
+          student.mainBalanceUnits + student.giftBalanceUnits
+          - (student.mainReservedUnits ?? 0) - (student.giftReservedUnits ?? 0)
+        );
+        return balanceBand === 'ZERO' ? available === 0
+          : balanceBand === 'LTE_FIVE' ? available <= 500 : available > 500;
+      });
+      const filtered = await source.listStudents({ page: 1, pageSize: 1, balanceBand });
+      expect(filtered.meta.total).toBe(expected.length);
+      expect(filtered.data).toEqual(expected.slice(0, 1));
+    }
+    const result = await source.listStudents({ page: 1, pageSize: 20, query: '林', balanceBand: 'GT_FIVE' });
+    expect(result.data).toEqual([]);
+    expect(result.meta.total).toBe(0);
   });
 
   it('paginates all six read-only detail collections', async () => {

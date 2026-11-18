@@ -6,29 +6,18 @@
     {
       "root": "pages/parent",
       "pages": [
-        "home/index",
-        "hours/index",
-        "leave/index",
-        "profile/index",
-        "student-profile/index",
-        "updates/index",
-        "group-campaigns/index",
-        "group-detail/index",
-        "group-orders/index",
-        "campuses/index"
+        "home/index", "hours/index", "leave/index",
+        "profile/index", "student-profile/index", "profile-setup/index",
+        "updates/index", "group-campaigns/index", "group-detail/index",
+        "group-orders/index", "campuses/index", "courses/index",
+        "campaign-registration/index"
       ]
     },
     {
       "root": "pages/teacher",
       "pages": [
-        "home/index",
-        "schedule/index",
-        "students/index",
-        "student-detail/index",
-        "lesson/index",
-        "feedback/index",
-        "feedback-detail/index",
-        "records/index",
+        "home/index","schedule/index","students/index","student-detail/index","lesson/index","feedback/index",
+        "feedback-detail/index","records/index",
         "ledger/index",
         "profile/index",
         "settings/index",
@@ -49,6 +38,15 @@
         "warnings/index",
         "campus-settings/index",
         "profile/index"
+      ]
+    },
+    {
+      "root": "pages/operator",
+      "pages": [
+        "home/index", "profile/index", "leave-requests/index",
+        "students/index", "student-detail/index", "teachers/index",
+        "student-form/index", "schedule/index", "schedule-editor/index",
+        "warnings/index", "campus-settings/index", "teacher-archives/index","rankings/index","lesson-account/index","earnings/index","headquarters/index"
       ]
     },
     {
@@ -73,27 +71,13 @@
         "settings/index",
         "role-permissions/index",
         "audit-logs/index",
-        "brand/index",
-        "group-campaigns/index",
-        "group-orders/index",
-        "staff-accounts/index",
-        "finance-review/index"
+        "brand/index", "group-campaigns/index", "group-orders/index", "staff-accounts/index", "partner-applications/index", "finance-review/index", "course-products/index", "campaign-reviews/index", "campaign-review-detail/index", "partner-withdrawals/index"
       ]
     },
     {
       "root": "pages/partner",
       "pages": [
-        "home/index",
-        "students/index",
-        "student-detail/index",
-        "warnings/index",
-        "attendance/index",
-        "teachers/index",
-        "profile/index",
-        "earnings/index",
-        "operations/index",
-        "group-campaigns/index",
-        "group-detail/index"
+        "home/index","students/index","student-detail/index","warnings/index","attendance/index","teachers/index","profile/index","earnings/index","lesson-account/index","operations/index","group-campaigns/index","group-detail/index","application/index","login/index","campaign-editor/index","rankings/index","withdrawals/index"
       ]
     },
     {

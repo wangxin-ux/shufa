@@ -1,0 +1,3826 @@
+{
+  "expectedWidth": 430,
+  "inputs": [
+    {
+      "sha256": "3398592107387ACCCECAF722C24427F252F7B68E5EC18EFD97CD3B59DD9BF28B",
+      "path": "frontend/pages/parent/courses/index.ts"
+    },
+    {
+      "sha256": "5FB79ADE73A22EAA8F6BFC8B2EF8A7CF5D747C15D80DEDD818595BC1EA198DE7",
+      "path": "frontend/pages/parent/courses/index.wxml"
+    },
+    {
+      "sha256": "8ABEEFC893EE054A0AEE32264CC5DDCE9DFB86360A19494BE87F2CD2C7A4F233",
+      "path": "frontend/pages/parent/courses/index.wxss"
+    },
+    {
+      "sha256": "9B5508C045A0688E48C89BF7AD54882D7F85437BD12023892F1A5676BD71EBDD",
+      "path": "frontend/services/parent-course-catalog.presenter.ts"
+    },
+    {
+      "sha256": "F94C7FA1050A74784A96F102170E588A5EA052FFC3B9D9B5D4B0F1ED16FC3A62",
+      "path": "frontend/pages/parent/assets/fonts/pdf-display-subset.woff"
+    },
+    {
+      "sha256": "55C071692BF060269153A5072328BE3F981D05B8976D679592EB95AF4205A0C1",
+      "path": "docs/verification/fixtures/parent-courses-price-input.json"
+    },
+    {
+      "sha256": "01E527CD7ED4BBB0621CBC88311224B3851892BD004DAE11F10813463ECE94BD",
+      "path": "docs/verification/ui-source-geometry-2026-10-10/psd-geometry-v2.json"
+    },
+    {
+      "sha256": "D2BF2583332CA837A9A4306FBC7E35F14587E2BF1E41D038C9ADCAE968A01F82",
+      "path": ".tools-automation/verify_parent_course_prices.ps1"
+    }
+  ],
+  "scope": "Synthetic raw GET data through actual Page/presenter; no business writes",
+  "events": [
+    {
+      "label": "mock-home-baseline",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": true,
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "result": {
+            "result": {
+              "route": "pages/parent/home/index",
+              "viewState": "ready",
+              "driver": "mock",
+              "window": {
+                "pixelRatio": 3,
+                "safeArea": {
+                  "top": 54,
+                  "left": 0,
+                  "right": 430,
+                  "bottom": 898,
+                  "width": 430,
+                  "height": 844
+                },
+                "screenWidth": 430,
+                "screenHeight": 932,
+                "screenTop": 0,
+                "windowWidth": 430,
+                "windowHeight": 932,
+                "statusBarHeight": 54
+              },
+              "capsule": {
+                "width": 87,
+                "height": 31,
+                "left": 336,
+                "top": 58,
+                "right": 423,
+                "bottom": 89
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "navigate-course-page",
+      "tool": "automation_navigate",
+      "response": {
+        "ok": true,
+        "tool": "automation_navigate",
+        "clientName": "Codex",
+        "result": {
+          "success": true
+        }
+      }
+    },
+    {
+      "label": "raw-quotes-through-current-page",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": true,
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "result": {
+            "result": {
+              "fontLoaded": true,
+              "viewState": "ready",
+              "rawPriceFen": [
+                0,
+                1,
+                488000,
+                388001,
+                1444444400,
+                2147483647
+              ],
+              "courses": [
+                {
+                  "courseName": "专业美术1",
+                  "primaryQuote": {
+                    "productId": "synthetic-price-0",
+                    "productName": "专业美术课包",
+                    "classType": "创意思维综合提升常规班",
+                    "priceFen": 0,
+                    "mainUnits": 99900,
+                    "giftUnits": 99900,
+                    "validityDays": 365,
+                    "campus": {
+                      "id": "10000000-0000-4000-8000-000000000001",
+                      "name": "京南一品儿童美术综合教学中心校区",
+                      "address": "测试路",
+                      "contactPhone": null,
+                      "latitude": 28.2,
+                      "longitude": 112.9,
+                      "distanceMeters": null
+                    }
+                  },
+                  "classTypes": [
+                    {
+                      "name": "创意思维综合提升常规班",
+                      "quotes": [
+                        {
+                          "productId": "synthetic-price-0",
+                          "productName": "专业美术课包",
+                          "classType": "创意思维综合提升常规班",
+                          "priceFen": 0,
+                          "mainUnits": 99900,
+                          "giftUnits": 99900,
+                          "validityDays": 365,
+                          "campus": {
+                            "id": "10000000-0000-4000-8000-000000000001",
+                            "name": "京南一品儿童美术综合教学中心校区",
+                            "address": "测试路",
+                            "contactPhone": null,
+                            "latitude": 28.2,
+                            "longitude": 112.9,
+                            "distanceMeters": null
+                          },
+                          "priceLabel": "0¥",
+                          "priceSize": 36,
+                          "unitsLabel": "999节 + 赠999节"
+                        }
+                      ]
+                    }
+                  ],
+                  "productId": "synthetic-price-0",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 0,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  },
+                  "priceLabel": "0¥",
+                  "priceSize": 36,
+                  "unitsLabel": "999节 + 赠999节",
+                  "quotePanelHeight": 108
+                },
+                {
+                  "courseName": "专业美术2",
+                  "primaryQuote": {
+                    "productId": "synthetic-price-1",
+                    "productName": "专业美术课包",
+                    "classType": "创意思维综合提升常规班",
+                    "priceFen": 1,
+                    "mainUnits": 99900,
+                    "giftUnits": 99900,
+                    "validityDays": 365,
+                    "campus": {
+                      "id": "10000000-0000-4000-8000-000000000001",
+                      "name": "京南一品儿童美术综合教学中心校区",
+                      "address": "测试路",
+                      "contactPhone": null,
+                      "latitude": 28.2,
+                      "longitude": 112.9,
+                      "distanceMeters": null
+                    }
+                  },
+                  "classTypes": [
+                    {
+                      "name": "创意思维综合提升常规班",
+                      "quotes": [
+                        {
+                          "productId": "synthetic-price-1",
+                          "productName": "专业美术课包",
+                          "classType": "创意思维综合提升常规班",
+                          "priceFen": 1,
+                          "mainUnits": 99900,
+                          "giftUnits": 99900,
+                          "validityDays": 365,
+                          "campus": {
+                            "id": "10000000-0000-4000-8000-000000000001",
+                            "name": "京南一品儿童美术综合教学中心校区",
+                            "address": "测试路",
+                            "contactPhone": null,
+                            "latitude": 28.2,
+                            "longitude": 112.9,
+                            "distanceMeters": null
+                          },
+                          "priceLabel": "0.01¥",
+                          "priceSize": 36,
+                          "unitsLabel": "999节 + 赠999节"
+                        }
+                      ]
+                    }
+                  ],
+                  "productId": "synthetic-price-1",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 1,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  },
+                  "priceLabel": "0.01¥",
+                  "priceSize": 36,
+                  "unitsLabel": "999节 + 赠999节",
+                  "quotePanelHeight": 108
+                },
+                {
+                  "courseName": "专业美术3",
+                  "primaryQuote": {
+                    "productId": "synthetic-price-2",
+                    "productName": "专业美术课包",
+                    "classType": "创意思维综合提升常规班",
+                    "priceFen": 488000,
+                    "mainUnits": 99900,
+                    "giftUnits": 99900,
+                    "validityDays": 365,
+                    "campus": {
+                      "id": "10000000-0000-4000-8000-000000000001",
+                      "name": "京南一品儿童美术综合教学中心校区",
+                      "address": "测试路",
+                      "contactPhone": null,
+                      "latitude": 28.2,
+                      "longitude": 112.9,
+                      "distanceMeters": null
+                    }
+                  },
+                  "classTypes": [
+                    {
+                      "name": "创意思维综合提升常规班",
+                      "quotes": [
+                        {
+                          "productId": "synthetic-price-2",
+                          "productName": "专业美术课包",
+                          "classType": "创意思维综合提升常规班",
+                          "priceFen": 488000,
+                          "mainUnits": 99900,
+                          "giftUnits": 99900,
+                          "validityDays": 365,
+                          "campus": {
+                            "id": "10000000-0000-4000-8000-000000000001",
+                            "name": "京南一品儿童美术综合教学中心校区",
+                            "address": "测试路",
+                            "contactPhone": null,
+                            "latitude": 28.2,
+                            "longitude": 112.9,
+                            "distanceMeters": null
+                          },
+                          "priceLabel": "4880¥",
+                          "priceSize": 36,
+                          "unitsLabel": "999节 + 赠999节"
+                        }
+                      ]
+                    }
+                  ],
+                  "productId": "synthetic-price-2",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 488000,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  },
+                  "priceLabel": "4880¥",
+                  "priceSize": 36,
+                  "unitsLabel": "999节 + 赠999节",
+                  "quotePanelHeight": 108
+                },
+                {
+                  "courseName": "专业美术4",
+                  "primaryQuote": {
+                    "productId": "synthetic-price-3",
+                    "productName": "专业美术课包",
+                    "classType": "创意思维综合提升常规班",
+                    "priceFen": 388001,
+                    "mainUnits": 99900,
+                    "giftUnits": 99900,
+                    "validityDays": 365,
+                    "campus": {
+                      "id": "10000000-0000-4000-8000-000000000001",
+                      "name": "京南一品儿童美术综合教学中心校区",
+                      "address": "测试路",
+                      "contactPhone": null,
+                      "latitude": 28.2,
+                      "longitude": 112.9,
+                      "distanceMeters": null
+                    }
+                  },
+                  "classTypes": [
+                    {
+                      "name": "创意思维综合提升常规班",
+                      "quotes": [
+                        {
+                          "productId": "synthetic-price-3",
+                          "productName": "专业美术课包",
+                          "classType": "创意思维综合提升常规班",
+                          "priceFen": 388001,
+                          "mainUnits": 99900,
+                          "giftUnits": 99900,
+                          "validityDays": 365,
+                          "campus": {
+                            "id": "10000000-0000-4000-8000-000000000001",
+                            "name": "京南一品儿童美术综合教学中心校区",
+                            "address": "测试路",
+                            "contactPhone": null,
+                            "latitude": 28.2,
+                            "longitude": 112.9,
+                            "distanceMeters": null
+                          },
+                          "priceLabel": "3880.01¥",
+                          "priceSize": 23,
+                          "unitsLabel": "999节 + 赠999节"
+                        }
+                      ]
+                    }
+                  ],
+                  "productId": "synthetic-price-3",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 388001,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  },
+                  "priceLabel": "3880.01¥",
+                  "priceSize": 23,
+                  "unitsLabel": "999节 + 赠999节",
+                  "quotePanelHeight": 108
+                },
+                {
+                  "courseName": "专业美术5",
+                  "primaryQuote": {
+                    "productId": "synthetic-price-4",
+                    "productName": "专业美术课包",
+                    "classType": "创意思维综合提升常规班",
+                    "priceFen": 1444444400,
+                    "mainUnits": 99900,
+                    "giftUnits": 99900,
+                    "validityDays": 365,
+                    "campus": {
+                      "id": "10000000-0000-4000-8000-000000000001",
+                      "name": "京南一品儿童美术综合教学中心校区",
+                      "address": "测试路",
+                      "contactPhone": null,
+                      "latitude": 28.2,
+                      "longitude": 112.9,
+                      "distanceMeters": null
+                    }
+                  },
+                  "classTypes": [
+                    {
+                      "name": "创意思维综合提升常规班",
+                      "quotes": [
+                        {
+                          "productId": "synthetic-price-4",
+                          "productName": "专业美术课包",
+                          "classType": "创意思维综合提升常规班",
+                          "priceFen": 1444444400,
+                          "mainUnits": 99900,
+                          "giftUnits": 99900,
+                          "validityDays": 365,
+                          "campus": {
+                            "id": "10000000-0000-4000-8000-000000000001",
+                            "name": "京南一品儿童美术综合教学中心校区",
+                            "address": "测试路",
+                            "contactPhone": null,
+                            "latitude": 28.2,
+                            "longitude": 112.9,
+                            "distanceMeters": null
+                          },
+                          "priceLabel": "14444444¥",
+                          "priceSize": 20,
+                          "unitsLabel": "999节 + 赠999节"
+                        }
+                      ]
+                    }
+                  ],
+                  "productId": "synthetic-price-4",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 1444444400,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  },
+                  "priceLabel": "14444444¥",
+                  "priceSize": 20,
+                  "unitsLabel": "999节 + 赠999节",
+                  "quotePanelHeight": 108
+                },
+                {
+                  "courseName": "专业美术与创意思维综合提升课程",
+                  "primaryQuote": {
+                    "productId": "synthetic-price-5",
+                    "productName": "专业美术课包",
+                    "classType": "创意思维综合提升常规班",
+                    "priceFen": 2147483647,
+                    "mainUnits": 99900,
+                    "giftUnits": 99900,
+                    "validityDays": 365,
+                    "campus": {
+                      "id": "10000000-0000-4000-8000-000000000001",
+                      "name": "京南一品儿童美术综合教学中心校区",
+                      "address": "测试路",
+                      "contactPhone": null,
+                      "latitude": 28.2,
+                      "longitude": 112.9,
+                      "distanceMeters": null
+                    }
+                  },
+                  "classTypes": [
+                    {
+                      "name": "创意思维综合提升常规班",
+                      "quotes": [
+                        {
+                          "productId": "synthetic-price-5",
+                          "productName": "专业美术课包",
+                          "classType": "创意思维综合提升常规班",
+                          "priceFen": 2147483647,
+                          "mainUnits": 99900,
+                          "giftUnits": 99900,
+                          "validityDays": 365,
+                          "campus": {
+                            "id": "10000000-0000-4000-8000-000000000001",
+                            "name": "京南一品儿童美术综合教学中心校区",
+                            "address": "测试路",
+                            "contactPhone": null,
+                            "latitude": 28.2,
+                            "longitude": 112.9,
+                            "distanceMeters": null
+                          },
+                          "priceLabel": "21474836.47¥",
+                          "priceSize": 15,
+                          "unitsLabel": "999节 + 赠999节"
+                        }
+                      ]
+                    }
+                  ],
+                  "productId": "synthetic-price-5",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 2147483647,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  },
+                  "priceLabel": "21474836.47¥",
+                  "priceSize": 15,
+                  "unitsLabel": "999节 + 赠999节",
+                  "quotePanelHeight": 108
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "route:prices-top",
+      "tool": "automation_runtime_info",
+      "response": {
+        "ok": true,
+        "tool": "automation_runtime_info",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "currentPage": {
+            "pageId": 124,
+            "path": "pages/parent/courses/index",
+            "query": {},
+            "route": "/pages/parent/courses/index",
+            "title": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "nodes:prices-top",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": true,
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "result": {
+            "result": {
+              "route": "pages/parent/courses/index",
+              "viewState": "ready",
+              "mapState": "ready",
+              "activeCourse": null,
+              "nodes": [
+                [
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 159.09375,
+                    "bottom": 196.23958587646484,
+                    "width": 75,
+                    "height": 37.145835876464844
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 223.09375,
+                    "bottom": 260.23958587646484,
+                    "width": 75,
+                    "height": 37.145835876464844
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 287.09375,
+                    "bottom": 324.23958587646484,
+                    "width": 75,
+                    "height": 37.145835876464844
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 355.46875,
+                    "bottom": 383.8645839691162,
+                    "width": 75,
+                    "height": 28.39583396911621
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 420.71875,
+                    "bottom": 446.6145839691162,
+                    "width": 75,
+                    "height": 25.89583396911621
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 490.21875,
+                    "bottom": 512.3645839691162,
+                    "width": 75,
+                    "height": 22.14583396911621
+                  }
+                ],
+                [
+                  {
+                    "left": 301.7708435058594,
+                    "right": 326.0000114440918,
+                    "top": 159.09375,
+                    "bottom": 184.09375,
+                    "width": 24.229167938232422,
+                    "height": 25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "20px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 276.71875,
+                    "right": 326,
+                    "top": 223.09375,
+                    "bottom": 248.09375,
+                    "width": 49.28125,
+                    "height": 25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "20px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 259.1770935058594,
+                    "right": 326.00001525878906,
+                    "top": 287.09375,
+                    "bottom": 312.09375,
+                    "width": 66.82292175292969,
+                    "height": 25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "20px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 267.04168701171875,
+                    "right": 326.0000228881836,
+                    "top": 355.46875,
+                    "bottom": 371.71875,
+                    "width": 58.958335876464844,
+                    "height": 16.25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "13px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 260.7083435058594,
+                    "right": 326.00001525878906,
+                    "top": 420.71875,
+                    "bottom": 434.46875,
+                    "width": 65.29167175292969,
+                    "height": 13.75,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "11px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 270.13543701171875,
+                    "right": 326.0000228881836,
+                    "top": 490.21875,
+                    "bottom": 500.21875,
+                    "width": 55.864585876464844,
+                    "height": 10,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "8px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  }
+                ],
+                null,
+                null,
+                [],
+                null,
+                {
+                  "id": "catalog-offers",
+                  "dataset": {},
+                  "left": 27,
+                  "right": 403,
+                  "top": 830,
+                  "bottom": 891,
+                  "width": 376,
+                  "height": 61
+                },
+                [],
+                null
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "screenshot:prices-top",
+      "tool": "simulator_screenshot",
+      "response": {
+        "ok": true,
+        "tool": "simulator_screenshot",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "path": "F:\\学习项目组\\小程序开发1\\docs\\verification\\parent-course-price-2026-10-11\\quote-font-430-v1\\prices-top.png",
+          "imageWidth": 549,
+          "imageHeight": 1190
+        }
+      }
+    },
+    {
+      "label": "scroll-catalog-to-long-prices",
+      "tool": "automation_element_action",
+      "response": {
+        "ok": true,
+        "tool": "automation_element_action",
+        "clientName": "Codex",
+        "result": {
+          "success": true
+        }
+      }
+    },
+    {
+      "label": "route:prices-bottom",
+      "tool": "automation_runtime_info",
+      "response": {
+        "ok": true,
+        "tool": "automation_runtime_info",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "currentPage": {
+            "pageId": 124,
+            "path": "pages/parent/courses/index",
+            "query": {},
+            "route": "/pages/parent/courses/index",
+            "title": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "nodes:prices-bottom",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": true,
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "result": {
+            "result": {
+              "route": "pages/parent/courses/index",
+              "viewState": "ready",
+              "mapState": "ready",
+              "activeCourse": null,
+              "nodes": [
+                [
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 115.09375,
+                    "bottom": 152.23958587646484,
+                    "width": 75,
+                    "height": 37.145835876464844
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 179.09375,
+                    "bottom": 216.23958587646484,
+                    "width": 75,
+                    "height": 37.145835876464844
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 243.09375,
+                    "bottom": 280.23958587646484,
+                    "width": 75,
+                    "height": 37.145835876464844
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 311.46875,
+                    "bottom": 339.8645839691162,
+                    "width": 75,
+                    "height": 28.39583396911621
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 376.71875,
+                    "bottom": 402.6145839691162,
+                    "width": 75,
+                    "height": 25.89583396911621
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 446.21875,
+                    "bottom": 468.3645839691162,
+                    "width": 75,
+                    "height": 22.14583396911621
+                  }
+                ],
+                [
+                  {
+                    "left": 301.7708435058594,
+                    "right": 326.0000114440918,
+                    "top": 115.09375,
+                    "bottom": 140.09375,
+                    "width": 24.229167938232422,
+                    "height": 25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "20px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 276.71875,
+                    "right": 326,
+                    "top": 179.09375,
+                    "bottom": 204.09375,
+                    "width": 49.28125,
+                    "height": 25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "20px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 259.1770935058594,
+                    "right": 326.00001525878906,
+                    "top": 243.09375,
+                    "bottom": 268.09375,
+                    "width": 66.82292175292969,
+                    "height": 25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "20px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 267.04168701171875,
+                    "right": 326.0000228881836,
+                    "top": 311.46875,
+                    "bottom": 327.71875,
+                    "width": 58.958335876464844,
+                    "height": 16.25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "13px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 260.7083435058594,
+                    "right": 326.00001525878906,
+                    "top": 376.71875,
+                    "bottom": 390.46875,
+                    "width": 65.29167175292969,
+                    "height": 13.75,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "11px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 270.13543701171875,
+                    "right": 326.0000228881836,
+                    "top": 446.21875,
+                    "bottom": 456.21875,
+                    "width": 55.864585876464844,
+                    "height": 10,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "8px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  }
+                ],
+                null,
+                null,
+                [],
+                null,
+                {
+                  "id": "catalog-offers",
+                  "dataset": {},
+                  "left": 27,
+                  "right": 403,
+                  "top": 830,
+                  "bottom": 891,
+                  "width": 376,
+                  "height": 61
+                },
+                [],
+                null
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "screenshot:prices-bottom",
+      "tool": "simulator_screenshot",
+      "response": {
+        "ok": true,
+        "tool": "simulator_screenshot",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "path": "F:\\学习项目组\\小程序开发1\\docs\\verification\\parent-course-price-2026-10-11\\quote-font-430-v1\\prices-bottom.png",
+          "imageWidth": 549,
+          "imageHeight": 1190
+        }
+      }
+    },
+    {
+      "label": "replay-class-type-event-with-current-course-name",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": true,
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "result": {
+            "result": {
+              "methodReplay": true,
+              "courseName": "专业美术与创意思维综合提升课程",
+              "quotePanelHeight": 108
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "route:long-price-expanded-top",
+      "tool": "automation_runtime_info",
+      "response": {
+        "ok": true,
+        "tool": "automation_runtime_info",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "currentPage": {
+            "pageId": 124,
+            "path": "pages/parent/courses/index",
+            "query": {},
+            "route": "/pages/parent/courses/index",
+            "title": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "nodes:long-price-expanded-top",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": true,
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "result": {
+            "result": {
+              "route": "pages/parent/courses/index",
+              "viewState": "ready",
+              "mapState": "ready",
+              "activeCourse": {
+                "courseName": "专业美术与创意思维综合提升课程",
+                "primaryQuote": {
+                  "productId": "synthetic-price-5",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 2147483647,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  }
+                },
+                "classTypes": [
+                  {
+                    "name": "创意思维综合提升常规班",
+                    "quotes": [
+                      {
+                        "productId": "synthetic-price-5",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      }
+                    ]
+                  }
+                ],
+                "productId": "synthetic-price-5",
+                "productName": "专业美术课包",
+                "classType": "创意思维综合提升常规班",
+                "priceFen": 2147483647,
+                "mainUnits": 99900,
+                "giftUnits": 99900,
+                "validityDays": 365,
+                "campus": {
+                  "id": "10000000-0000-4000-8000-000000000001",
+                  "name": "京南一品儿童美术综合教学中心校区",
+                  "address": "测试路",
+                  "contactPhone": null,
+                  "latitude": 28.2,
+                  "longitude": 112.9,
+                  "distanceMeters": null
+                },
+                "priceLabel": "21474836.47¥",
+                "priceSize": 15,
+                "unitsLabel": "999节 + 赠999节",
+                "quotePanelHeight": 108
+              },
+              "nodes": [
+                [
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 115.09375,
+                    "bottom": 152.23958587646484,
+                    "width": 75,
+                    "height": 37.145835876464844
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 179.09375,
+                    "bottom": 216.23958587646484,
+                    "width": 75,
+                    "height": 37.145835876464844
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 243.09375,
+                    "bottom": 280.23958587646484,
+                    "width": 75,
+                    "height": 37.145835876464844
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 311.46875,
+                    "bottom": 339.8645839691162,
+                    "width": 75,
+                    "height": 28.39583396911621
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 376.71875,
+                    "bottom": 402.6145839691162,
+                    "width": 75,
+                    "height": 25.89583396911621
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 446.21875,
+                    "bottom": 468.3645839691162,
+                    "width": 75,
+                    "height": 22.14583396911621
+                  }
+                ],
+                [
+                  {
+                    "left": 301.7708435058594,
+                    "right": 326.0000114440918,
+                    "top": 115.09375,
+                    "bottom": 140.09375,
+                    "width": 24.229167938232422,
+                    "height": 25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "20px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 276.71875,
+                    "right": 326,
+                    "top": 179.09375,
+                    "bottom": 204.09375,
+                    "width": 49.28125,
+                    "height": 25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "20px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 259.1770935058594,
+                    "right": 326.00001525878906,
+                    "top": 243.09375,
+                    "bottom": 268.09375,
+                    "width": 66.82292175292969,
+                    "height": 25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "20px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 267.04168701171875,
+                    "right": 326.0000228881836,
+                    "top": 311.46875,
+                    "bottom": 327.71875,
+                    "width": 58.958335876464844,
+                    "height": 16.25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "13px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 260.7083435058594,
+                    "right": 326.00001525878906,
+                    "top": 376.71875,
+                    "bottom": 390.46875,
+                    "width": 65.29167175292969,
+                    "height": 13.75,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "11px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 270.13543701171875,
+                    "right": 326.0000228881836,
+                    "top": 446.21875,
+                    "bottom": 456.21875,
+                    "width": 55.864585876464844,
+                    "height": 10,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "8px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  }
+                ],
+                {
+                  "id": "",
+                  "dataset": {},
+                  "left": 169,
+                  "right": 398,
+                  "top": 236,
+                  "bottom": 369.1979217529297,
+                  "width": 229,
+                  "height": 133.1979217529297
+                },
+                {
+                  "id": "",
+                  "dataset": {},
+                  "left": 179,
+                  "right": 388,
+                  "top": 276,
+                  "bottom": 337,
+                  "width": 209,
+                  "height": 61
+                },
+                [
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 303.16668701171875,
+                    "bottom": 331.16668701171875,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  }
+                ],
+                {
+                  "id": "",
+                  "dataset": {},
+                  "left": 179,
+                  "right": 388,
+                  "top": 342,
+                  "bottom": 361.1979179382324,
+                  "width": 209,
+                  "height": 19.197917938232422
+                },
+                {
+                  "id": "catalog-offers",
+                  "dataset": {},
+                  "left": 27,
+                  "right": 403,
+                  "top": 830,
+                  "bottom": 891,
+                  "width": 376,
+                  "height": 61
+                },
+                [
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 303.16668701171875,
+                    "bottom": 317.16668701171875,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 317.16668701171875,
+                    "bottom": 331.16668701171875,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  }
+                ],
+                {
+                  "scrollLeft": 0,
+                  "scrollTop": 0,
+                  "scrollWidth": 209,
+                  "scrollHeight": 65
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "screenshot:long-price-expanded-top",
+      "tool": "simulator_screenshot",
+      "response": {
+        "ok": true,
+        "tool": "simulator_screenshot",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "path": "F:\\学习项目组\\小程序开发1\\docs\\verification\\parent-course-price-2026-10-11\\quote-font-430-v1\\long-price-expanded-top.png",
+          "imageWidth": 549,
+          "imageHeight": 1190
+        }
+      }
+    },
+    {
+      "label": "scroll-expanded-quote-to-price",
+      "tool": "automation_element_action",
+      "response": {
+        "ok": true,
+        "tool": "automation_element_action",
+        "clientName": "Codex",
+        "result": {
+          "success": true
+        }
+      }
+    },
+    {
+      "label": "route:long-price-expanded-bottom",
+      "tool": "automation_runtime_info",
+      "response": {
+        "ok": true,
+        "tool": "automation_runtime_info",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "currentPage": {
+            "pageId": 124,
+            "path": "pages/parent/courses/index",
+            "query": {},
+            "route": "/pages/parent/courses/index",
+            "title": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "nodes:long-price-expanded-bottom",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": true,
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "result": {
+            "result": {
+              "route": "pages/parent/courses/index",
+              "viewState": "ready",
+              "mapState": "ready",
+              "activeCourse": {
+                "courseName": "专业美术与创意思维综合提升课程",
+                "primaryQuote": {
+                  "productId": "synthetic-price-5",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 2147483647,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  }
+                },
+                "classTypes": [
+                  {
+                    "name": "创意思维综合提升常规班",
+                    "quotes": [
+                      {
+                        "productId": "synthetic-price-5",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      }
+                    ]
+                  }
+                ],
+                "productId": "synthetic-price-5",
+                "productName": "专业美术课包",
+                "classType": "创意思维综合提升常规班",
+                "priceFen": 2147483647,
+                "mainUnits": 99900,
+                "giftUnits": 99900,
+                "validityDays": 365,
+                "campus": {
+                  "id": "10000000-0000-4000-8000-000000000001",
+                  "name": "京南一品儿童美术综合教学中心校区",
+                  "address": "测试路",
+                  "contactPhone": null,
+                  "latitude": 28.2,
+                  "longitude": 112.9,
+                  "distanceMeters": null
+                },
+                "priceLabel": "21474836.47¥",
+                "priceSize": 15,
+                "unitsLabel": "999节 + 赠999节",
+                "quotePanelHeight": 108
+              },
+              "nodes": [
+                [
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 115.09375,
+                    "bottom": 152.23958587646484,
+                    "width": 75,
+                    "height": 37.145835876464844
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 179.09375,
+                    "bottom": 216.23958587646484,
+                    "width": 75,
+                    "height": 37.145835876464844
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 243.09375,
+                    "bottom": 280.23958587646484,
+                    "width": 75,
+                    "height": 37.145835876464844
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 311.46875,
+                    "bottom": 339.8645839691162,
+                    "width": 75,
+                    "height": 28.39583396911621
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 376.71875,
+                    "bottom": 402.6145839691162,
+                    "width": 75,
+                    "height": 25.89583396911621
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 446.21875,
+                    "bottom": 468.3645839691162,
+                    "width": 75,
+                    "height": 22.14583396911621
+                  }
+                ],
+                [
+                  {
+                    "left": 301.7708435058594,
+                    "right": 326.0000114440918,
+                    "top": 115.09375,
+                    "bottom": 140.09375,
+                    "width": 24.229167938232422,
+                    "height": 25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "20px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 276.71875,
+                    "right": 326,
+                    "top": 179.09375,
+                    "bottom": 204.09375,
+                    "width": 49.28125,
+                    "height": 25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "20px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 259.1770935058594,
+                    "right": 326.00001525878906,
+                    "top": 243.09375,
+                    "bottom": 268.09375,
+                    "width": 66.82292175292969,
+                    "height": 25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "20px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 267.04168701171875,
+                    "right": 326.0000228881836,
+                    "top": 311.46875,
+                    "bottom": 327.71875,
+                    "width": 58.958335876464844,
+                    "height": 16.25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "13px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 260.7083435058594,
+                    "right": 326.00001525878906,
+                    "top": 376.71875,
+                    "bottom": 390.46875,
+                    "width": 65.29167175292969,
+                    "height": 13.75,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "11px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 270.13543701171875,
+                    "right": 326.0000228881836,
+                    "top": 446.21875,
+                    "bottom": 456.21875,
+                    "width": 55.864585876464844,
+                    "height": 10,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "8px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  }
+                ],
+                {
+                  "id": "",
+                  "dataset": {},
+                  "left": 169,
+                  "right": 398,
+                  "top": 236,
+                  "bottom": 369.1979217529297,
+                  "width": 229,
+                  "height": 133.1979217529297
+                },
+                {
+                  "id": "",
+                  "dataset": {},
+                  "left": 179,
+                  "right": 388,
+                  "top": 276,
+                  "bottom": 337,
+                  "width": 209,
+                  "height": 61
+                },
+                [
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 299.16668701171875,
+                    "bottom": 327.16668701171875,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  }
+                ],
+                {
+                  "id": "",
+                  "dataset": {},
+                  "left": 179,
+                  "right": 388,
+                  "top": 342,
+                  "bottom": 361.1979179382324,
+                  "width": 209,
+                  "height": 19.197917938232422
+                },
+                {
+                  "id": "catalog-offers",
+                  "dataset": {},
+                  "left": 27,
+                  "right": 403,
+                  "top": 830,
+                  "bottom": 891,
+                  "width": 376,
+                  "height": 61
+                },
+                [
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 299.16668701171875,
+                    "bottom": 313.16668701171875,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 313.16668701171875,
+                    "bottom": 327.16668701171875,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  }
+                ],
+                {
+                  "scrollLeft": 0,
+                  "scrollTop": 4,
+                  "scrollWidth": 209,
+                  "scrollHeight": 65
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "screenshot:long-price-expanded-bottom",
+      "tool": "simulator_screenshot",
+      "response": {
+        "ok": true,
+        "tool": "simulator_screenshot",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "path": "F:\\学习项目组\\小程序开发1\\docs\\verification\\parent-course-price-2026-10-11\\quote-font-430-v1\\long-price-expanded-bottom.png",
+          "imageWidth": 549,
+          "imageHeight": 1190
+        }
+      }
+    },
+    {
+      "label": "replay-close-quotes-event",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": true,
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "result": {
+            "result": {
+              "methodReplay": true,
+              "closed": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "verify-closed-without-navigation",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": true,
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "result": {
+            "result": {
+              "route": "pages/parent/courses/index",
+              "activeCourse": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "route:long-price-closed",
+      "tool": "automation_runtime_info",
+      "response": {
+        "ok": true,
+        "tool": "automation_runtime_info",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "currentPage": {
+            "pageId": 124,
+            "path": "pages/parent/courses/index",
+            "query": {},
+            "route": "/pages/parent/courses/index",
+            "title": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "nodes:long-price-closed",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": true,
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "result": {
+            "result": {
+              "route": "pages/parent/courses/index",
+              "viewState": "ready",
+              "mapState": "ready",
+              "activeCourse": null,
+              "nodes": [
+                [
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 115.09375,
+                    "bottom": 152.23958587646484,
+                    "width": 75,
+                    "height": 37.145835876464844
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 179.09375,
+                    "bottom": 216.23958587646484,
+                    "width": 75,
+                    "height": 37.145835876464844
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 243.09375,
+                    "bottom": 280.23958587646484,
+                    "width": 75,
+                    "height": 37.145835876464844
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 311.46875,
+                    "bottom": 339.8645839691162,
+                    "width": 75,
+                    "height": 28.39583396911621
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 376.71875,
+                    "bottom": 402.6145839691162,
+                    "width": 75,
+                    "height": 25.89583396911621
+                  },
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 446.21875,
+                    "bottom": 468.3645839691162,
+                    "width": 75,
+                    "height": 22.14583396911621
+                  }
+                ],
+                [
+                  {
+                    "left": 301.7708435058594,
+                    "right": 326.0000114440918,
+                    "top": 115.09375,
+                    "bottom": 140.09375,
+                    "width": 24.229167938232422,
+                    "height": 25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "20px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 276.71875,
+                    "right": 326,
+                    "top": 179.09375,
+                    "bottom": 204.09375,
+                    "width": 49.28125,
+                    "height": 25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "20px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 259.1770935058594,
+                    "right": 326.00001525878906,
+                    "top": 243.09375,
+                    "bottom": 268.09375,
+                    "width": 66.82292175292969,
+                    "height": 25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "20px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 267.04168701171875,
+                    "right": 326.0000228881836,
+                    "top": 311.46875,
+                    "bottom": 327.71875,
+                    "width": 58.958335876464844,
+                    "height": 16.25,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "13px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 260.7083435058594,
+                    "right": 326.00001525878906,
+                    "top": 376.71875,
+                    "bottom": 390.46875,
+                    "width": 65.29167175292969,
+                    "height": 13.75,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "11px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  },
+                  {
+                    "left": 270.13543701171875,
+                    "right": 326.0000228881836,
+                    "top": 446.21875,
+                    "bottom": 456.21875,
+                    "width": 55.864585876464844,
+                    "height": 10,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "8px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  }
+                ],
+                null,
+                null,
+                [],
+                null,
+                {
+                  "id": "catalog-offers",
+                  "dataset": {},
+                  "left": 27,
+                  "right": 403,
+                  "top": 830,
+                  "bottom": 891,
+                  "width": 376,
+                  "height": 61
+                },
+                [],
+                null
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "screenshot:long-price-closed",
+      "tool": "simulator_screenshot",
+      "response": {
+        "ok": true,
+        "tool": "simulator_screenshot",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "path": "F:\\学习项目组\\小程序开发1\\docs\\verification\\parent-course-price-2026-10-11\\quote-font-430-v1\\long-price-closed.png",
+          "imageWidth": 549,
+          "imageHeight": 1190
+        }
+      }
+    },
+    {
+      "label": "eight-raw-quotes-through-current-page",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": true,
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "result": {
+            "result": {
+              "methodReplay": true,
+              "courses": [
+                {
+                  "courseName": "专业美术与创意思维综合提升课程",
+                  "primaryQuote": {
+                    "productId": "synthetic-price-5",
+                    "productName": "专业美术课包",
+                    "classType": "创意思维综合提升常规班",
+                    "priceFen": 2147483647,
+                    "mainUnits": 99900,
+                    "giftUnits": 99900,
+                    "validityDays": 365,
+                    "campus": {
+                      "id": "10000000-0000-4000-8000-000000000001",
+                      "name": "京南一品儿童美术综合教学中心校区",
+                      "address": "测试路",
+                      "contactPhone": null,
+                      "latitude": 28.2,
+                      "longitude": 112.9,
+                      "distanceMeters": null
+                    }
+                  },
+                  "classTypes": [
+                    {
+                      "name": "创意思维综合提升常规班",
+                      "quotes": [
+                        {
+                          "productId": "synthetic-price-5-many-0",
+                          "productName": "专业美术课包",
+                          "classType": "创意思维综合提升常规班",
+                          "priceFen": 2147483647,
+                          "mainUnits": 99900,
+                          "giftUnits": 99900,
+                          "validityDays": 365,
+                          "campus": {
+                            "id": "10000000-0000-4000-8000-000000000001",
+                            "name": "京南一品儿童美术综合教学中心校区1",
+                            "address": "测试路",
+                            "contactPhone": null,
+                            "latitude": 28.2,
+                            "longitude": 112.9,
+                            "distanceMeters": null
+                          },
+                          "priceLabel": "21474836.47¥",
+                          "priceSize": 15,
+                          "unitsLabel": "999节 + 赠999节"
+                        },
+                        {
+                          "productId": "synthetic-price-5-many-1",
+                          "productName": "专业美术课包",
+                          "classType": "创意思维综合提升常规班",
+                          "priceFen": 2147483647,
+                          "mainUnits": 99900,
+                          "giftUnits": 99900,
+                          "validityDays": 365,
+                          "campus": {
+                            "id": "10000000-0000-4000-8000-000000000001",
+                            "name": "京南一品儿童美术综合教学中心校区2",
+                            "address": "测试路",
+                            "contactPhone": null,
+                            "latitude": 28.2,
+                            "longitude": 112.9,
+                            "distanceMeters": null
+                          },
+                          "priceLabel": "21474836.47¥",
+                          "priceSize": 15,
+                          "unitsLabel": "999节 + 赠999节"
+                        },
+                        {
+                          "productId": "synthetic-price-5-many-2",
+                          "productName": "专业美术课包",
+                          "classType": "创意思维综合提升常规班",
+                          "priceFen": 2147483647,
+                          "mainUnits": 99900,
+                          "giftUnits": 99900,
+                          "validityDays": 365,
+                          "campus": {
+                            "id": "10000000-0000-4000-8000-000000000001",
+                            "name": "京南一品儿童美术综合教学中心校区3",
+                            "address": "测试路",
+                            "contactPhone": null,
+                            "latitude": 28.2,
+                            "longitude": 112.9,
+                            "distanceMeters": null
+                          },
+                          "priceLabel": "21474836.47¥",
+                          "priceSize": 15,
+                          "unitsLabel": "999节 + 赠999节"
+                        },
+                        {
+                          "productId": "synthetic-price-5-many-3",
+                          "productName": "专业美术课包",
+                          "classType": "创意思维综合提升常规班",
+                          "priceFen": 2147483647,
+                          "mainUnits": 99900,
+                          "giftUnits": 99900,
+                          "validityDays": 365,
+                          "campus": {
+                            "id": "10000000-0000-4000-8000-000000000001",
+                            "name": "京南一品儿童美术综合教学中心校区4",
+                            "address": "测试路",
+                            "contactPhone": null,
+                            "latitude": 28.2,
+                            "longitude": 112.9,
+                            "distanceMeters": null
+                          },
+                          "priceLabel": "21474836.47¥",
+                          "priceSize": 15,
+                          "unitsLabel": "999节 + 赠999节"
+                        },
+                        {
+                          "productId": "synthetic-price-5-many-4",
+                          "productName": "专业美术课包",
+                          "classType": "创意思维综合提升常规班",
+                          "priceFen": 2147483647,
+                          "mainUnits": 99900,
+                          "giftUnits": 99900,
+                          "validityDays": 365,
+                          "campus": {
+                            "id": "10000000-0000-4000-8000-000000000001",
+                            "name": "京南一品儿童美术综合教学中心校区5",
+                            "address": "测试路",
+                            "contactPhone": null,
+                            "latitude": 28.2,
+                            "longitude": 112.9,
+                            "distanceMeters": null
+                          },
+                          "priceLabel": "21474836.47¥",
+                          "priceSize": 15,
+                          "unitsLabel": "999节 + 赠999节"
+                        },
+                        {
+                          "productId": "synthetic-price-5-many-5",
+                          "productName": "专业美术课包",
+                          "classType": "创意思维综合提升常规班",
+                          "priceFen": 2147483647,
+                          "mainUnits": 99900,
+                          "giftUnits": 99900,
+                          "validityDays": 365,
+                          "campus": {
+                            "id": "10000000-0000-4000-8000-000000000001",
+                            "name": "京南一品儿童美术综合教学中心校区6",
+                            "address": "测试路",
+                            "contactPhone": null,
+                            "latitude": 28.2,
+                            "longitude": 112.9,
+                            "distanceMeters": null
+                          },
+                          "priceLabel": "21474836.47¥",
+                          "priceSize": 15,
+                          "unitsLabel": "999节 + 赠999节"
+                        },
+                        {
+                          "productId": "synthetic-price-5-many-6",
+                          "productName": "专业美术课包",
+                          "classType": "创意思维综合提升常规班",
+                          "priceFen": 2147483647,
+                          "mainUnits": 99900,
+                          "giftUnits": 99900,
+                          "validityDays": 365,
+                          "campus": {
+                            "id": "10000000-0000-4000-8000-000000000001",
+                            "name": "京南一品儿童美术综合教学中心校区7",
+                            "address": "测试路",
+                            "contactPhone": null,
+                            "latitude": 28.2,
+                            "longitude": 112.9,
+                            "distanceMeters": null
+                          },
+                          "priceLabel": "21474836.47¥",
+                          "priceSize": 15,
+                          "unitsLabel": "999节 + 赠999节"
+                        },
+                        {
+                          "productId": "synthetic-price-5-many-7",
+                          "productName": "专业美术课包",
+                          "classType": "创意思维综合提升常规班",
+                          "priceFen": 2147483647,
+                          "mainUnits": 99900,
+                          "giftUnits": 99900,
+                          "validityDays": 365,
+                          "campus": {
+                            "id": "10000000-0000-4000-8000-000000000001",
+                            "name": "京南一品儿童美术综合教学中心校区8",
+                            "address": "测试路",
+                            "contactPhone": null,
+                            "latitude": 28.2,
+                            "longitude": 112.9,
+                            "distanceMeters": null
+                          },
+                          "priceLabel": "21474836.47¥",
+                          "priceSize": 15,
+                          "unitsLabel": "999节 + 赠999节"
+                        }
+                      ]
+                    }
+                  ],
+                  "productId": "synthetic-price-5",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 2147483647,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  },
+                  "priceLabel": "21474836.47¥",
+                  "priceSize": 15,
+                  "unitsLabel": "999节 + 赠999节",
+                  "quotePanelHeight": 390
+                }
+              ],
+              "rawQuotes": [
+                {
+                  "productId": "synthetic-price-5-many-0",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 2147483647,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区1",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  }
+                },
+                {
+                  "productId": "synthetic-price-5-many-1",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 2147483647,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区2",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  }
+                },
+                {
+                  "productId": "synthetic-price-5-many-2",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 2147483647,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区3",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  }
+                },
+                {
+                  "productId": "synthetic-price-5-many-3",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 2147483647,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区4",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  }
+                },
+                {
+                  "productId": "synthetic-price-5-many-4",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 2147483647,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区5",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  }
+                },
+                {
+                  "productId": "synthetic-price-5-many-5",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 2147483647,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区6",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  }
+                },
+                {
+                  "productId": "synthetic-price-5-many-6",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 2147483647,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区7",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  }
+                },
+                {
+                  "productId": "synthetic-price-5-many-7",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 2147483647,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区8",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  }
+                }
+              ],
+              "quotePanelHeight": 390
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "route:many-quotes-expanded-top",
+      "tool": "automation_runtime_info",
+      "response": {
+        "ok": true,
+        "tool": "automation_runtime_info",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "currentPage": {
+            "pageId": 124,
+            "path": "pages/parent/courses/index",
+            "query": {},
+            "route": "/pages/parent/courses/index",
+            "title": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "nodes:many-quotes-expanded-top",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": true,
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "result": {
+            "result": {
+              "route": "pages/parent/courses/index",
+              "viewState": "ready",
+              "mapState": "ready",
+              "activeCourse": {
+                "courseName": "专业美术与创意思维综合提升课程",
+                "primaryQuote": {
+                  "productId": "synthetic-price-5",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 2147483647,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  }
+                },
+                "classTypes": [
+                  {
+                    "name": "创意思维综合提升常规班",
+                    "quotes": [
+                      {
+                        "productId": "synthetic-price-5-many-0",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区1",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      },
+                      {
+                        "productId": "synthetic-price-5-many-1",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区2",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      },
+                      {
+                        "productId": "synthetic-price-5-many-2",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区3",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      },
+                      {
+                        "productId": "synthetic-price-5-many-3",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区4",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      },
+                      {
+                        "productId": "synthetic-price-5-many-4",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区5",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      },
+                      {
+                        "productId": "synthetic-price-5-many-5",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区6",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      },
+                      {
+                        "productId": "synthetic-price-5-many-6",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区7",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      },
+                      {
+                        "productId": "synthetic-price-5-many-7",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区8",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      }
+                    ]
+                  }
+                ],
+                "productId": "synthetic-price-5",
+                "productName": "专业美术课包",
+                "classType": "创意思维综合提升常规班",
+                "priceFen": 2147483647,
+                "mainUnits": 99900,
+                "giftUnits": 99900,
+                "validityDays": 365,
+                "campus": {
+                  "id": "10000000-0000-4000-8000-000000000001",
+                  "name": "京南一品儿童美术综合教学中心校区",
+                  "address": "测试路",
+                  "contactPhone": null,
+                  "latitude": 28.2,
+                  "longitude": 112.9,
+                  "distanceMeters": null
+                },
+                "priceLabel": "21474836.47¥",
+                "priceSize": 15,
+                "unitsLabel": "999节 + 赠999节",
+                "quotePanelHeight": 390
+              },
+              "nodes": [
+                [
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 170.21875,
+                    "bottom": 192.3645839691162,
+                    "width": 75,
+                    "height": 22.14583396911621
+                  }
+                ],
+                [
+                  {
+                    "left": 270.13543701171875,
+                    "right": 326.0000228881836,
+                    "top": 170.21875,
+                    "bottom": 180.21875,
+                    "width": 55.864585876464844,
+                    "height": 10,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "8px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  }
+                ],
+                {
+                  "id": "",
+                  "dataset": {},
+                  "left": 169,
+                  "right": 398,
+                  "top": 236,
+                  "bottom": 531.1979370117188,
+                  "width": 229,
+                  "height": 295.19793701171875
+                },
+                {
+                  "id": "",
+                  "dataset": {},
+                  "left": 179,
+                  "right": 388,
+                  "top": 276,
+                  "bottom": 499,
+                  "width": 209,
+                  "height": 223
+                },
+                [
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 303.16668701171875,
+                    "bottom": 331.16668701171875,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 337.8333435058594,
+                    "bottom": 365.8333435058594,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 372.5,
+                    "bottom": 400.5,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 407.16668701171875,
+                    "bottom": 435.16668701171875,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 441.8333435058594,
+                    "bottom": 469.8333435058594,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 476.5,
+                    "bottom": 504.5,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 511.16668701171875,
+                    "bottom": 539.1666870117188,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 545.8333740234375,
+                    "bottom": 573.8333740234375,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  }
+                ],
+                {
+                  "id": "",
+                  "dataset": {},
+                  "left": 179,
+                  "right": 388,
+                  "top": 504,
+                  "bottom": 523.1979179382324,
+                  "width": 209,
+                  "height": 19.197917938232422
+                },
+                {
+                  "id": "catalog-offers",
+                  "dataset": {},
+                  "left": 27,
+                  "right": 403,
+                  "top": 830,
+                  "bottom": 891,
+                  "width": 376,
+                  "height": 61
+                },
+                [
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 303.16668701171875,
+                    "bottom": 317.16668701171875,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 317.16668701171875,
+                    "bottom": 331.16668701171875,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 337.8333435058594,
+                    "bottom": 351.8333435058594,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 351.8333435058594,
+                    "bottom": 365.8333435058594,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 372.5,
+                    "bottom": 386.5,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 386.5,
+                    "bottom": 400.5,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 407.16668701171875,
+                    "bottom": 421.16668701171875,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 421.16668701171875,
+                    "bottom": 435.16668701171875,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 441.8333435058594,
+                    "bottom": 455.8333435058594,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 455.8333435058594,
+                    "bottom": 469.8333435058594,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 476.5,
+                    "bottom": 490.5,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 490.5,
+                    "bottom": 504.5,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 511.16668701171875,
+                    "bottom": 525.1666870117188,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 525.1666870117188,
+                    "bottom": 539.1666870117188,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 545.8333740234375,
+                    "bottom": 559.8333740234375,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 559.8333740234375,
+                    "bottom": 573.8333740234375,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  }
+                ],
+                {
+                  "scrollLeft": 0,
+                  "scrollTop": 0,
+                  "scrollWidth": 209,
+                  "scrollHeight": 301
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "screenshot:many-quotes-expanded-top",
+      "tool": "simulator_screenshot",
+      "response": {
+        "ok": true,
+        "tool": "simulator_screenshot",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "path": "F:\\学习项目组\\小程序开发1\\docs\\verification\\parent-course-price-2026-10-11\\quote-font-430-v1\\many-quotes-expanded-top.png",
+          "imageWidth": 549,
+          "imageHeight": 1190
+        }
+      }
+    },
+    {
+      "label": "scroll-eight-quotes-to-last-price",
+      "tool": "automation_element_action",
+      "response": {
+        "ok": true,
+        "tool": "automation_element_action",
+        "clientName": "Codex",
+        "result": {
+          "success": true
+        }
+      }
+    },
+    {
+      "label": "route:many-quotes-expanded-bottom",
+      "tool": "automation_runtime_info",
+      "response": {
+        "ok": true,
+        "tool": "automation_runtime_info",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "currentPage": {
+            "pageId": 124,
+            "path": "pages/parent/courses/index",
+            "query": {},
+            "route": "/pages/parent/courses/index",
+            "title": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "nodes:many-quotes-expanded-bottom",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": true,
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "result": {
+            "result": {
+              "route": "pages/parent/courses/index",
+              "viewState": "ready",
+              "mapState": "ready",
+              "activeCourse": {
+                "courseName": "专业美术与创意思维综合提升课程",
+                "primaryQuote": {
+                  "productId": "synthetic-price-5",
+                  "productName": "专业美术课包",
+                  "classType": "创意思维综合提升常规班",
+                  "priceFen": 2147483647,
+                  "mainUnits": 99900,
+                  "giftUnits": 99900,
+                  "validityDays": 365,
+                  "campus": {
+                    "id": "10000000-0000-4000-8000-000000000001",
+                    "name": "京南一品儿童美术综合教学中心校区",
+                    "address": "测试路",
+                    "contactPhone": null,
+                    "latitude": 28.2,
+                    "longitude": 112.9,
+                    "distanceMeters": null
+                  }
+                },
+                "classTypes": [
+                  {
+                    "name": "创意思维综合提升常规班",
+                    "quotes": [
+                      {
+                        "productId": "synthetic-price-5-many-0",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区1",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      },
+                      {
+                        "productId": "synthetic-price-5-many-1",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区2",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      },
+                      {
+                        "productId": "synthetic-price-5-many-2",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区3",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      },
+                      {
+                        "productId": "synthetic-price-5-many-3",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区4",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      },
+                      {
+                        "productId": "synthetic-price-5-many-4",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区5",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      },
+                      {
+                        "productId": "synthetic-price-5-many-5",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区6",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      },
+                      {
+                        "productId": "synthetic-price-5-many-6",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区7",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      },
+                      {
+                        "productId": "synthetic-price-5-many-7",
+                        "productName": "专业美术课包",
+                        "classType": "创意思维综合提升常规班",
+                        "priceFen": 2147483647,
+                        "mainUnits": 99900,
+                        "giftUnits": 99900,
+                        "validityDays": 365,
+                        "campus": {
+                          "id": "10000000-0000-4000-8000-000000000001",
+                          "name": "京南一品儿童美术综合教学中心校区8",
+                          "address": "测试路",
+                          "contactPhone": null,
+                          "latitude": 28.2,
+                          "longitude": 112.9,
+                          "distanceMeters": null
+                        },
+                        "priceLabel": "21474836.47¥",
+                        "priceSize": 15,
+                        "unitsLabel": "999节 + 赠999节"
+                      }
+                    ]
+                  }
+                ],
+                "productId": "synthetic-price-5",
+                "productName": "专业美术课包",
+                "classType": "创意思维综合提升常规班",
+                "priceFen": 2147483647,
+                "mainUnits": 99900,
+                "giftUnits": 99900,
+                "validityDays": 365,
+                "campus": {
+                  "id": "10000000-0000-4000-8000-000000000001",
+                  "name": "京南一品儿童美术综合教学中心校区",
+                  "address": "测试路",
+                  "contactPhone": null,
+                  "latitude": 28.2,
+                  "longitude": 112.9,
+                  "distanceMeters": null
+                },
+                "priceLabel": "21474836.47¥",
+                "priceSize": 15,
+                "unitsLabel": "999节 + 赠999节",
+                "quotePanelHeight": 390
+              },
+              "nodes": [
+                [
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 170.21875,
+                    "bottom": 192.3645839691162,
+                    "width": 75,
+                    "height": 22.14583396911621
+                  }
+                ],
+                [
+                  {
+                    "left": 270.13543701171875,
+                    "right": 326.0000228881836,
+                    "top": 170.21875,
+                    "bottom": 180.21875,
+                    "width": 55.864585876464844,
+                    "height": 10,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "8px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  }
+                ],
+                {
+                  "id": "",
+                  "dataset": {},
+                  "left": 169,
+                  "right": 398,
+                  "top": 236,
+                  "bottom": 531.1979370117188,
+                  "width": 229,
+                  "height": 295.19793701171875
+                },
+                {
+                  "id": "",
+                  "dataset": {},
+                  "left": 179,
+                  "right": 388,
+                  "top": 276,
+                  "bottom": 499,
+                  "width": 209,
+                  "height": 223
+                },
+                [
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 225.83334350585938,
+                    "bottom": 253.83334350585938,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 260.5,
+                    "bottom": 288.5,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 295.16668701171875,
+                    "bottom": 323.16668701171875,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 329.8333435058594,
+                    "bottom": 357.8333435058594,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 364.5,
+                    "bottom": 392.5,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 399.16668701171875,
+                    "bottom": 427.16668701171875,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 433.8333435058594,
+                    "bottom": 461.8333435058594,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 468.5,
+                    "bottom": 496.5,
+                    "width": 169,
+                    "height": 28,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px",
+                    "overflow-wrap": "anywhere"
+                  }
+                ],
+                {
+                  "id": "",
+                  "dataset": {},
+                  "left": 179,
+                  "right": 388,
+                  "top": 504,
+                  "bottom": 523.1979179382324,
+                  "width": 209,
+                  "height": 19.197917938232422
+                },
+                {
+                  "id": "catalog-offers",
+                  "dataset": {},
+                  "left": 27,
+                  "right": 403,
+                  "top": 830,
+                  "bottom": 891,
+                  "width": 376,
+                  "height": 61
+                },
+                [
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 225.83334350585938,
+                    "bottom": 239.83334350585938,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 239.83334350585938,
+                    "bottom": 253.83334350585938,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 260.5,
+                    "bottom": 274.5,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 274.5,
+                    "bottom": 288.5,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 295.16668701171875,
+                    "bottom": 309.16668701171875,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 309.16668701171875,
+                    "bottom": 323.16668701171875,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 329.8333435058594,
+                    "bottom": 343.8333435058594,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 343.8333435058594,
+                    "bottom": 357.8333435058594,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 364.5,
+                    "bottom": 378.5,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 378.5,
+                    "bottom": 392.5,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 399.16668701171875,
+                    "bottom": 413.16668701171875,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 413.16668701171875,
+                    "bottom": 427.16668701171875,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 433.8333435058594,
+                    "bottom": 447.8333435058594,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 447.8333435058594,
+                    "bottom": 461.8333435058594,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 468.5,
+                    "bottom": 482.5,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  },
+                  {
+                    "left": 210,
+                    "right": 379,
+                    "top": 482.5,
+                    "bottom": 496.5,
+                    "width": 169,
+                    "height": 14,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "10px",
+                    "font-weight": "400",
+                    "line-height": "14px"
+                  }
+                ],
+                {
+                  "scrollLeft": 0,
+                  "scrollTop": 77.33333587646484,
+                  "scrollWidth": 209,
+                  "scrollHeight": 301
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "screenshot:many-quotes-expanded-bottom",
+      "tool": "simulator_screenshot",
+      "response": {
+        "ok": true,
+        "tool": "simulator_screenshot",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "path": "F:\\学习项目组\\小程序开发1\\docs\\verification\\parent-course-price-2026-10-11\\quote-font-430-v1\\many-quotes-expanded-bottom.png",
+          "imageWidth": 549,
+          "imageHeight": 1190
+        }
+      }
+    },
+    {
+      "label": "replay-close-eight-quotes",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": true,
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "result": {
+            "result": {
+              "methodReplay": true,
+              "route": "pages/parent/courses/index",
+              "closed": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "route:many-quotes-closed",
+      "tool": "automation_runtime_info",
+      "response": {
+        "ok": true,
+        "tool": "automation_runtime_info",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "currentPage": {
+            "pageId": 124,
+            "path": "pages/parent/courses/index",
+            "query": {},
+            "route": "/pages/parent/courses/index",
+            "title": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "nodes:many-quotes-closed",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": true,
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "result": {
+            "result": {
+              "route": "pages/parent/courses/index",
+              "viewState": "ready",
+              "mapState": "ready",
+              "activeCourse": null,
+              "nodes": [
+                [
+                  {
+                    "id": "",
+                    "dataset": {},
+                    "left": 251,
+                    "right": 326,
+                    "top": 170.21875,
+                    "bottom": 192.3645839691162,
+                    "width": 75,
+                    "height": 22.14583396911621
+                  }
+                ],
+                [
+                  {
+                    "left": 270.13543701171875,
+                    "right": 326.0000228881836,
+                    "top": 170.21875,
+                    "bottom": 180.21875,
+                    "width": 55.864585876464844,
+                    "height": 10,
+                    "font-family": "ParentPdfDisplay, \"Microsoft YaHei\", sans-serif",
+                    "font-size": "8px",
+                    "font-weight": "800",
+                    "white-space": "nowrap"
+                  }
+                ],
+                null,
+                null,
+                [],
+                null,
+                {
+                  "id": "catalog-offers",
+                  "dataset": {},
+                  "left": 27,
+                  "right": 403,
+                  "top": 830,
+                  "bottom": 891,
+                  "width": 376,
+                  "height": 61
+                },
+                [],
+                null
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "screenshot:many-quotes-closed",
+      "tool": "simulator_screenshot",
+      "response": {
+        "ok": true,
+        "tool": "simulator_screenshot",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "path": "F:\\学习项目组\\小程序开发1\\docs\\verification\\parent-course-price-2026-10-11\\quote-font-430-v1\\many-quotes-closed.png",
+          "imageWidth": 549,
+          "imageHeight": 1190
+        }
+      }
+    },
+    {
+      "label": "runtime-storage-unchanged",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": true,
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "result": {
+            "result": {
+              "runtimeUnchanged": true,
+              "markerRemoved": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "return-original-home",
+      "tool": "automation_navigate",
+      "response": {
+        "ok": true,
+        "tool": "automation_navigate",
+        "clientName": "Codex",
+        "result": {
+          "success": true
+        }
+      }
+    },
+    {
+      "label": "route:restored-parent-home",
+      "tool": "automation_runtime_info",
+      "response": {
+        "ok": true,
+        "tool": "automation_runtime_info",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "currentPage": {
+            "pageId": 122,
+            "path": "pages/parent/home/index",
+            "query": {},
+            "route": "/pages/parent/home/index",
+            "title": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "nodes:restored-parent-home",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": true,
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "result": {
+            "result": {
+              "route": "pages/parent/home/index",
+              "viewState": "ready",
+              "nodes": [
+                [],
+                [],
+                null,
+                null,
+                [],
+                null,
+                null,
+                [],
+                null
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "screenshot:restored-parent-home",
+      "tool": "simulator_screenshot",
+      "response": {
+        "ok": true,
+        "tool": "simulator_screenshot",
+        "clientName": "Codex",
+        "result": {
+          "success": true,
+          "path": "F:\\学习项目组\\小程序开发1\\docs\\verification\\parent-course-price-2026-10-11\\quote-font-430-v1\\restored-parent-home.png",
+          "imageWidth": 549,
+          "imageHeight": 1190
+        }
+      }
+    }
+  ],
+  "failure": null
+}

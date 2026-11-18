@@ -1,0 +1,172 @@
+openapi: 3.1.0
+info:
+  title: Headquarters operator account and campus grant management
+  version: 0.1.0
+security: [{ bearerAuth: [] }]
+paths:
+  /management/operator-headquarters:
+    post:
+      tags: [Management]
+      operationId: createOperatorHeadquartersAccount
+      summary: Create a separate headquarters operator without campus grants
+      description: >-
+        A current active, exclusive SUPER_ADMIN with null campus creates a separate
+        OPERATOR account with explicit null campus and no campus grants. Ordinary
+        staff creation still requires a campus for OPERATOR. No identity or test
+        token is created. The phone is normalized and returned only in masked form.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [displayName, phone]
+              properties:
+                displayName: { type: string, minLength: 1, maxLength: 100, pattern: '\S' }
+                phone: { type: string, pattern: '^(?:\+?86)?1[3-9][0-9]{9}$' }
+      responses:
+        '201':
+          description: Account created with no grants, or completed original command replayed.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    additionalProperties: false
+                    required: [id, displayName, maskedPhone, roleCode, campusId, status, version, createdAt]
+                    properties:
+                      id: { type: string, format: uuid }
+                      displayName: { type: string }
+                      maskedPhone: { type: string }
+                      roleCode: { const: OPERATOR }
+                      campusId: { type: 'null' }
+                      status: { const: ACTIVE }
+                      version: { type: integer, minimum: 1 }
+                      createdAt: { type: string, format: date-time }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /management/operator-headquarters/{userId}/campuses:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    get:
+      tags: [Management]
+      operationId: listOperatorHeadquartersCampusGrants
+      summary: List retained campus grants for one headquarters operator
+      description: >-
+        Current exclusive SUPER_ADMIN only. Lists retained active and revoked
+        grant rows for one exact single-role null-campus OPERATOR. An absent
+        grant is not platform access. Retained versions permit safe regrant.
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, maximum: 2147483647, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+      responses:
+        '200':
+          description: Grants ordered by campus ID; empty grants produce an empty page.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Grant' }
+                  meta:
+                    type: object
+                    required: [page, pageSize, total, totalPages]
+                    properties:
+                      page: { type: integer, minimum: 1 }
+                      pageSize: { type: integer, minimum: 1, maximum: 100 }
+                      total: { type: integer, minimum: 0 }
+                      totalPages: { type: integer, minimum: 0 }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+  /management/operator-headquarters/{userId}/campuses/{campusId}:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+      - { name: campusId, in: path, required: true, schema: { type: string, format: uuid } }
+    put:
+      tags: [Management]
+      operationId: updateOperatorHeadquartersCampusGrant
+      summary: Grant or revoke one campus with a retained version and audit
+      description: >-
+        Exclusive current SUPER_ADMIN only. Lock User rows first, then recheck
+        current administrator and exact HQ target. expectedVersion is zero only
+        for an absent row. A real change increments the retained positive version
+        and appends audit in the same transaction; revocation never deletes the
+        row. An unchanged request does not increment or append a business audit.
+        Revoking an absent grant returns inactive version zero without inserting.
+        Disabled HQ accounts can be revoked but cannot receive new grants.
+        Completed original keys replay their original response; a new stale
+        version yields 409. Unknown key results must be reconciled before a new
+        command. No roles, account campus, or ordinary operator permissions change.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [isActive, expectedVersion]
+              properties:
+                isActive: { type: boolean }
+                expectedVersion: { type: integer, minimum: 0, maximum: 2147483647 }
+      responses:
+        '200':
+          description: Exact grant mutation receipt, including inactive version zero for an absent row.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Grant' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    UserId: { name: userId, in: path, required: true, schema: { type: string, format: uuid } }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 8, maxLength: 128, pattern: '^[A-Za-z0-9._:-]{8,128}$' }
+  responses:
+    Error:
+      description: Failure preserves its actual HTTP status; no success envelope hides a failure.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [code, message]
+            properties:
+              code: { type: string }
+              message: { type: string }
+              requestId: { type: string }
+  schemas:
+    Grant:
+      type: object
+      additionalProperties: false
+      required: [userId, campusId, isActive, version]
+      properties:
+        userId: { type: string, format: uuid }
+        campusId: { type: string, format: uuid }
+        isActive: { type: boolean }
+        version: { type: integer, minimum: 0, maximum: 2147483647 }

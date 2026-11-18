@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { REVERSAL_WINDOW_MS } from '../attendance/lesson-reversal-window';
 import {
   calculateTeacherEarningForRule,
   type LessonKind,
@@ -44,6 +45,7 @@ export class EarningRecordingService {
       where: {
         campusId: input.campusId,
         lessonSessionId: input.lessonSessionId,
+        includedInFinalRoster: true,
       },
       orderBy: { studentId: 'asc' },
       select: { studentId: true, status: true },
@@ -140,7 +142,10 @@ export class EarningRecordingService {
         ruleSnapshot: snapshot,
         reviewableAt: new Date(
           input.completedAt.getTime() +
-            rule.settlementDelayDays * 24 * 60 * 60 * 1_000,
+            Math.max(
+              REVERSAL_WINDOW_MS,
+              rule.settlementDelayDays * 24 * 60 * 60 * 1_000,
+            ),
         ),
       },
     });

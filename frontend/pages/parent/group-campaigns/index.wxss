@@ -2,6 +2,22 @@
   padding: 44rpx 0 100rpx;
 }
 
+button.free-campaign-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 80rpx;
+  margin: 0 0 24rpx;
+  padding: 12rpx 24rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.9);
+  border-radius: 12rpx;
+  background: rgba(255, 255, 255, 0.58);
+  font-size: 28rpx;
+  color: #2a231e;
+}
+
+button.free-campaign-button::after { border: 0; }
+
 .group-list__head {
   display: flex;
   align-items: flex-end;

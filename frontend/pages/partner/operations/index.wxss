@@ -1,8 +1,32 @@
 @import "../../../styles/partner-workspace.wxss";
+@import "../styles/pdf-typography.wxss";
 
 .operations-page {
   padding-top: 8rpx;
   padding-bottom: 80rpx;
+}
+
+.operations-refresh-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  min-height: 0;
+  width: 653rpx;
+  max-width: 100%;
+  margin: 16rpx auto 0;
+  font-size: 22rpx;
+  color: var(--partner-ink);
+}
+
+.operations-refresh-error text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.operations-refresh-error .partner-command {
+  flex: none;
+  margin: 0;
 }
 
 .operations-head__title {

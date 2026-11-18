@@ -36,7 +36,7 @@ describe('teacher home presenter', () => {
     expect(model.nextLesson).toEqual({
       id: 'lesson/with space',
       time: '09:05',
-      weekday: '周二',
+      weekday: 'Tuesday',
       campusName: '城东青少年成长中心旗舰校区',
       courseName: '专业美术与综合材料创作长课程名',
       statusPrefix: '课时预警/',
@@ -59,7 +59,7 @@ describe('teacher home presenter', () => {
 
     expect(model.nextLesson).toMatchObject({
       time: '14:00',
-      weekday: '周日',
+      weekday: 'Sunday',
     });
   });
 

@@ -65,8 +65,12 @@ describe('parent home page model', () => {
       url: '/pages/parent/campuses/index',
     });
     expect(resolveParentHomeAction('team')).toEqual({
-      type: 'unavailable',
-      message: '本轮暂未开放',
+      type: 'sheet',
+      sheet: 'teachers',
+    });
+    expect(resolveParentHomeAction('reminders')).toEqual({
+      type: 'sheet',
+      sheet: 'reminders',
     });
   });
 });

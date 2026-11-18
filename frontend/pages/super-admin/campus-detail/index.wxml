@@ -52,6 +52,7 @@
         </view>
         <button class="button qr-editor__button" bindtap="onChooseCustomerServiceQr" loading="{{uploadingQr}}" disabled="{{uploadingQr}}">{{campus.customerServiceQrCodeUrl ? '更换二维码' : '上传二维码'}}</button>
       </view>
+      <campus-subjects id="campus-subjects" campus-id="{{campusId}}" />
       <view class="actions">
         <button class="button" bindtap="onLedgerTap">查看本校区课时流水</button>
       </view>

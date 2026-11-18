@@ -1,0 +1,106 @@
+<view class="subjects-workspace" wx:if="{{!blocked}}">
+  <view class="subjects-heading">
+    <image class="subjects-icon" src="/pages/super-admin/assets/icon-campuses.png" mode="aspectFit" />
+    <text class="subjects-title">校区科目</text>
+  </view>
+  <view wx:if="{{forbidden}}" class="subjects-message subjects-error" role="alert">{{forbiddenMessage}}</view>
+  <block wx:else>
+    <text wx:if="{{notice}}" class="subjects-message" role="status">{{notice}}</text>
+    <view wx:if="{{mutationState}}" class="subjects-operation">
+      <text>{{mutationState === 'submitting' ? '正在提交' : '提交结果待确认'}}</text>
+      <text class="subjects-muted">{{mutationLabel}}</text>
+      <button wx:if="{{mutationState === 'unknown'}}" class="button" bindtap="onRetryMutation">重试原操作</button>
+    </view>
+    <text wx:if="{{mutationError}}" class="subjects-message subjects-error" role="alert">{{mutationError}}</text>
+
+    <view wx:if="{{editor}}" class="subjects-editor">
+      <text class="subjects-subtitle">{{editor.id ? '编辑科目' : '新增科目'}}</text>
+      <label class="subjects-label">科目名称
+        <input class="field" value="{{editor.name}}" maxlength="80" disabled="{{!!mutationState}}" bindinput="onNameInput" placeholder="科目名称" />
+      </label>
+      <view wx:if="{{editor.id}}" class="subjects-switch">
+        <text>启用科目</text>
+        <switch checked="{{editor.isActive}}" disabled="{{!!mutationState}}" color="#f07d2b" bindchange="onActiveChange" />
+      </view>
+      <view class="subjects-actions">
+        <button class="button" bindtap="onSaveSubject" disabled="{{!!mutationState}}" loading="{{mutationState === 'submitting'}}">保存科目</button>
+        <button class="button button--ghost" bindtap="onCancelEdit" disabled="{{!!mutationState}}">取消</button>
+      </view>
+    </view>
+    <view wx:if="{{binding}}" class="subjects-editor">
+      <text class="subjects-subtitle">{{binding.name}}</text>
+      <text class="subjects-muted">当前科目：{{binding.currentLabel}}</text>
+      <label class="subjects-label">调整科目
+        <picker range="{{subjectOptions}}" range-key="name" value="{{binding.pickerIndex}}" disabled="{{!!mutationState || !optionsLoaded}}" bindchange="onSubjectPick">
+          <view class="select subjects-select">{{binding.selectedLabel}}<text aria-hidden="true">⌄</text></view>
+        </picker>
+      </label>
+      <button class="button button--ghost subjects-clear" bindtap="onClearSubject" disabled="{{!!mutationState || !optionsLoaded}}">设为未归类</button>
+      <label class="subjects-label">调整原因
+        <textarea class="textarea" value="{{binding.reason}}" maxlength="200" disabled="{{!!mutationState}}" bindinput="onReasonInput" placeholder="填写调整原因" />
+      </label>
+      <view class="subjects-actions">
+        <button class="button" bindtap="onSaveBinding" disabled="{{!!mutationState || !optionsLoaded}}" loading="{{mutationState === 'submitting'}}">保存关联</button>
+        <button class="button button--ghost" bindtap="onCancelEdit" disabled="{{!!mutationState}}">取消</button>
+      </view>
+    </view>
+
+    <view class="subjects-section">
+      <view class="subjects-section-head">
+        <text class="subjects-subtitle">科目目录</text>
+        <button class="button button--ghost" bindtap="onCreate" disabled="{{!!mutationState}}">新增科目</button>
+      </view>
+      <view class="subjects-search">
+        <input class="field" value="{{subjects.search}}" data-lane="subjects" maxlength="100" bindinput="onSearchInput" bindconfirm="onSearch" confirm-type="search" placeholder="搜索科目" />
+        <button class="button button--ghost" data-lane="subjects" bindtap="onSearch">搜索</button>
+      </view>
+      <text wx:if="{{subjects.loading}}" class="subjects-message">正在加载科目目录</text>
+      <view wx:if="{{subjects.error}}" class="subjects-feedback">
+        <text class="subjects-error">{{subjects.error}}</text><button class="button button--ghost" data-lane="subjects" bindtap="onRetry">重试</button>
+      </view>
+      <text wx:if="{{subjects.loaded && !subjects.loading && !subjects.error && !subjects.rows.length}}" class="subjects-message">暂无科目</text>
+      <view wx:for="{{subjects.rows}}" wx:key="id" class="subjects-row">
+        <view class="subjects-row-main"><text class="subjects-name">{{item.name}}</text><text class="subjects-muted">{{item.isActive ? '启用' : '已停用'}}</text></view>
+        <button class="button button--ghost" data-id="{{item.id}}" bindtap="onEdit" disabled="{{!!mutationState || subjects.loading}}">编辑</button>
+      </view>
+      <view class="subjects-pagination">
+        <button class="subjects-page-button" aria-label="科目上一页" data-lane="subjects" data-direction="-1" bindtap="onPage" disabled="{{subjects.page <= 1 || subjects.loading}}">‹</button>
+        <text>{{subjects.page}} / {{subjects.totalPages || 1}} · {{subjects.total}}条</text>
+        <button class="subjects-page-button" aria-label="科目下一页" data-lane="subjects" data-direction="1" bindtap="onPage" disabled="{{subjects.page >= subjects.totalPages || subjects.loading}}">›</button>
+      </view>
+    </view>
+    <text wx:if="{{optionsLoading}}" class="subjects-message">正在加载可选科目</text>
+    <view wx:if="{{optionsError}}" class="subjects-feedback">
+      <text class="subjects-error">{{optionsError}}</text><button class="button button--ghost" data-lane="options" bindtap="onRetry">重试</button>
+    </view>
+    <template name="links">
+      <view class="subjects-section">
+        <text class="subjects-subtitle">{{title}}</text>
+        <view class="subjects-search">
+          <input class="field" value="{{list.search}}" data-lane="{{lane}}" maxlength="100" bindinput="onSearchInput" bindconfirm="onSearch" confirm-type="search" placeholder="{{placeholder}}" />
+          <button class="button button--ghost" data-lane="{{lane}}" bindtap="onSearch">搜索</button>
+        </view>
+        <text wx:if="{{list.loading}}" class="subjects-message">正在加载{{title}}</text>
+        <view wx:if="{{list.error}}" class="subjects-feedback">
+          <text class="subjects-error">{{list.error}}</text><button class="button button--ghost" data-lane="{{lane}}" bindtap="onRetry">重试</button>
+        </view>
+        <text wx:if="{{list.loaded && !list.loading && !list.error && !list.rows.length}}" class="subjects-message">暂无{{title}}</text>
+        <view wx:for="{{list.rows}}" wx:key="id" class="subjects-row">
+          <view class="subjects-row-main">
+            <text class="subjects-name">{{item.name}}</text>
+            <text wx:if="{{item.studentName}}" class="subjects-muted">{{item.studentName}}</text>
+            <text class="subjects-muted">科目：{{item.subjectName || (item.subjectId ? '名称待核对' : '未归类')}}</text>
+          </view>
+          <button class="button button--ghost" data-lane="{{lane}}" data-id="{{item.id}}" bindtap="onBind" disabled="{{!!mutationState || !optionsLoaded || list.loading}}">调整</button>
+        </view>
+        <view class="subjects-pagination">
+          <button class="subjects-page-button" aria-label="{{title}}上一页" data-lane="{{lane}}" data-direction="-1" bindtap="onPage" disabled="{{list.page <= 1 || list.loading}}">‹</button>
+          <text>{{list.page}} / {{list.totalPages || 1}} · {{list.total}}条</text>
+          <button class="subjects-page-button" aria-label="{{title}}下一页" data-lane="{{lane}}" data-direction="1" bindtap="onPage" disabled="{{list.page >= list.totalPages || list.loading}}">›</button>
+        </view>
+      </view>
+    </template>
+    <template is="links" data="{{title:'班级关联',placeholder:'搜索班级',lane:'classes',list:classes,mutationState,optionsLoaded}}" />
+    <template is="links" data="{{title:'课包关联',placeholder:'搜索课包或学员',lane:'packages',list:packages,mutationState,optionsLoaded}}" />
+  </block>
+</view>

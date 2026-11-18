@@ -4,6 +4,10 @@ import {
   TeachingRecord,
 } from '../types/teacher';
 import { parseZonedDateTime } from '../utils/format';
+import { normalizeStarRating, starRatingLabel } from '../utils/star-rating';
+import { ParentLessonReview } from '../types/parent';
+import { TeacherFeedbackRatings } from '../types/teacher-feedback';
+import { emptyTeacherRatings, teacherRatingRows, TeacherRatingRow } from '../utils/teacher-ratings';
 
 export interface TeacherFeedbackItemModel {
   id: string;
@@ -25,8 +29,19 @@ export interface TeacherFeedbackStudentModel {
   feedback: string | null;
   feedbackDraft: string;
   feedbackImages: FeedbackImage[];
+  performanceRating: number | null;
+  performanceRatingDraft: number | null;
+  performanceRatingLabel: string;
+  teacherRatingsDraft: TeacherFeedbackRatings;
+  teacherRatingRows: TeacherRatingRow[];
+  feedbackVersion: number;
+  feedbackAuthorName: string;
+  ratingConflict: boolean;
   hasFeedback: boolean;
   readOnly: boolean;
+  photo: FeedbackImage | null;
+  parentReview: ParentLessonReview | null;
+  parentReviewRows: Array<{ label: string; ratingLabel: string }>;
 }
 
 const ATTENDANCE_LABELS: Record<string, string> = {
@@ -83,7 +98,6 @@ export function buildTeacherFeedbackPageModel(
 export function buildTeacherFeedbackStudentModels(
   detail: TeacherLessonDetail,
 ): TeacherFeedbackStudentModel[] {
-  const readOnly = detail.status !== 'COMPLETED';
   return detail.students.map((student) => ({
     id: student.id,
     displayName: student.displayName,
@@ -93,8 +107,24 @@ export function buildTeacherFeedbackStudentModels(
     feedback: student.feedback,
     feedbackDraft: student.feedback ?? '',
     feedbackImages: [...student.feedbackImages],
+    performanceRating: normalizeStarRating(student.performanceRating),
+    performanceRatingDraft: normalizeStarRating(student.performanceRating),
+    performanceRatingLabel: starRatingLabel(student.performanceRating),
+    teacherRatingsDraft: { ...(student.teacherRatings ?? emptyTeacherRatings()) },
+    teacherRatingRows: teacherRatingRows(student.teacherRatings),
+    feedbackVersion: student.feedbackVersion ?? (student.feedback ? 1 : 0),
+    feedbackAuthorName: student.feedbackAuthorName ?? '',
+    ratingConflict: false,
     hasFeedback: Boolean(student.feedback?.trim()),
-    readOnly,
+    readOnly: detail.status !== 'COMPLETED' || student.canEditFeedback !== true,
+    photo: student.photo ?? null,
+    parentReview: student.parentReview ?? null,
+    parentReviewRows: student.parentReview ? [
+      { label: '老师教学', ratingLabel: starRatingLabel(student.parentReview.teaching) },
+      { label: '课后沟通', ratingLabel: starRatingLabel(student.parentReview.communication) },
+      { label: '教室环境', ratingLabel: starRatingLabel(student.parentReview.environment) },
+      { label: '整体评价', ratingLabel: starRatingLabel(student.parentReview.overall) },
+    ] : [],
   }));
 }
 

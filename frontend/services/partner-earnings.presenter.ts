@@ -3,6 +3,7 @@ import {
   PartnerEarningRule,
   PartnerEarningStatus,
   PartnerEarningSummary,
+  PartnerAttendanceStatus,
 } from '../types/partner';
 import { formatPartnerDateTime } from '../utils/partner-format';
 
@@ -11,6 +12,12 @@ const STATUS_LABELS: Record<PartnerEarningStatus, string> = {
   AVAILABLE: '可结算',
   REJECTED: '已驳回',
   REVERSED: '已冲正',
+};
+
+const ATTENDANCE_LABELS: Record<PartnerAttendanceStatus, string> = {
+  PRESENT: '实际到课',
+  LEAVE: '请假',
+  ABSENT: '缺勤',
 };
 
 export function formatPartnerEarningMoney(fen: number): string {
@@ -49,9 +56,10 @@ export function presentPartnerEarningRule(rule: PartnerEarningRule | null) {
     ...rule,
     unitPriceLabel: formatPartnerEarningMoney(rule.unitPriceFen),
     shareLabel: formatPartnerShare(rule.shareBasisPoints),
-    attendanceLabel: rule.countedAttendanceStatuses.includes('PRESENT')
-      ? '实际到课'
-      : '按配置状态',
+    attendanceLabel: (['PRESENT', 'LEAVE', 'ABSENT'] as const)
+      .filter((status) => rule.countedAttendanceStatuses.includes(status))
+      .map((status) => ATTENDANCE_LABELS[status])
+      .join('、') || '未配置',
     effectiveFromLabel: formatPartnerDateTime(rule.effectiveFrom),
   };
 }
@@ -60,6 +68,7 @@ export function presentPartnerEarningEntry(entry: PartnerEarningEntry) {
   return {
     ...entry,
     attendeeLabel: `${entry.countedAttendeeCount} 人`,
+    actualAttendeeLabel: `${entry.actualAttendeeCount} 人`,
     unitPriceLabel: formatPartnerEarningMoney(entry.unitPriceFen),
     shareLabel: formatPartnerShare(entry.shareBasisPoints),
     perAttendeeLabel: formatPartnerEarningMoney(entry.perAttendeeAmountFen),

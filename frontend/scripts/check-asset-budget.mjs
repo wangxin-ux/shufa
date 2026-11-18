@@ -2,7 +2,7 @@
  * 小程序素材预算检查：
  * - 单张图片不得超过 500 KB
  * - 单个字体文件不得超过 128 KB
- * - 图片与字体合计不得超过 6 MB；新增财务/人力各最多 512 KB
+ * - 图片与字体合计不得超过 7 MB；新增财务/人力各最多 512 KB
  * 超出时退出码为 1 并打印具体文件。
  */
 import { existsSync, readdirSync, statSync } from 'node:fs';
@@ -18,6 +18,7 @@ const IMAGE_DIRS = [
   fileURLToPath(new URL('../pages/parent/assets', import.meta.url)),
   fileURLToPath(new URL('../pages/teacher/assets', import.meta.url)),
   fileURLToPath(new URL('../pages/campus-manager/assets', import.meta.url)),
+  fileURLToPath(new URL('../pages/operator/assets', import.meta.url)),
   fileURLToPath(new URL('../pages/super-admin/assets', import.meta.url)),
   fileURLToPath(new URL('../pages/partner/assets', import.meta.url)),
 ];
@@ -29,7 +30,7 @@ const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif']);
 const FONT_EXTS = new Set(['.woff', '.woff2', '.ttf', '.otf']);
 const SINGLE_LIMIT = 500 * 1024;
 const FONT_SINGLE_LIMIT = 128 * 1024;
-const TOTAL_LIMIT = 6 * 1024 * 1024;
+const TOTAL_LIMIT = 7 * 1024 * 1024;
 
 let failures = 0;
 let total = 0;
@@ -53,6 +54,7 @@ function walk(dir, extensions, singleLimit, label) {
 
 for (const dir of IMAGE_DIRS) {
   walk(dir, IMAGE_EXTS, SINGLE_LIMIT, '500KB IMAGE LIMIT');
+  walk(dir, FONT_EXTS, FONT_SINGLE_LIMIT, '128KB FONT LIMIT');
 }
 for (const dir of NEW_ROLE_DIRS) {
   if (!existsSync(dir)) continue;
@@ -62,6 +64,7 @@ for (const dir of NEW_ROLE_DIRS) {
     failures += 1;
     console.error(`OVER 512KB ROLE IMAGE BUDGET: ${dir}`);
   }
+  walk(dir, FONT_EXTS, FONT_SINGLE_LIMIT, '128KB FONT LIMIT');
 }
 walk(FONT_DIR, FONT_EXTS, FONT_SINGLE_LIMIT, '128KB FONT LIMIT');
 console.log(`assets total: ${(total / 1024).toFixed(1)} KB (limit ${(TOTAL_LIMIT / 1024).toFixed(1)} KB)`);

@@ -1,0 +1,172 @@
+<view class="teacher-performance">
+  <view wx:if="{{state !== 'forbidden'}}" class="performance-head">
+    <text class="performance-title">授课与月度评价</text>
+    <picker
+      class="performance-month"
+      mode="date"
+      fields="month"
+      value="{{month}}"
+      disabled="{{saving || saveUnknown}}"
+      bindchange="onMonthChange"
+      aria-label="评价月份，当前{{month}}"
+    >
+      <view class="performance-month__control {{saving || saveUnknown ? 'performance-month__control--disabled' : ''}}">
+        <text class="performance-month__value">{{month}}</text>
+        <text class="performance-month__arrow" aria-hidden="true">⌄</text>
+      </view>
+    </picker>
+  </view>
+
+  <view wx:if="{{state === 'loading'}}" class="performance-state">
+    <text>正在加载授课与月度评价</text>
+  </view>
+  <view wx:elif="{{state === 'forbidden'}}" class="performance-state">
+    <text class="performance-state__title">无权查看教师评价</text>
+    <text>{{message || '当前账号无法查看此教师的授课与评价'}}</text>
+  </view>
+  <view wx:elif="{{state === 'error'}}" class="performance-state">
+    <text class="performance-state__title">授课与月度评价加载失败</text>
+    <text>{{message}}</text>
+    <button class="performance-button performance-button--secondary" bindtap="onRetry" aria-label="重新加载授课与月度评价">重试加载</button>
+  </view>
+
+  <block wx:elif="{{state === 'ready'}}">
+    <text class="performance-meta">统计时区：{{timezone}}</text>
+    <view class="performance-metrics">
+      <view class="performance-metric">
+        <text class="performance-metric__label">应授课次</text>
+        <text class="performance-metric__value {{scheduledLabel.length > 6 ? 'performance-metric__value--long' : scheduledLabel.length > 2 ? 'performance-metric__value--compact' : ''}}">{{scheduledLabel}}</text>
+      </view>
+      <view class="performance-metric">
+        <text class="performance-metric__label">实授课次</text>
+        <text class="performance-metric__value {{completedLabel.length > 6 ? 'performance-metric__value--long' : completedLabel.length > 2 ? 'performance-metric__value--compact' : ''}}">{{completedLabel}}</text>
+      </view>
+      <view class="performance-metric">
+        <text class="performance-metric__label">完成率</text>
+        <text class="performance-metric__value {{rateLabel.length > 6 ? 'performance-metric__value--long' : rateLabel.length > 2 ? 'performance-metric__value--compact' : ''}}">{{rateLabel}}</text>
+      </view>
+    </view>
+
+    <view class="performance-evaluation">
+      <view class="performance-section-head">
+        <text class="performance-title">月度评价</text>
+        <text wx:if="{{!authorName}}" class="performance-meta">本月尚未评价</text>
+        <text wx:elif="{{!canEdit}}" class="performance-meta">只读</text>
+        <text wx:elif="{{dirty}}" class="performance-meta">有未保存修改</text>
+      </view>
+      <view wx:if="{{authorName}}" class="performance-author">
+        <text class="performance-author__line">评价人：{{authorName}}</text>
+        <text wx:if="{{savedLabel}}" class="performance-author__line">保存时间：{{savedLabel}}</text>
+      </view>
+
+      <view wx:for="{{ratings}}" wx:for-item="rating" wx:key="field" class="performance-rating">
+        <view class="performance-rating__head">
+          <text class="performance-rating__label">{{rating.label}}</text>
+          <text class="performance-rating__score">{{rating.score === null ? '未评分' : rating.scoreLabel}}</text>
+        </view>
+        <view class="performance-stars" aria-label="{{rating.label}}，{{rating.score === null ? '未评分' : rating.scoreLabel}}">
+          <view wx:for="{{rating.stars}}" wx:for-item="star" wx:key="full" class="performance-star">
+            <view class="performance-star__visual" aria-hidden="true">
+              <image class="performance-star__base" src="/pages/partner/assets/rating-star.png" mode="aspectFit" />
+              <view class="performance-star__fill" style="width: {{star.fill}}%;">
+                <image class="performance-star__image" src="/pages/partner/assets/rating-star.png" mode="aspectFit" />
+              </view>
+            </view>
+            <button
+              class="performance-star__tap performance-star__tap--half"
+              data-field="{{rating.field}}"
+              data-score="{{star.half}}"
+              bindtap="onRate"
+              disabled="{{!canEdit || saving || saveUnknown || conflict}}"
+              aria-label="{{rating.label}}，评为{{star.half / 2}}星，满分5星"
+              aria-pressed="{{rating.score === star.half}}"
+              hover-class="performance-star__tap--hover"
+            ></button>
+            <button
+              class="performance-star__tap performance-star__tap--full"
+              data-field="{{rating.field}}"
+              data-score="{{star.full}}"
+              bindtap="onRate"
+              disabled="{{!canEdit || saving || saveUnknown || conflict}}"
+              aria-label="{{rating.label}}，评为{{star.full / 2}}星，满分5星"
+              aria-pressed="{{rating.score === star.full}}"
+              hover-class="performance-star__tap--hover"
+            ></button>
+          </view>
+        </view>
+      </view>
+
+      <view class="performance-guidance">
+        <view class="performance-section-head">
+          <text class="performance-rating__label">指导意见</text>
+          <text wx:if="{{canEdit}}" class="performance-guidance__count {{guidanceCount > 1000 ? 'performance-guidance__count--over' : ''}}">{{guidanceCount}}/1000字</text>
+        </view>
+        <textarea
+          wx:if="{{canEdit}}"
+          class="performance-guidance__input"
+          value="{{guidance}}"
+          maxlength="-1"
+          disabled="{{!canEdit || saving || saveUnknown || conflict}}"
+          auto-height="{{true}}"
+          adjust-position="{{true}}"
+          cursor-spacing="24"
+          placeholder="填写指导意见（选填）"
+          placeholder-class="performance-guidance__placeholder"
+          bindinput="onGuidanceInput"
+          aria-label="月度指导意见，选填，最多1000字"
+        />
+        <text wx:else class="performance-guidance__readonly">{{guidance || '暂无指导意见'}}</text>
+        <text wx:if="{{canEdit && guidanceCount > 1000}}" class="performance-notice">指导意见不能超过1000字</text>
+      </view>
+
+      <text wx:if="{{message}}" class="performance-notice">{{message}}</text>
+      <view wx:if="{{conflict}}" class="performance-recovery">
+        <text class="performance-notice">评价已更新，重新读取后再修改。</text>
+        <button class="performance-button performance-button--secondary" bindtap="onReload" disabled="{{saving || saveUnknown}}" aria-label="重新读取本月最新评价">重新读取</button>
+      </view>
+      <view wx:elif="{{saveUnknown}}" class="performance-recovery">
+        <text class="performance-notice">保存结果尚未确认</text>
+        <button wx:if="{{canEdit}}" class="performance-button" bindtap="onSave" loading="{{saving}}" disabled="{{!canEdit || saving || conflict}}" aria-label="重试本次评价保存">{{saving ? '正在确认保存' : '重试本次保存'}}</button>
+      </view>
+      <button
+        wx:elif="{{canEdit}}"
+        class="performance-button {{!dirty || saving || saveUnknown || conflict || guidanceCount > 1000 ? 'performance-button--disabled' : ''}}"
+        bindtap="onSave"
+        loading="{{saving}}"
+        disabled="{{!canEdit || !dirty || saving || saveUnknown || conflict || guidanceCount > 1000}}"
+        aria-label="保存本月四项评分与指导意见"
+      >{{saving ? '保存中' : '保存评价'}}</button>
+    </view>
+
+    <view class="performance-history">
+      <button class="performance-history__toggle" bindtap="onHistoryToggle" aria-expanded="{{historyOpen}}" aria-label="{{historyOpen ? '收起' : '展开'}}本月评价修订历史" hover-class="performance-history__toggle--hover">
+        <text>修订历史</text>
+        <text class="performance-history__arrow {{historyOpen ? 'performance-history__arrow--open' : ''}}" aria-hidden="true">⌄</text>
+      </button>
+      <block wx:if="{{historyOpen}}">
+        <view wx:for="{{historyRows}}" wx:for-item="revision" wx:key="version" class="performance-history__row">
+          <view class="performance-section-head">
+            <text class="performance-history__version">第{{revision.version}}版</text>
+            <text class="performance-meta">{{revision.savedLabel}}</text>
+          </view>
+          <text class="performance-history__author">评价人：{{revision.authorName}}</text>
+          <view class="performance-history__scores">
+            <text class="performance-history__score">教学：{{revision.teachingLabel}}</text>
+            <text class="performance-history__score">课后沟通：{{revision.communicationLabel}}</text>
+            <text class="performance-history__score">出勤：{{revision.attendanceLabel}}</text>
+            <text class="performance-history__score">整体：{{revision.overallLabel}}</text>
+          </view>
+          <text class="performance-history__guidance">指导意见：{{revision.guidance || '暂无指导意见'}}</text>
+        </view>
+        <view wx:if="{{historyLoading}}" class="performance-state">正在加载修订历史</view>
+        <view wx:elif="{{historyError}}" class="performance-state">
+          <text>{{historyError}}</text>
+          <button class="performance-button performance-button--secondary" bindtap="onHistoryRetry" aria-label="重新加载评价修订历史">重试历史加载</button>
+        </view>
+        <button wx:elif="{{historyHasMore}}" class="performance-button performance-button--secondary" bindtap="onHistoryMore" aria-label="加载更多本月评价修订历史">加载更多</button>
+        <text wx:elif="{{!historyRows.length}}" class="performance-history__empty">本月暂无修订记录</text>
+        <text wx:else class="performance-history__end">已显示全部修订</text>
+      </block>
+    </view>
+  </block>
+</view>

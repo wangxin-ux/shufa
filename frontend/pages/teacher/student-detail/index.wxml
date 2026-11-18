@@ -1,16 +1,30 @@
+<template name="ratingStars">
+  <view class="rating-stars">
+    <view wx:for="{{stars}}" wx:key="index" class="rating-stars__slot rating-stars__slot--{{item}}">
+      <image class="rating-stars__base" src="/pages/teacher/assets/rating-star.png" mode="aspectFit" aria-hidden="true" />
+      <image wx:if="{{item !== 'empty'}}" class="rating-stars__fill" src="/pages/teacher/assets/rating-star.png" mode="aspectFit" aria-hidden="true" />
+    </view>
+  </view>
+</template>
+
 <teacher-page-shell
-  markTitle="学员详情"
-  markIcon="/pages/teacher/assets/icon-students.png"
+  markTitle="学员档案"
+  markIcon="/pages/teacher/assets/page-mark-pdf.png" markIconSize="44"
   tone="yellow"
   showBack="{{true}}"
 >
   <view class="student-detail">
+    <view wx:if="{{refreshError}}" class="page-state__message">
+      <text>{{refreshError}}</text>
+      <button class="page-state__retry" bindtap="onRetry">重试刷新</button>
+    </view>
     <view wx:if="{{viewState === 'loading'}}" class="page-state">
       <text class="page-state__title">正在加载学员详情</text>
     </view>
     <view wx:elif="{{viewState === 'forbidden'}}" class="page-state">
       <text class="page-state__title">无访问权限</text>
       <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-state__retry" bindtap="onLogin">重新登录</button>
     </view>
     <view wx:elif="{{viewState === 'error'}}" class="page-state">
       <text class="page-state__title">学员详情加载失败</text>
@@ -23,10 +37,74 @@
 
     <block wx:elif="{{viewState === 'ready'}}">
       <view class="student-hero">
-        <text class="student-hero__eyebrow">负责学员</text>
-        <text class="student-hero__name">{{detail.displayName}}</text>
-        <text class="student-hero__class">{{detail.classLabel}}</text>
+        <image wx:if="{{detail.photoUrl && !photoFailed}}" class="student-hero__photo" src="{{detail.photoUrl}}" mode="aspectFill" binderror="onPhotoError" />
+        <view wx:else class="student-hero__photo student-hero__photo--empty"><text>暂无照片</text></view>
+        <view class="student-hero__scrim"></view>
+        <view class="student-hero__identity">
+          <view class="student-hero__name-row">
+            <text class="student-hero__name {{detail.displayName.length > 4 ? 'student-hero__name--compact' : ''}}">{{detail.displayName}}</text>
+            <text wx:if="{{detail.ageLabel !== '年龄待完善'}}" class="student-hero__age">{{detail.ageLabel}}</text>
+          </view>
+          <text class="student-hero__class">{{detail.classLabel}}</text>
+        </view>
       </view>
+
+      <view class="section-head">
+        <text class="section-head__title">逐课反馈</text>
+        <text wx:if="{{feedbackHistory.length}}" class="section-head__meta">共 {{feedbackHistory.length}} 节</text>
+      </view>
+      <view wx:if="{{!feedbackHistory.length}}" class="feedback-card">
+        <text class="feedback-card__content">{{detail.latestFeedbackContent}}</text>
+        <text class="feedback-card__meta">{{detail.latestFeedbackMeta}}</text>
+      </view>
+      <view wx:for="{{feedbackHistory}}" wx:key="id" class="feedback-block">
+        <view class="feedback-card">
+          <view class="feedback-card__top">
+            <image wx:if="{{item.mediaImage}}" class="feedback-card__media" src="{{item.mediaImage.accessUrl}}" mode="aspectFill" data-id="{{item.id}}" data-image-id="{{item.mediaImage.id}}" bindtap="onPreviewFeedback" />
+            <view wx:else class="feedback-card__media feedback-card__media--empty"><text>无课堂照片</text></view>
+            <view class="feedback-card__meta-col">
+              <text class="feedback-card__meta-line">{{item.metaLines[0]}}</text>
+              <text class="feedback-card__meta-line">{{item.metaLines[1]}}</text>
+              <text class="feedback-card__meta-line">{{item.metaLines[2]}}</text>
+              <template is="ratingStars" data="{{stars: item.stars}}" />
+            </view>
+          </view>
+          <text class="feedback-card__content">{{item.content}}</text>
+          <view wx:if="{{item.extraImages.length}}" class="feedback-card__extra">
+            <image wx:for="{{item.extraImages}}" wx:for-item="image" wx:key="id" class="feedback-card__extra-image" src="{{image.accessUrl}}" mode="aspectFill" data-id="{{item.id}}" data-image-id="{{image.id}}" bindtap="onPreviewFeedback" />
+          </view>
+          <text class="feedback-card__meta">{{item.timeLabel}} · {{item.statusLabel}}</text>
+        </view>
+
+        <view class="rating-card">
+          <view wx:for="{{item.ratingStarRows}}" wx:for-item="rating" wx:key="field" class="rating-card__row">
+            <text class="rating-card__label">{{rating.label}}</text>
+            <template is="ratingStars" data="{{stars: rating.stars}}" />
+          </view>
+          <text wx:if="{{!item.ratingStarRows.length}}" class="rating-card__hint">本节课未填写四项评分 · {{item.legacyRatingLabel}}</text>
+          <button class="rating-card__action" data-id="{{item.id}}" bindtap="onOpenFeedback" hover-class="control--hover">
+            <text class="rating-card__action-label">查看本节课反馈</text>
+            <text class="rating-card__action-arrow">›</text>
+          </button>
+        </view>
+      </view>
+      <text wx:if="{{feedbackError}}" class="page-state__message">{{feedbackError}}</text>
+      <button wx:if="{{feedbackHasMore}}" class="page-state__retry" disabled="{{feedbackLoading}}" bindtap="onLoadMoreFeedback">{{feedbackLoading ? '加载中' : (feedbackError ? '重试加载反馈' : '更多反馈')}}</button>
+
+      <view class="section-head">
+        <text class="section-head__title">课时档案</text>
+        <text wx:if="{{detail.warningLabel}}" class="archive-warning">{{detail.warningLabel}}</text>
+      </view>
+      <view class="archive-facts">
+        <view><text class="archive-facts__label">报名原始主课</text><text class="archive-facts__value">{{detail.originalMainLabel}}</text></view>
+        <view><text class="archive-facts__label">报名原始赠课</text><text class="archive-facts__value">{{detail.originalGiftLabel}}</text></view>
+        <view><text class="archive-facts__label">当前可用主课</text><text class="archive-facts__value">{{detail.availableMainLabel}}</text></view>
+        <view><text class="archive-facts__label">当前可用赠课</text><text class="archive-facts__value">{{detail.availableGiftLabel}}</text></view>
+        <view><text class="archive-facts__label">剩余课时合计</text><text class="archive-facts__value">{{detail.remainingTotalLabel}}</text></view>
+        <view><text class="archive-facts__label">累计实收</text><text class="archive-facts__value">{{detail.receivedLabel}}</text></view>
+        <view wx:if="{{detail.pendingIssuanceLabel}}"><text class="archive-facts__label">发课进度</text><text class="archive-facts__value">{{detail.pendingIssuanceLabel}}</text></view>
+      </view>
+      <text wx:if="{{detail.balanceAsOfLabel}}" class="detail-row__meta">当前可用截至 {{detail.balanceAsOfLabel}}</text>
 
       <view class="section-head">
         <text class="section-head__title">下一次课程</text>
@@ -44,7 +122,7 @@
         <text class="section-head__meta">到课率 {{detail.attendanceRateLabel}}</text>
       </view>
       <view class="attendance-summary">
-        <text>{{detail.attendanceSummary}}</text>
+        <text>有效完课 · {{detail.attendanceSummary}}</text>
       </view>
       <view wx:if="{{detail.recentAttendance.length}}" class="detail-list">
         <view wx:for="{{detail.recentAttendance}}" wx:key="id" class="detail-row">
@@ -56,14 +134,6 @@
         </view>
       </view>
       <text wx:else class="empty-line">暂无近期出勤记录</text>
-
-      <view class="section-head">
-        <text class="section-head__title">最近反馈</text>
-      </view>
-      <view class="feedback-card">
-        <text class="feedback-card__content">{{detail.latestFeedbackContent}}</text>
-        <text class="feedback-card__meta">{{detail.latestFeedbackMeta}}</text>
-      </view>
 
       <view class="section-head">
         <text class="section-head__title">负责班级</text>
@@ -79,5 +149,9 @@
       </view>
       <text wx:else class="empty-line">暂无负责班级</text>
     </block>
+    <view wx:if="{{viewState !== 'forbidden'}}">
+      <button class="page-state__retry" bindtap="onStudents">学员列表</button>
+      <button wx:if="{{viewState === 'ready'}}" class="page-state__retry" bindtap="onFeedback">课堂反馈</button>
+    </view>
   </view>
 </teacher-page-shell>

@@ -1,0 +1,40 @@
+<view wx:if="{{!blocked}}" class="ranking-preview">
+  <view class="ranking-preview__head">
+    <text class="ranking-preview__title">校区月榜</text>
+    <button class="ranking-preview__all" bindtap="onAllTap" disabled="{{viewState === 'forbidden'}}" aria-label="查看全部月榜">全部 <text aria-hidden="true">›</text></button>
+  </view>
+  <view class="ranking-preview__metrics" aria-label="月榜指标">
+    <button wx:for="{{metricOptions}}" wx:key="value" class="ranking-preview__metric {{metric === item.value ? 'ranking-preview__metric--active' : ''}}" data-metric="{{item.value}}" bindtap="onMetricTap" disabled="{{viewState === 'forbidden'}}">{{item.label}}</button>
+  </view>
+  <scroll-view class="ranking-preview__content" scroll-y="{{true}}" show-scrollbar="{{true}}">
+  <view wx:if="{{viewState === 'loading'}}" class="ranking-preview__state">正在加载月榜</view>
+  <view wx:elif="{{viewState === 'forbidden'}}" class="ranking-preview__state">{{errorMessage}}</view>
+  <view wx:elif="{{viewState === 'error'}}" class="ranking-preview__state">
+    <text>{{errorMessage}}</text><button class="ranking-preview__retry" bindtap="onRetry">重试</button>
+  </view>
+  <block wx:else>
+    <view class="ranking-preview__status"><text>{{month}} · {{availabilityLabel}}</text><text wx:if="{{refreshing}}">刷新中</text></view>
+    <text wx:if="{{asOfLabel}}" class="ranking-preview__meta">截至 {{asOfLabel}} · 北京时间</text>
+    <view wx:if="{{refreshError}}" class="ranking-preview__state"><text>{{refreshError}}</text><button class="ranking-preview__retry" bindtap="onRetry">重试刷新</button></view>
+    <view wx:if="{{ownCampus}}" class="ranking-preview__own">
+      <text class="ranking-preview__own-label">本校区</text>
+      <view class="ranking-preview__row ranking-preview__row--own">
+        <text class="ranking-preview__rank">{{ownCampus.rank}}</text>
+        <text class="ranking-preview__name">{{ownCampus.campusName}}</text>
+        <text class="ranking-preview__delta {{ownCampus.rankDelta !== null && ownCampus.rankDelta !== undefined ? 'ranking-preview__delta--known' : ''}}">{{ownCampus.deltaLabel}}</text>
+      </view>
+    </view>
+    <text wx:elif="{{viewState !== 'unavailable'}}" class="ranking-preview__meta">本校区暂无排名</text>
+    <view wx:if="{{viewState === 'unavailable'}}" class="ranking-preview__state">{{unavailableMessage}}</view>
+    <view wx:elif="{{viewState === 'empty'}}" class="ranking-preview__state">该月暂无排名</view>
+    <block wx:else>
+      <view wx:for="{{rows}}" wx:key="campusId" class="ranking-preview__row {{item.isOwnCampus ? 'ranking-preview__row--own' : ''}}">
+        <text class="ranking-preview__rank">{{item.rank}}</text>
+        <view class="ranking-preview__name"><text>{{item.campusName}}</text><text wx:if="{{item.isOwnCampus}}" class="ranking-preview__own-label">本校区</text></view>
+        <text class="ranking-preview__delta {{item.rankDelta !== null && item.rankDelta !== undefined ? 'ranking-preview__delta--known' : ''}}">{{item.deltaLabel}}</text>
+      </view>
+    </block>
+  </block>
+  <text wx:if="{{navigationError}}" class="ranking-preview__state">{{navigationError}}</text>
+  </scroll-view>
+</view>

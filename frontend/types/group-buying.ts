@@ -136,6 +136,8 @@ export interface GroupPageQuery {
 
 export type GroupPromotionCampaignQuery = GroupPageQuery;
 
+export type { PartnerCampaignPhase, PartnerCampaignQuery, PartnerCampaignView } from '../pages/partner/runtime/group-promotion';
+
 export interface ParentGroupCampaignQuery extends GroupPageQuery {
   studentId?: string;
 }
@@ -172,6 +174,8 @@ export interface ManagementCourseProductView {
   campusId: string;
   campusName: string;
   name: string;
+  courseName?: string;
+  classType?: string;
   summary: string;
   coverFileId: string | null;
   priceFen: number;
@@ -187,4 +191,16 @@ export interface ManagementCourseProductView {
 export interface ManagementCourseProductQuery extends GroupPageQuery {
   campusId?: string;
   status?: CourseProductStatus;
+}
+
+export interface CourseProductMutationInput {
+  campusId: string;
+  name: string;
+  courseName: string;
+  classType: string;
+  summary: string;
+  priceFen: number;
+  mainUnits: number;
+  giftUnits: number;
+  validityDays: number;
 }

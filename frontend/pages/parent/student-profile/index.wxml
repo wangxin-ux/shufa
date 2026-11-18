@@ -39,11 +39,12 @@
         <view class="student-profile__detail-row">
           <text class="student-profile__detail-label">年龄</text>
           <input
-            wx:if="{{isEditing}}"
+            wx:if="{{isEditing && !profileSetupCompleted}}"
             class="student-profile__input student-profile__input--age"
             type="number"
             maxlength="3"
             value="{{studentAgeInput}}"
+            disabled="{{submitting}}"
             bindinput="onAgeInput"
           />
           <text wx:else class="student-profile__detail-value">{{studentAgeLabel}}</text>
@@ -56,6 +57,7 @@
             maxlength="300"
             auto-height
             value="{{homeAddress}}"
+            disabled="{{submitting}}"
             placeholder="请输入家庭住址（可留空）"
             bindinput="onAddressInput"
           />

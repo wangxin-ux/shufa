@@ -9,6 +9,7 @@ Component({
     markIcon: { type: String, value: '' },
     bg: { type: String, value: 'yellow' },
     showWave: { type: Boolean, value: true },
+    waveSrc: { type: String, value: '' },
     backgroundColor: { type: String, value: '' },
     showBack: { type: Boolean, value: false },
     fixedHeader: { type: Boolean, value: false },

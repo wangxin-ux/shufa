@@ -8,25 +8,92 @@
 }
 
 .shell--yellow {
-  background: var(--teacher-yellow-soft);
+  background: var(--teacher-gradient);
 }
 
 .shell--home {
-  background: var(--role-home-yellow-gradient);
+  background: var(--teacher-gradient);
 }
 
 .shell--white {
   background: var(--teacher-surface);
 }
 
+/* PDF P20 的账户页为上部浅金、下部白底，不复用工作页白色顶浪。 */
+.shell--account {
+  background: var(--teacher-surface);
+}
+
+.shell--account::before {
+  position: absolute;
+  top: 0;
+  left: -20%;
+  width: 140%;
+  height: 680rpx;
+  border-radius: 0 0 40% 15%;
+  background: var(--teacher-yellow-soft);
+  content: '';
+  pointer-events: none;
+}
+
+/* 白色波浪底边取自教师端 PSD：左侧浅（约 101rpx）、右侧深（约 218rpx），
+   中段最陡、两端趋平，用多边形近似曲线（坐标见 docs/ui 教师端对齐记录）。
+   投影必须挂在父层：clip-path 会把本元素的 filter 结果一起裁掉，
+   因此形状（背景 + 多边形）下放到 ::before，父层只负责投影。 */
 .shell__wave {
   position: absolute;
-  top: -520rpx;
-  left: -50%;
-  width: 200%;
-  height: 700rpx;
-  border-radius: 50%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 228rpx;
+  filter: drop-shadow(0 6rpx 18rpx rgba(0, 32, 54, 0.34));
+  pointer-events: none;
+}
+
+.shell__wave::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: var(--teacher-surface);
+  clip-path: polygon(
+    0% 0%,
+    100% 0%,
+    100% 95.9%,
+    98.5% 95.9%,
+    95.2% 95.3%,
+    91.9% 94%,
+    88.6% 93.3%,
+    85.3% 91.4%,
+    82% 89.5%,
+    78.8% 88.3%,
+    75.5% 85.7%,
+    72.2% 83.2%,
+    68.9% 80.6%,
+    65.6% 77.5%,
+    62.4% 74.3%,
+    59.1% 71.1%,
+    55.8% 67.3%,
+    52.5% 64.1%,
+    49.2% 61%,
+    45.9% 57.8%,
+    42.7% 54.6%,
+    39.4% 52.1%,
+    36.1% 49.5%,
+    32.8% 48.3%,
+    29.5% 46.4%,
+    26.3% 45.1%,
+    23% 44.5%,
+    19.7% 44.5%,
+    16.4% 44.5%,
+    13.1% 45.1%,
+    9.8% 45.7%,
+    6.6% 47%,
+    3.3% 48.9%,
+    0% 50.2%
+  );
 }
 
 .shell__header,
@@ -52,6 +119,8 @@
   align-items: center;
   gap: 12rpx;
 }
+
+.shell__tools { display: flex; flex: none; margin-left: auto; }
 
 .shell__leading--fixed {
   position: fixed;

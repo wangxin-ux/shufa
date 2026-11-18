@@ -1,6 +1,6 @@
 <teacher-page-shell
   markTitle="首页"
-  markIcon="/pages/teacher/assets/icon-confirm.png"
+  markIcon="/pages/teacher/assets/page-mark-pdf.png" markIconSize="44"
   tone="home"
 >
   <view class="home">
@@ -11,6 +11,7 @@
     <view wx:elif="{{viewState === 'forbidden'}}" class="page-state" aria-live="polite">
       <text class="page-state__title">无访问权限</text>
       <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-state__retry" bindtap="onLogin" hover-class="button--hover">重新登录</button>
     </view>
 
     <view wx:elif="{{viewState === 'error'}}" class="page-state" aria-live="polite">
@@ -20,6 +21,10 @@
     </view>
 
     <block wx:else>
+      <view wx:if="{{refreshError}}" class="home__refresh" role="alert">
+        <text>{{refreshError}}</text>
+        <button class="home__more" bindtap="onRetry" hover-class="button--hover">重试</button>
+      </view>
       <view class="home__schedule-head">
         <text class="home__title">今日课表</text>
         <button
@@ -54,6 +59,14 @@
             >{{nextLesson.statusPrefix}}</text>
             <text class="lesson-card__status lesson-card__status--{{nextLesson.statusTone}}">{{nextLesson.statusLabel}}</text>
           </view>
+        </view>
+        <view class="lesson-card__roster" aria-live="polite">
+          <view class="lesson-card__counts">
+            <text>{{rosterSummary.expectedLabel}}</text>
+            <text>{{rosterSummary.leaveLabel}}</text>
+            <text class="{{rosterSummary.hasWarning ? 'lesson-card__warning' : ''}}">{{rosterSummary.warningLabel}}</text>
+          </view>
+          <text class="lesson-card__roster-note">{{rosterSummary.sourceLabel}} · {{rosterSummary.thresholdLabel}} · {{rosterSummary.asOfLabel}}</text>
         </view>
       </view>
 

@@ -286,10 +286,10 @@ function toEntryView(entry: EarningEntryRow) {
     entryType: entry.entryType,
     amountFen: entry.amountFen,
     status: entry.status,
-    basisType: readString(snapshot, 'basisType'),
-    unitAmountFen: readNumber(snapshot, 'unitAmountFen'),
-    lessonUnits: readNumber(snapshot, 'lessonUnits'),
-    attendeeCount: readNumber(snapshot, 'attendeeCount'),
+    basisType: readBasisType(snapshot),
+    unitAmountFen: readSnapshotInteger(snapshot, 'unitAmountFen', 1),
+    lessonUnits: readSnapshotInteger(snapshot, 'lessonUnits', 1),
+    attendeeCount: readSnapshotInteger(snapshot, 'attendeeCount', 0),
     reviewableAt: entry.reviewableAt.toISOString(),
     reviewedAt: entry.reviewedAt?.toISOString() ?? null,
     rejectionReason:
@@ -306,12 +306,24 @@ function asSnapshot(value: Prisma.JsonValue): Prisma.JsonObject {
   return value;
 }
 
-function readString(snapshot: Prisma.JsonObject, key: string): string {
-  const value = snapshot[key];
-  return typeof value === 'string' ? value : '';
+function readBasisType(snapshot: Prisma.JsonObject) {
+  const value = snapshot.basisType;
+  return value === 'PER_COMPLETED_SESSION' ||
+    value === 'PER_LESSON_UNIT' ||
+    value === 'PER_PRESENT_ATTENDEE'
+    ? value
+    : null;
 }
 
-function readNumber(snapshot: Prisma.JsonObject, key: string): number {
+function readSnapshotInteger(
+  snapshot: Prisma.JsonObject,
+  key: string,
+  minimum: number,
+): number | null {
   const value = snapshot[key];
-  return typeof value === 'number' && Number.isSafeInteger(value) ? value : 0;
+  return typeof value === 'number' &&
+    Number.isSafeInteger(value) &&
+    value >= minimum
+    ? value
+    : null;
 }

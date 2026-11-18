@@ -1,5 +1,6 @@
 import { TeacherLedgerRecord } from '../types/teacher';
 import { parseZonedDateTime } from '../utils/format';
+import { formatPartnerSignedLessonUnits } from '../utils/partner-format';
 
 export interface TeacherLedgerItemModel {
   id: string;
@@ -33,14 +34,8 @@ export function buildTeacherLedgerPageModel(
     occurredAtLabel: formatOccurredAt(record.occurredAt),
     typeLabel: TYPE_LABELS[record.entryType],
     bucketLabel: record.bucket === 'MAIN' ? '主课时' : '赠送课时',
-    deltaLabel:
-      record.deltaUnits > 0 ? `+${record.deltaUnits}` : String(record.deltaUnits),
-    tone:
-      record.deltaUnits < 0
-        ? 'negative'
-        : record.deltaUnits > 0
-          ? 'positive'
-          : 'neutral',
+    deltaLabel: formatPartnerSignedLessonUnits(record.deltaUnits),
+    tone: record.deltaUnits < 0 ? 'negative' : record.deltaUnits > 0 ? 'positive' : 'neutral',
   }));
 }
 

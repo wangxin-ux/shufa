@@ -1,0 +1,28 @@
+<view class="crop" role="dialog" aria-modal="{{true}}" aria-label="{{imageSlot === 'cover' ? '裁切封面' : '裁切转发图'}}" catchtouchmove="onTouchEnd">
+  <view class="crop__header">
+    <text class="crop__title">{{imageSlot === 'cover' ? '裁切封面' : '裁切转发图'}}</text>
+    <text class="crop__size">{{imageSlot === 'cover' ? '750×1125' : '4:3'}}</text>
+  </view>
+  <view class="crop__stage">
+    <view class="crop__viewport" style="width: {{width}}px; height: {{height}}px;"
+      catchtouchstart="onTouchStart" catchtouchmove="onTouchMove" catchtouchend="onTouchEnd" catchtouchcancel="onTouchEnd">
+      <image wx:if="{{ready && preview.src}}" id="campaign-crop-preview" class="crop__image" src="{{preview.src}}" mode="scaleToFill"
+        style="width: {{preview.width}}px; height: {{preview.height}}px; left: {{preview.left}}px; top: {{preview.top}}px;"
+        data-source="{{preview.src}}" binderror="onPreviewError" />
+    </view>
+  </view>
+  <canvas id="campaign-crop-canvas" type="2d" class="crop__canvas" style="width: {{width}}px; height: {{height}}px;" />
+  <view class="crop__controls">
+    <view class="crop__zoom">
+      <text>缩放</text>
+      <slider class="crop__slider" min="1" max="4" step="0.05" value="{{zoom}}" disabled="{{!ready || busy}}" activeColor="#f86114" bindchanging="onZoom" bindchange="onZoom" aria-label="图片缩放" />
+      <button id="campaign-crop-reset" class="crop__reset {{!ready || busy ? 'crop__reset--disabled' : ''}}" bindtap="onReset" disabled="{{!ready || busy}}" aria-label="重置裁切">↺</button>
+    </view>
+    <text class="crop__message" aria-live="polite">{{message || (!ready ? '正在读取图片' : '')}}</text>
+    <button wx:if="{{!ready && message}}" class="crop__retry" bindtap="loadImage">重新读取</button>
+    <view class="crop__actions">
+      <button id="campaign-crop-cancel" class="crop__cancel" bindtap="onCancel">取消</button>
+      <button id="campaign-crop-confirm" class="crop__confirm {{!ready || busy ? 'crop__confirm--disabled' : ''}}" bindtap="onConfirm" disabled="{{!ready || busy}}" loading="{{busy}}">确定</button>
+    </view>
+  </view>
+</view>

@@ -1,6 +1,24 @@
+@import "../../../styles/parent-pdf.wxss";
+@import "../styles/pdf-typography.wxss";
+
 .profile {
   position: relative;
+  isolation: isolate;
   padding: 24rpx 0 100rpx;
+}
+
+.profile::before {
+  content: '';
+  position: absolute;
+  left: -160rpx;
+  right: -160rpx;
+  bottom: -180rpx;
+  height: 230rpx;
+  border-radius: 50% 50% 0 0;
+  background: var(--parent-pdf-bottom-gradient);
+  transform: rotate(7deg);
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* 原稿下半页的绿衣背包狗背景装饰 */
@@ -47,7 +65,7 @@
 
 .profile__student-card-bg {
   z-index: 0;
-  background: #fe8419;
+  background: var(--parent-orange);
   box-shadow: 0 13rpx 24rpx rgba(24, 18, 14, 0.19);
 }
 
@@ -68,29 +86,53 @@
   margin-top: 54rpx;
   margin-left: 14rpx;
   box-sizing: border-box;
-  --parent-yellow-card: rgba(255, 215, 94, 0.84);
+  border-radius: var(--parent-card-radius);
+  background-color: #ffd650;
+  --parent-yellow-card: transparent;
   --parent-action-card-shadow: 0 13rpx 24rpx rgba(24, 18, 14, 0.19);
+}
+
+.profile__menu-surface {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: var(--parent-card-radius);
+  pointer-events: none;
+}
+
+.profile__menu-backdrop {
+  position: absolute;
+  top: -215rpx;
+  left: calc(50% - 646rpx);
+  width: 1050rpx;
+}
+
+.profile__menu-surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 214, 80, 0.84);
 }
 
 .profile__student-name {
   flex: 0 1 auto;
   min-width: 0;
   max-width: 480rpx;
-  font-size: 100rpx;
+  font-size: 95rpx;
   font-family: var(--parent-font-display);
   line-height: 1.1;
-  font-weight: 800;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .profile__student-age {
   flex: none;
   margin-left: 18rpx;
-  font-size: 50rpx;
+  font-size: 63rpx;
   font-family: var(--parent-font-display);
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .profile__empty {
@@ -99,6 +141,8 @@
 }
 
 .actions {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
 }
@@ -107,7 +151,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 74rpx;
+  min-height: 82rpx;
   gap: 24rpx;
   border-bottom: 4rpx solid #ffffff;
 }
@@ -132,25 +176,10 @@
 }
 
 .actions__label {
-  font-size: 36rpx;
+  font-size: 34rpx;
   font-family: var(--parent-font-display);
-  font-weight: 700;
+  font-weight: 400;
   color: var(--parent-ink);
-}
-
-.actions__badge {
-  flex: none;
-  min-width: 40rpx;
-  height: 40rpx;
-  margin-left: 14rpx;
-  padding: 0 10rpx;
-  box-sizing: border-box;
-  border-radius: 999rpx;
-  line-height: 40rpx;
-  text-align: center;
-  font-size: 22rpx;
-  background: var(--parent-danger);
-  color: #ffffff;
 }
 
 .actions__button {
@@ -163,9 +192,28 @@
   line-height: 55rpx;
   text-align: center;
   font-size: 24rpx;
-  background: #fe8419;
+  background: var(--parent-orange);
   color: var(--parent-on-color);
 }
+
+.profile__refresh-error {
+  position: relative;
+  z-index: 2;
+  margin: 20rpx 14rpx 0;
+  font-size: 24rpx;
+  color: var(--parent-ink);
+}
+.profile__refresh-error button {
+  display: inline-block;
+  margin: 0 0 0 20rpx;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #bf5600;
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+.profile__refresh-error button::after { border: none; }
 
 @media (max-width: 350px) {
   .actions__label {

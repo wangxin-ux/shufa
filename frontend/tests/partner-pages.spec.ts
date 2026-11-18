@@ -178,6 +178,8 @@ describe('partner read-only pages', () => {
       {
         id: 'student-1',
         displayName: '姓名很长但必须完整可读的学员同学',
+        nameFontSize: 36,
+        lowBalance: false,
         birthDateLabel: '2017年6月18日',
         classLabel: '创意美术 A 班、周末综合材料班',
         mainBalanceLabel: '123',
@@ -210,6 +212,20 @@ describe('partner read-only pages', () => {
     expect(
       mergePartnerWarningItems(first, next, 2).map(({ studentId }) => studentId),
     ).toEqual(['student-1', 'student-2']);
+  });
+
+  it.each([
+    [0, 0, 0, true],
+    [500, 0, 0, true],
+    [501, 0, 0, false],
+    [600, 0, 100, true],
+  ])('uses available units for the fixed five-lesson strip color: %s/%s/%s', (main, gift, reserved, low) => {
+    const item = buildPartnerStudentItems([student({
+      mainBalanceUnits: main, giftBalanceUnits: gift, totalBalanceUnits: main + gift,
+      mainReservedUnits: reserved,
+    })])[0];
+    expect(item.lowBalance).toBe(low);
+    expect(item.totalBalanceLabel).toBe(formatPartnerLessonUnits(main + gift - reserved));
   });
 
   it('maps attendance summary, Chinese statuses and campus-local times', () => {
@@ -329,6 +345,7 @@ describe('partner read-only pages', () => {
     const profile: PartnerProfile = {
       displayName: '朱元璋',
       roleCode: 'PARTNER',
+      activeStudentCount: 106,
       campus: {
         id: 'campus-east',
         code: 'EAST',
@@ -343,6 +360,10 @@ describe('partner read-only pages', () => {
       displayName: '朱元璋',
       identityLabel: '合作方',
       campusName: '启明东校区',
+      campusNameCompact: false,
+      campusNameFontSizeRpx: 54,
+      campusNameHeightRpx: 63.72,
+      activeStudentCountLabel: '106人',
       campusCodeLabel: '校区编号 EAST',
       contactPhoneLabel: '0731-88886666',
       addressLabel: '长沙市岳麓区启明路 18 号',
@@ -355,11 +376,17 @@ describe('partner read-only pages', () => {
       { key: 'attendance', label: '出勤统计' },
       { key: 'teachers', label: '教师信息' },
       { key: 'earnings', label: '合作收益' },
+      { key: 'lesson-account', label: '课时流水' },
       { key: 'group-campaigns', label: '活动中心' },
+      { key: 'application', label: '入驻申请' },
     ]);
     expect(resolvePartnerProfileAction('earnings')).toEqual({
       kind: 'navigate',
       url: '/pages/partner/earnings/index',
+    });
+    expect(resolvePartnerProfileAction('lesson-account')).toEqual({
+      kind: 'navigate',
+      url: '/pages/partner/lesson-account/index',
     });
     expect(resolvePartnerProfileAction('operations')).toEqual({
       kind: 'navigate',
@@ -428,7 +455,8 @@ describe('partner read-only pages', () => {
       'utf8',
     );
 
-    expect(studentsMarkup).toContain('bindtap="onStudentTap"');
+    expect(studentsMarkup).toContain('bindtap="onStudentToggle"');
+    expect(studentsMarkup).toContain('bindtap="onStudentMore"');
     expect(studentsMarkup).toContain('data-id="{{item.id}}"');
     expect(studentDetailMarkup).toContain('近期上课');
     expect(studentDetailMarkup).toContain('近期课时流水');
@@ -489,8 +517,8 @@ describe('partner read-only pages', () => {
 
     expect(markup).toContain('/pages/partner/assets/lesson-account-top-character.png');
     expect(markup).toContain('/pages/partner/assets/lesson-account-lower-character.png');
-    expect(markup).toContain('校区课时账户');
-    expect(markup).toContain('全校区学员课时合计');
+    expect(markup).toContain('课时账户');
+    expect(markup).toContain('全校区 {{summary.totalBalanceLabel}} 节');
     expect(markup).not.toContain('数据来自课时账本实时汇总');
     expect(markup).toContain('class="account-ledger__aside"');
     expect(markup).toContain('{{item.balanceAfterLabel}}');
@@ -501,22 +529,19 @@ describe('partner read-only pages', () => {
       /\.account-page::before\s*\{[^}]*background:\s*#ffffff/s,
     );
     expect(styles).toMatch(
-      /\.account-hero\s*\{[^}]*width:\s*653rpx[^}]*min-height:\s*360rpx[^}]*overflow:\s*visible[^}]*border-radius:\s*32rpx/s,
+      /\.account-hero\s*\{[^}]*width:\s*100%[^}]*min-height:[^}]*overflow:\s*visible[^}]*border-radius:\s*32rpx/s,
     );
+    const hero = styles.match(/\.account-hero\s*\{([^}]+)\}/)?.[1] ?? '';
+    expect(hero).toMatch(/background:\s*rgba\(255,\s*123,\s*16,\s*0\.901961\)/);
+    expect(hero).not.toMatch(/(?:^|;)\s*opacity:/);
     expect(styles).toMatch(
-      /\.account-hero__character\s*\{[^}]*right:\s*-18rpx[^}]*bottom:\s*0[^}]*width:\s*434rpx/s,
+      /\.account-hero__character\s*\{[^}]*bottom:\s*0[^}]*pointer-events:\s*none/s,
     );
+    expect(markup).toContain('主课时 {{summary.mainBalanceLabel}} · 赠送 {{summary.giftBalanceLabel}}');
+    expect(markup).not.toContain('class="account-balance"');
+    expect(markup.indexOf('class="account-ledger-stage"')).toBeLessThan(markup.indexOf('class="account-ranking-stage"'));
     expect(styles).toMatch(
-      /\.account-balances\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)[^}]*gap:\s*92rpx[^}]*width:\s*653rpx/s,
-    );
-    expect(styles).toMatch(
-      /\.account-balances::after\s*\{[^}]*content:\s*'\+'/s,
-    );
-    expect(styles).toMatch(
-      /\.account-balance\s*\{[^}]*border-radius:\s*32rpx[^}]*background:\s*#ffd75e/s,
-    );
-    expect(styles).toMatch(
-      /\.account-ledger\s*\{[^}]*border-radius:\s*32rpx[^}]*background:\s*rgba\(246,\s*212,\s*104,\s*0\.86\)/s,
+      /\.account-ledger\s*\{[^}]*height:\s*0[^}]*background:\s*#f6d468/s,
     );
   });
 

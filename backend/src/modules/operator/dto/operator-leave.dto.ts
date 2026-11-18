@@ -1,0 +1,65 @@
+import { Transform, Type, type TransformFnParams } from 'class-transformer';
+import {
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Matches,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
+
+const trim = (params: TransformFnParams): unknown =>
+  typeof params.value === 'string' ? params.value.trim() : params.value;
+
+const LEAVE_STATUSES = ['PENDING', 'APPROVED', 'REJECTED'] as const;
+
+export class OperatorLeaveRequestsQueryDto {
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page = 1;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  pageSize = 20;
+
+  @IsOptional()
+  @IsIn(LEAVE_STATUSES)
+  status?: (typeof LEAVE_STATUSES)[number];
+
+  @Transform(({ value }: TransformFnParams): unknown =>
+    value === 'true' ? true : value === 'false' ? false : value,
+  )
+  @IsOptional()
+  @IsBoolean()
+  reviewedOnly?: boolean;
+}
+
+export class OperatorReviewLeaveDto {
+  @IsInt()
+  @Min(1)
+  version!: number;
+
+  @Transform(trim)
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  reviewReason?: string;
+}
+
+export class OperatorRejectLeaveDto {
+  @IsInt()
+  @Min(1)
+  version!: number;
+
+  @Transform(trim)
+  @IsString()
+  @Matches(/\S/, { message: 'reviewReason must contain non-whitespace text' })
+  @MaxLength(500)
+  reviewReason!: string;
+}

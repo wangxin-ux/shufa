@@ -3,7 +3,7 @@ import {
   LessonSessionStatus,
   TeacherLessonSession,
 } from '../types/teacher';
-import { parseZonedDateTime } from '../utils/format';
+import { formatDateLabel, parseZonedDateTime } from '../utils/format';
 
 export type TeacherScheduleStatusFilter = 'ALL' | LessonSessionStatus;
 
@@ -21,10 +21,13 @@ export interface TeacherScheduleItemModel {
   campusName: string;
   dateLabel: string;
   timeLabel: string;
+  startLabel: string;
+  endLabel: string;
   studentCountLabel: string;
   statusLabel: string;
   statusTone: 'success' | 'warning' | 'muted' | 'danger';
   actionDisabled: boolean;
+  isToday: boolean;
 }
 
 export const TEACHER_SCHEDULE_STATUS_FILTERS: ReadonlyArray<{
@@ -64,12 +67,6 @@ function formatDate(value: string): string {
   return `${parts.month}月${parts.day}日 ${CHINESE_WEEKDAYS[parts.weekday]}`;
 }
 
-function formatTimeRange(startsAt: string, endsAt: string): string {
-  const start = parseZonedDateTime(startsAt)?.time ?? '--:--';
-  const end = parseZonedDateTime(endsAt)?.time ?? '--:--';
-  return `${start}-${end}`;
-}
-
 function nextDate(date: string): string {
   const match = date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!match) {
@@ -106,20 +103,26 @@ export function buildTeacherScheduleQuery(
 
 export function buildTeacherSchedulePageModel(
   lessons: readonly TeacherLessonSession[],
+  today?: string,
 ): TeacherScheduleItemModel[] {
   return lessons.map((lesson) => {
     const status = STATUS_PRESENTATION[lesson.status];
+    const startLabel = parseZonedDateTime(lesson.startsAt)?.time ?? '--:--';
+    const endLabel = parseZonedDateTime(lesson.endsAt)?.time ?? '--:--';
     return {
       id: lesson.id,
       courseName: lesson.courseName,
       className: lesson.className,
       campusName: lesson.campusName,
       dateLabel: formatDate(lesson.startsAt),
-      timeLabel: formatTimeRange(lesson.startsAt, lesson.endsAt),
+      timeLabel: `${startLabel}-${endLabel}`,
+      startLabel,
+      endLabel,
       studentCountLabel: `${Math.max(0, Math.trunc(lesson.studentCount))} 名学员`,
       statusLabel: status.label,
       statusTone: status.tone,
       actionDisabled: status.actionDisabled,
+      isToday: Boolean(today) && formatDateLabel(lesson.startsAt) === today,
     };
   });
 }

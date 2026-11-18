@@ -1,0 +1,6 @@
+page {
+  --parent-font-display: "ParentPdfDisplay", "Microsoft YaHei", sans-serif;
+  --parent-font-body: "Microsoft YaHei Light", "Microsoft YaHei", sans-serif;
+  --parent-font-nav: var(--parent-font-body);
+  font-family: var(--parent-font-body);
+}

@@ -1,0 +1,19 @@
+.approved-role {
+  position: fixed;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 102rpx;
+  height: 88rpx;
+  border-radius: 16rpx;
+  background: #ff7b10;
+  color: #111111;
+  font-family: var(--partner-font-body);
+  font-size: 30rpx;
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: nowrap;
+  pointer-events: none;
+}

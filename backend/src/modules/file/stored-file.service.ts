@@ -8,7 +8,7 @@ import {
 } from 'node:crypto';
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import * as path from 'node:path';
-import type { StoredFilePurpose } from '@prisma/client';
+import type { Prisma, StoredFilePurpose } from '@prisma/client';
 import type { AuthenticatedUser } from '../../common/auth/authenticated-user';
 import { DomainError } from '../../common/errors/domain-error';
 import type { ErrorCode } from '../../common/errors/error-codes';
@@ -41,6 +41,15 @@ export const STUDENT_FEEDBACK_IMAGE_OPTIONS = {
   label: 'feedback image',
 } as const satisfies StoredFileOptions;
 
+export const STUDENT_PROFILE_PHOTO_OPTIONS = {
+  purpose: 'STUDENT_PROFILE_PHOTO',
+  directory: 'student-photos',
+  allowedMimeTypes: ['image/jpeg', 'image/png'],
+  maxBytes: 3 * 1024 * 1024,
+  invalidCode: 'STUDENT_PHOTO_INVALID',
+  label: 'student photo',
+} as const satisfies StoredFileOptions;
+
 export const GROUP_CAMPAIGN_POSTER_OPTIONS = {
   purpose: 'GROUP_CAMPAIGN_POSTER',
   directory: 'group-campaign-posters',
@@ -48,6 +57,15 @@ export const GROUP_CAMPAIGN_POSTER_OPTIONS = {
   maxBytes: 3 * 1024 * 1024,
   invalidCode: 'GROUP_CAMPAIGN_POSTER_INVALID',
   label: 'group campaign poster',
+} as const satisfies StoredFileOptions;
+
+export const PARTNER_CAMPAIGN_IMAGE_OPTIONS = {
+  purpose: 'PARTNER_CAMPAIGN_IMAGE',
+  directory: 'partner-campaign-images',
+  allowedMimeTypes: ['image/jpeg', 'image/png'],
+  maxBytes: 3 * 1024 * 1024,
+  invalidCode: 'VALIDATION_FAILED',
+  label: 'campaign image',
 } as const satisfies StoredFileOptions;
 
 export const CUSTOMER_SERVICE_QR_OPTIONS = {
@@ -88,6 +106,7 @@ export class StoredFileService {
     actor: AuthenticatedUser,
     file: UploadedStoredFile | undefined,
     options: StoredFileOptions,
+    database: Pick<Prisma.TransactionClient, 'storedFile'> = this.prisma,
   ) {
     if (!file || file.buffer.length === 0) {
       this.invalid(options, `A ${options.label} file is required`);
@@ -119,7 +138,7 @@ export class StoredFileService {
     await writeFile(absolutePath, file.buffer, { flag: 'wx' });
 
     try {
-      return await this.prisma.storedFile.create({
+      return await database.storedFile.create({
         data: {
           purpose: options.purpose,
           storageKey,
@@ -144,7 +163,12 @@ export class StoredFileService {
     });
     if (!stored) this.imageNotFound(options.label);
     try {
-      return { buffer: await readFile(this.resolveStoragePath(stored.storageKey, options)), mimeType: stored.mimeType };
+      return {
+        buffer: await readFile(
+          this.resolveStoragePath(stored.storageKey, options),
+        ),
+        mimeType: stored.mimeType,
+      };
     } catch {
       this.imageNotFound(options.label);
     }
@@ -183,6 +207,63 @@ export class StoredFileService {
     };
   }
 
+  toPartnerCampaignImageView(
+    file:
+      { id: string; mimeType: string; sizeBytes: number } | null | undefined,
+  ) {
+    if (!file) return null;
+    const expires = Math.floor(Date.now() / 1000) + 15 * 60;
+    return {
+      id: file.id,
+      mimeType: file.mimeType,
+      sizeBytes: file.sizeBytes,
+      accessUrl: `/media/partner-campaign-images/${file.id}?expires=${expires}&signature=${this.signImage('partner-campaign-image', file.id, expires)}`,
+      accessUrlExpiresAt: new Date(expires * 1000).toISOString(),
+    };
+  }
+
+  readPartnerCampaignImage(id: string, expires: string, signature: string) {
+    return this.readSignedImage(
+      'partner-campaign-image',
+      id,
+      expires,
+      signature,
+      PARTNER_CAMPAIGN_IMAGE_OPTIONS,
+    );
+  }
+
+  toStudentPhotoView(file: {
+    id: string;
+    mimeType: string;
+    sizeBytes: number;
+  }): FeedbackImageFileView {
+    const expires = Math.floor(Date.now() / 1_000) + 15 * 60;
+    return {
+      ...file,
+      accessUrl: `/media/student-photos/${encodeURIComponent(file.id)}?expires=${expires}&signature=${this.signImage('student-photo', file.id, expires)}`,
+      accessUrlExpiresAt: new Date(expires * 1_000).toISOString(),
+    };
+  }
+
+  async readStudentPhoto(id: string, expires: string, signature: string) {
+    const linked = await this.prisma.storedFile.findFirst({
+      where: {
+        id,
+        purpose: 'STUDENT_PROFILE_PHOTO',
+        profilePhotoStudent: { is: { isActive: true } },
+      },
+      select: { id: true },
+    });
+    if (!linked) this.imageNotFound('student photo');
+    return this.readSignedImage(
+      'student-photo',
+      id,
+      expires,
+      signature,
+      STUDENT_PROFILE_PHOTO_OPTIONS,
+    );
+  }
+
   toGroupCampaignPosterView(poster: {
     id: string;
     sortOrder: number;
@@ -210,11 +291,7 @@ export class StoredFileService {
   ): string | null {
     if (!file) return null;
     const expires = Math.floor(Date.now() / 1_000) + 15 * 60;
-    const signature = this.signImage(
-      'customer-service-qr',
-      file.id,
-      expires,
-    );
+    const signature = this.signImage('customer-service-qr', file.id, expires);
     return `/media/customer-service-qr/${encodeURIComponent(file.id)}?expires=${expires}&signature=${signature}`;
   }
 
@@ -346,7 +423,9 @@ export class StoredFileService {
     if (!stored) this.imageNotFound(options.label);
     try {
       return {
-        buffer: await readFile(this.resolveStoragePath(stored.storageKey, options)),
+        buffer: await readFile(
+          this.resolveStoragePath(stored.storageKey, options),
+        ),
         mimeType: stored.mimeType,
       };
     } catch {

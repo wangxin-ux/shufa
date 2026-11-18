@@ -124,7 +124,7 @@ describe("super admin home", () => {
     const statStyles = fs.readFileSync(
       path.join(
         root,
-        "components/super-admin-stat-strip/super-admin-stat-strip.wxss",
+        "pages/super-admin/runtime/components/super-admin-stat-strip/super-admin-stat-strip.wxss",
       ),
       "utf8",
     );
@@ -133,7 +133,7 @@ describe("super admin home", () => {
       "utf8",
     );
     const glassAsset = fs.readFileSync(
-      path.join(root, "assets/super-admin/home-stat-glass.png"),
+      path.join(root, "pages/super-admin/assets/home-stat-glass.png"),
     );
 
     expect(statStyles).toMatch(/\.stats\s*\{[^}]*background:\s*transparent/s);

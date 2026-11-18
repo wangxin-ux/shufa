@@ -6,6 +6,11 @@ export type PartnerHomeActionKey =
   | 'teachers'
   | 'students'
   | 'profile'
+  | 'application'
+  | 'lesson-account'
+  | 'group-campaigns'
+  | 'operations'
+  | 'earnings'
   | 'more';
 
 export type PartnerHomeActionResult =
@@ -13,7 +18,7 @@ export type PartnerHomeActionResult =
   | { kind: 'unavailable'; message: string };
 
 export interface PartnerHomeStatModel {
-  key: 'students' | 'consumed' | 'attendance';
+  key: 'students' | 'consumed' | 'teachers';
   label: string;
   value: string;
   unit: '人' | '节' | '%';
@@ -24,10 +29,13 @@ export interface PartnerHomePageModel {
   partnerName: string;
   campusName: string;
   highlightValue: string;
+  highlightFontSizeRpx: number;
   highlightUnit: '节';
   highlightStudent: string;
   highlightClass: string;
   highlightSummary: string;
+  highlightCourses: Array<{ id: string; className: string; label: string }>;
+  highlightAttendance: string;
   stats: PartnerHomeStatModel[];
 }
 
@@ -66,14 +74,6 @@ function count(value: number): { value: string; compact: boolean } {
   return { value: String(normalized), compact: normalized >= 100 };
 }
 
-function percentage(basisPoints: number | null): string {
-  if (basisPoints === null) return '--';
-  const value = Math.max(0, Math.trunc(basisPoints)) / 100;
-  return Number.isInteger(value)
-    ? String(value)
-    : value.toFixed(2).replace(/0+$/, '');
-}
-
 export function buildPartnerHomePageModel(
   dashboard: PartnerDashboard,
 ): PartnerHomePageModel {
@@ -88,15 +88,29 @@ export function buildPartnerHomePageModel(
     partnerName: dashboard.partner.displayName,
     campusName: dashboard.campus.name,
     highlightValue,
+    highlightFontSizeRpx: Math.min(
+      152,
+      Math.floor(210 / (Math.max(1, highlightValue.length) * 0.75)),
+    ),
     highlightUnit: '节',
     highlightStudent: highlight?.studentName ?? '暂无课时预警',
     highlightClass:
       highlight && highlight.classNames.length > 0
         ? highlight.classNames.join('、')
-        : dashboard.campus.name,
+        : highlight ? '暂无在读班级' : dashboard.campus.name,
     highlightSummary: highlight
       ? `低课时 · 当前 ${highlightValue} 节`
       : '当前校区暂无低课时学员',
+    highlightCourses: (highlight?.classes ?? []).map((item) => ({
+      id: item.id,
+      className: item.className,
+      label: `${item.courseName} · ${item.teacherName}`,
+    })),
+    highlightAttendance: !highlight
+      ? ''
+      : highlight.attendance?.attendanceRateBasisPoints == null
+        ? '暂无有效出勤'
+        : `个人到课 ${highlight.attendance.presentCount}/${highlight.attendance.recordedCount} · ${Number((highlight.attendance.attendanceRateBasisPoints / 100).toFixed(2))}%`,
     stats: [
       {
         key: 'students',
@@ -112,11 +126,10 @@ export function buildPartnerHomePageModel(
         compact: consumed.length >= 4,
       },
       {
-        key: 'attendance',
-        label: '出勤率',
-        value: percentage(dashboard.attendanceRateBasisPoints),
-        unit: '%',
-        compact: false,
+        key: 'teachers',
+        label: '授课教师',
+        ...count(dashboard.activeTeacherCount),
+        unit: '人',
       },
     ],
   };
@@ -129,6 +142,11 @@ const ROUTES: Partial<Record<PartnerHomeActionKey, string>> = {
   students: '/pages/partner/students/index',
   profile: '/pages/partner/profile/index',
   more: '/pages/partner/group-campaigns/index',
+  'lesson-account': '/pages/partner/lesson-account/index',
+  'group-campaigns': '/pages/partner/group-campaigns/index',
+  operations: '/pages/partner/operations/index',
+  earnings: '/pages/partner/earnings/index',
+  application: '/pages/partner/application/index',
 };
 
 export function resolvePartnerHomeAction(

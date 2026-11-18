@@ -1,0 +1,237 @@
+archive:
+  get:
+    operationId: getOperatorStudentArchive
+    summary: Read the approved student archive in the operator's own campus
+    description: >-
+      Requires one current OPERATOR role and OPERATOR_STUDENT_READ. Reads an
+      active own-campus student in one repeatable snapshot. No parent contact,
+      full birth date, address, payment proofs, storage keys or account data.
+      Unknown enrollment sources stay null; zero is a known zero. Units are
+      integer hundredths of a lesson and money is integer fen.
+    tags: [Operator]
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/StudentId'
+    responses:
+      '200':
+        description: Restricted archive and server calculation time.
+        content:
+          application/json:
+            schema:
+              $ref: '#/schemas/ArchiveEnvelope'
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+growth:
+  get:
+    operationId: getOperatorStudentGrowth
+    summary: Read paginated teaching feedback and parent reviews for one student
+    description: >-
+      Same live role/campus/student checks as archive. Only consistently completed
+      or reversed teaching records in this campus are included, in startsAt/id
+      descending order. Reversed history remains visible with feedbackValid and
+      review.valid false; it does not count towards effective attendance.
+      Teacher four ratings, legacy performanceRating and parent review retain
+      their distinct authors and meanings. Meta is on the response envelope.
+    tags: [Operator]
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/StudentId'
+      - $ref: './openapi.yaml#/components/parameters/Page'
+      - $ref: './openapi.yaml#/components/parameters/PageSize'
+    responses:
+      '200':
+        description: Growth history, including an empty page beyond the end.
+        content:
+          application/json:
+            schema:
+              $ref: '#/schemas/GrowthEnvelope'
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+media:
+  get:
+    operationId: readOperatorStudentArchiveMedia
+    summary: Download currently authorized student photo or feedback image
+    description: >-
+      Requires the current Bearer token on every download. Rechecks active user,
+      current single manager role, active own-campus student, current photo or
+      visible feedback association and image purpose. Replacement, unlinking,
+      student deactivation or scope loss invalidates old addresses. Frontends
+      download with Authorization before displaying a local image. No public
+      signatures or permanent local-file cache. Cache-Control is private,no-store.
+    tags: [Operator]
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/StudentId'
+      - name: storedFileId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      '200':
+        description: Authorized image bytes, never an envelope.
+        headers:
+          Cache-Control:
+            schema: { type: string, const: 'private, no-store' }
+        content:
+          image/jpeg:
+            schema: { type: string, format: binary }
+          image/png:
+            schema: { type: string, format: binary }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+schemas:
+  Media:
+    type: object
+    required: [id, mimeType, sizeBytes, accessUrl]
+    properties:
+      id: { type: string, format: uuid }
+      mimeType: { type: string, enum: [image/jpeg, image/png] }
+      sizeBytes: { type: integer, minimum: 1 }
+      accessUrl:
+        type: string
+        description: >-
+          Environment-relative /operators/me/students/{studentId}/archive/media/{id}.
+          Requires current Bearer authentication; no query or fragment.
+    additionalProperties: false
+  Archive:
+    type: object
+    required:
+      - id
+      - displayName
+      - ageYears
+      - photo
+      - classes
+      - enrollmentSummary
+      - mainBalanceUnits
+      - giftBalanceUnits
+      - totalBalanceUnits
+      - mainReservedUnits
+      - giftReservedUnits
+      - reservedTotalUnits
+      - mainAvailableUnits
+      - giftAvailableUnits
+      - availableTotalUnits
+      - warningThresholdUnits
+      - lowBalance
+      - attendance
+      - serverTime
+    properties:
+      id: { type: string, format: uuid }
+      displayName: { type: string }
+      ageYears: { type: [integer, 'null'], minimum: 0 }
+      photo:
+        oneOf:
+          - $ref: '#/schemas/Media'
+          - type: 'null'
+      classes:
+        type: array
+        items:
+          $ref: './openapi.yaml#/components/schemas/PartnerStudentClassView'
+      enrollmentSummary:
+        $ref: './openapi.yaml#/components/schemas/PartnerEnrollmentSummary'
+      mainBalanceUnits: { type: integer, minimum: 0 }
+      giftBalanceUnits: { type: integer, minimum: 0 }
+      totalBalanceUnits: { type: integer, minimum: 0 }
+      mainReservedUnits: { type: integer, minimum: 0 }
+      giftReservedUnits: { type: integer, minimum: 0 }
+      reservedTotalUnits: { type: integer, minimum: 0 }
+      mainAvailableUnits: { type: integer, minimum: 0 }
+      giftAvailableUnits: { type: integer, minimum: 0 }
+      availableTotalUnits: { type: integer, minimum: 0 }
+      warningThresholdUnits: { type: integer, minimum: 0 }
+      lowBalance: { type: boolean }
+      attendance:
+        $ref: './openapi.yaml#/components/schemas/PartnerStudentAttendanceSummary'
+      serverTime: { type: string, format: date-time }
+    additionalProperties: false
+  TeacherRatings:
+    type: object
+    description: Independent half-star values, 0..10 representing 0..5 stars.
+    required: [classroomPerformance, workCompletion, communication, overall]
+    properties:
+      classroomPerformance: { type: [integer, 'null'], minimum: 0, maximum: 10 }
+      workCompletion: { type: [integer, 'null'], minimum: 0, maximum: 10 }
+      communication: { type: [integer, 'null'], minimum: 0, maximum: 10 }
+      overall: { type: [integer, 'null'], minimum: 0, maximum: 10 }
+    additionalProperties: false
+  GrowthRecord:
+    type: object
+    required:
+      - lessonSessionId
+      - studentId
+      - courseName
+      - campusName
+      - teacherName
+      - startsAt
+      - lessonStatus
+      - attendanceStatus
+      - feedback
+      - performanceRating
+      - teacherRatings
+      - feedbackVersion
+      - feedbackAuthorName
+      - feedbackValid
+      - review
+      - reviewAuthorName
+      - feedbackImages
+      - feedbackUpdatedAt
+    properties:
+      lessonSessionId: { type: string, format: uuid }
+      studentId: { type: string, format: uuid }
+      courseName: { type: string }
+      campusName: { type: string }
+      teacherName: { type: string }
+      startsAt: { type: string, format: date-time }
+      lessonStatus: { type: string, enum: [COMPLETED, REVERSED] }
+      attendanceStatus: { type: [string, 'null'], enum: [PRESENT, ABSENT, LEAVE, null] }
+      feedback: { type: [string, 'null'], maxLength: 1000 }
+      performanceRating:
+        $ref: './openapi.yaml#/components/schemas/NullablePerformanceRating'
+      teacherRatings:
+        oneOf:
+          - $ref: '#/schemas/TeacherRatings'
+          - type: 'null'
+      feedbackVersion: { type: integer, minimum: 0 }
+      feedbackAuthorName: { type: [string, 'null'] }
+      feedbackValid: { type: boolean }
+      review:
+        oneOf:
+          - $ref: './openapi.yaml#/components/schemas/ParentLessonReviewView'
+          - type: 'null'
+      reviewAuthorName: { type: [string, 'null'] }
+      feedbackImages:
+        type: array
+        maxItems: 3
+        items: { $ref: '#/schemas/Media' }
+      feedbackUpdatedAt: { type: [string, 'null'], format: date-time }
+    additionalProperties: false
+  ArchiveEnvelope:
+    allOf:
+      - $ref: './openapi.yaml#/components/schemas/SuccessEnvelope'
+      - type: object
+        required: [data]
+        properties:
+          data: { $ref: '#/schemas/Archive' }
+    unevaluatedProperties: false
+  GrowthEnvelope:
+    type: object
+    required: [data, meta, requestId]
+    properties:
+      data:
+        type: object
+        required: [items]
+        properties:
+          items:
+            type: array
+            items: { $ref: '#/schemas/GrowthRecord' }
+        additionalProperties: false
+      meta: { $ref: './openapi.yaml#/components/schemas/PaginationMeta' }
+      requestId:
+        $ref: './openapi.yaml#/components/schemas/SuccessEnvelope/properties/requestId'
+    additionalProperties: false

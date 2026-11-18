@@ -1,0 +1,145 @@
+summary:
+  get:
+    operationId: getOperatorInternalEarningSummary
+    summary: Read the operator campus internal estimated earning totals
+    description: >-
+      Requires OPERATOR_EARNING_READ and exactly one active OPERATOR role with
+      one nonempty campus. Mixed roles and unscoped total accounts are forbidden.
+      Reads all historical teaching, basis and earning facts in RepeatableRead,
+      then locks and checks the persisted identity again in a fresh transaction.
+      Estimated total includes registered pending review and available facts,
+      excludes valid rejections and offsets original accruals with reversals.
+      Missing or unpriced sources are null, never invented zero. Pending review
+      independently covers reliable registered pending facts. All values are
+      safe integer fen, currency CNY. Current rules never reprice history.
+      Totals are campus-wide and are unaffected by journal filters or pages.
+      These are internal estimates, not personal commission, profit or
+      withdrawable cash. No financial write, rule or review permission is granted.
+    tags: [Operator]
+    security: [{ bearerAuth: [] }]
+    responses:
+      '200':
+        description: Campus historical internal earning totals.
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [data]
+              properties:
+                data: { $ref: '#/schemas/Summary' }
+                requestId: { type: string }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+entries:
+  get:
+    operationId: listOperatorInternalEarningEntries
+    summary: Read a minimal operator campus internal earning journal
+    description: >-
+      Uses the same single-campus OPERATOR_EARNING_READ scope, RepeatableRead
+      snapshot and fresh persisted identity check as summary. Pages all recorded
+      entries of this campus, including rejected originals and negative
+      reversals. Amount is the signed recorded amount, not a recalculated
+      estimate or cash entitlement. Status and entryType filters use AND and
+      affect only this journal, never the campus summary. Ordering is createdAt
+      descending then id descending. Offset must not exceed 2147483647; invalid
+      queries return 400 before any database read. Entry, basis, teaching and
+      lesson historical campus linkage must agree; broken links, unsafe amounts
+      or invalid signed types fail with 500. Current teacher or class transfers
+      do not rewrite historical scope. No personnel, attendance counts,
+      pricing, share rates, review reasons or rule snapshots are returned.
+      All timestamps are instants with an offset; timezone is the campus
+      configured display timezone.
+    tags: [Operator]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - name: page
+        in: query
+        description: Offset (page-1)*pageSize must not exceed 2147483647.
+        schema: { type: integer, minimum: 1, maximum: 2147483647, default: 1 }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+      - name: status
+        in: query
+        schema: { $ref: './openapi.yaml#/components/schemas/PartnerEarningStatus' }
+      - name: entryType
+        in: query
+        schema: { $ref: './openapi.yaml#/components/schemas/PartnerEarningEntryType' }
+    responses:
+      '200':
+        description: One minimal historical journal page.
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [data]
+              properties:
+                data: { $ref: '#/schemas/Entries' }
+                requestId: { type: string }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+schemas:
+  Signed:
+    type: integer
+    minimum: -9007199254740991
+    maximum: 9007199254740991
+  NullableAmount:
+    anyOf: [{ $ref: '#/schemas/Signed' }, { type: 'null' }]
+  Summary:
+    type: object
+    additionalProperties: false
+    required: [estimatedTotalFen, pendingReviewFen, currency, serverTime, timezone]
+    properties:
+      estimatedTotalFen: { $ref: '#/schemas/NullableAmount' }
+      pendingReviewFen: { $ref: '#/schemas/NullableAmount' }
+      currency: { const: CNY }
+      serverTime: { type: string, format: date-time }
+      timezone: { type: string, minLength: 1 }
+  Entry:
+    type: object
+    additionalProperties: false
+    required: [id, entryType, status, amountFen, createdAt, completedAt]
+    properties:
+      id: { type: string, format: uuid }
+      entryType: { $ref: './openapi.yaml#/components/schemas/PartnerEarningEntryType' }
+      status: { $ref: './openapi.yaml#/components/schemas/PartnerEarningStatus' }
+      amountFen: { $ref: '#/schemas/Signed' }
+      createdAt: { type: string, format: date-time }
+      completedAt: { type: string, format: date-time }
+    allOf:
+      - if:
+          properties:
+            entryType: { const: ACCRUAL }
+        then:
+          properties:
+            amountFen: { minimum: 1 }
+        else:
+          properties:
+            amountFen: { maximum: -1 }
+            status: { const: REVERSED }
+  Meta:
+    type: object
+    additionalProperties: false
+    required: [page, pageSize, total, totalPages]
+    properties:
+      page: { type: integer, minimum: 1, maximum: 2147483647 }
+      pageSize: { type: integer, minimum: 1, maximum: 100 }
+      total: { type: integer, minimum: 0, maximum: 9007199254740991 }
+      totalPages: { type: integer, minimum: 0, maximum: 9007199254740991 }
+  Entries:
+    type: object
+    additionalProperties: false
+    required: [data, meta, serverTime, timezone]
+    properties:
+      data:
+        type: array
+        maxItems: 100
+        items: { $ref: '#/schemas/Entry' }
+      meta: { $ref: '#/schemas/Meta' }
+      serverTime: { type: string, format: date-time }
+      timezone: { type: string, minLength: 1 }

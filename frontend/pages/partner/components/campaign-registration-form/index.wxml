@@ -1,0 +1,63 @@
+<view class="registration-form">
+  <block wx:if="{{preview}}">
+    <text wx:if="{{!rows.length}}" class="registration-form__empty">暂无报名问题</text>
+    <view wx:for="{{rows}}" wx:key="id" class="registration-form__question">
+      <view class="registration-form__heading">
+        <text class="registration-form__title">{{index + 1}}. {{item.label || '未填写题目'}}</text>
+        <text wx:if="{{item.required}}" class="registration-form__required" aria-label="必填">*</text>
+      </view>
+      <text wx:if="{{item.hint}}" class="registration-form__hint">{{item.hint}}</text>
+      <view wx:if="{{item.kind === 'SINGLE_CHOICE' || item.kind === 'MULTI_CHOICE'}}" class="registration-form__choices">
+        <view wx:for="{{item.optionRows}}" wx:for-item="option" wx:key="index" class="registration-form__choice">
+          <radio wx:if="{{item.kind === 'SINGLE_CHOICE'}}" disabled="{{true}}" color="#f86114" />
+          <checkbox wx:else disabled="{{true}}" color="#f86114" />
+          <text class="registration-form__option-label">{{option.value || '未填写选项'}}</text>
+        </view>
+      </view>
+      <picker wx:elif="{{item.kind === 'DATE'}}" class="registration-form__picker" mode="date" disabled="{{true}}" aria-label="{{item.label}}">
+        <view class="registration-form__control registration-form__placeholder">请选择日期</view>
+      </picker>
+      <input wx:elif="{{item.kind === 'NUMBER' || item.kind === 'AGE'}}" class="registration-form__input" type="number" disabled="{{true}}" placeholder="{{item.kind === 'AGE' ? '请输入年龄' : '请输入数字'}}" aria-label="{{item.label}}" />
+      <input wx:elif="{{item.kind === 'MOBILE'}}" class="registration-form__input" type="number" disabled="{{true}}" placeholder="请输入手机号" aria-label="{{item.label}}" />
+      <input wx:else class="registration-form__input" type="text" disabled="{{true}}" placeholder="请输入" aria-label="{{item.label}}" />
+    </view>
+  </block>
+  <block wx:else>
+    <button wx:if="{{!questions.length}}" class="registration-form__default" disabled="{{disabled}}" bindtap="onDefaults">添加姓名和电话</button>
+    <view wx:for="{{rows}}" wx:key="id" class="registration-form__question">
+      <view class="registration-form__heading">
+        <text class="registration-form__number">问题 {{index + 1}}</text>
+        <view class="registration-form__tools">
+          <button class="registration-form__tool" disabled="{{disabled || index === 0}}" data-id="{{item.id}}" data-direction="-1" bindtap="onMove" aria-label="上移问题">↑</button>
+          <button class="registration-form__tool" disabled="{{disabled || index === questions.length - 1}}" data-id="{{item.id}}" data-direction="1" bindtap="onMove" aria-label="下移问题">↓</button>
+          <button class="registration-form__tool" disabled="{{disabled}}" data-id="{{item.id}}" bindtap="onRemove" aria-label="删除问题">×</button>
+        </view>
+      </view>
+      <text class="registration-form__label">题目</text>
+      <input class="registration-form__input" value="{{item.label}}" maxlength="-1" disabled="{{disabled}}" data-id="{{item.id}}" data-field="label" bindinput="onTextInput" aria-label="题目标题" placeholder="请输入题目" />
+      <view class="registration-form__settings">
+        <view class="registration-form__type">
+          <text class="registration-form__label">类型</text>
+          <picker class="registration-form__picker" mode="selector" range="{{kinds}}" range-key="label" value="{{item.kindIndex}}" disabled="{{disabled}}" data-id="{{item.id}}" bindchange="onKindChange" aria-label="题目类型">
+            <view class="registration-form__control"><text class="registration-form__kind-label">{{item.kindLabel}}</text><text class="registration-form__chevron">⌄</text></view>
+          </picker>
+        </view>
+        <view class="registration-form__required-control">
+          <text class="registration-form__label">必填</text>
+          <view class="registration-form__switch"><switch checked="{{item.required}}" disabled="{{disabled}}" color="#f86114" data-id="{{item.id}}" bindchange="onRequiredChange" aria-label="必填" /></view>
+        </view>
+      </view>
+      <text class="registration-form__label">备注</text>
+      <input class="registration-form__input" value="{{item.hint}}" maxlength="-1" disabled="{{disabled}}" data-id="{{item.id}}" data-field="hint" bindinput="onTextInput" aria-label="题目备注" placeholder="选填" />
+      <view wx:if="{{item.kind === 'SINGLE_CHOICE' || item.kind === 'MULTI_CHOICE'}}" class="registration-form__options">
+        <text class="registration-form__label">选项</text>
+        <view wx:for="{{item.optionRows}}" wx:for-item="option" wx:key="index" class="registration-form__option-row">
+          <input class="registration-form__input" value="{{option.value}}" maxlength="-1" disabled="{{disabled}}" data-id="{{item.id}}" data-option="{{option.index}}" bindinput="onOptionInput" aria-label="选项{{option.index + 1}}" placeholder="请输入选项" />
+          <button class="registration-form__tool" disabled="{{disabled || !(item.options.length > 2)}}" data-id="{{item.id}}" data-option="{{option.index}}" bindtap="onRemoveOption" aria-label="删除选项">×</button>
+        </view>
+        <button class="registration-form__add-option" disabled="{{disabled || item.options.length >= 20}}" data-id="{{item.id}}" bindtap="onAddOption" aria-label="增加选项">＋</button>
+      </view>
+    </view>
+    <button class="registration-form__add" disabled="{{disabled || questions.length >= 20}}" bindtap="onAdd" aria-label="添加问题">＋</button>
+  </block>
+</view>

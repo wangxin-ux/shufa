@@ -7,6 +7,7 @@
     </view>
     <view wx:elif="{{viewState === 'forbidden'}}" class="page-state">
       <text class="page-state__title">无访问权限</text><text class="page-state__message">{{errorMessage}}</text>
+      <button class="secondary-command" bindtap="onLogin">重新登录</button>
     </view>
     <view wx:elif="{{viewState === 'error'}}" class="page-state">
       <text class="page-state__title">课次加载失败</text><text class="page-state__message">{{errorMessage}}</text>
@@ -22,11 +23,17 @@
         compact="{{true}}"
       />
 
+      <view wx:if="{{refreshError}}" class="mutation-state">
+        <text class="mutation-state__message">{{refreshError}}</text>
+        <button class="secondary-command" bindtap="onRetry">重试刷新</button>
+      </view>
+
       <view wx:if="{{mutationMessage}}" class="mutation-state {{conflictCode ? 'mutation-state--conflict' : ''}}">
         <text class="mutation-state__message">{{mutationMessage}}</text>
         <text wx:if="{{balanceBlocked && insufficientStudents.length === 0}}" class="mutation-state__student">有学员课时余额不足，请联系管理员核对</text>
         <text wx:for="{{insufficientStudents}}" wx:key="studentId" class="mutation-state__student">{{item.displayName}}</text>
-        <button wx:if="{{conflictCode}}" class="secondary-command" bindtap="onRefreshConflict">刷新课次</button>
+        <button wx:if="{{conflictCode || needsReconcile}}" class="secondary-command" disabled="{{submitting}}" bindtap="onRefreshConflict">刷新课次</button>
+        <button wx:if="{{retryOriginalAvailable}}" class="secondary-command" disabled="{{submitting || refreshing}}" bindtap="onRetryOriginal">按原操作重试</button>
       </view>
 
       <view class="section-head">
@@ -45,7 +52,7 @@
               class="attendance-option {{item.selectedStatus === statusItem ? 'attendance-option--active' : ''}}"
               data-id="{{item.id}}"
               data-status="{{statusItem}}"
-              disabled="{{!canEditAttendance || submitting}}"
+              disabled="{{!canEditAttendance || submitting || refreshing || needsReconcile}}"
               bindtap="onAttendanceTap"
             >{{statusItem === 'PRESENT' ? '到课' : statusItem === 'LEAVE' ? '请假' : '缺席'}}</button>
           </view>
@@ -56,12 +63,12 @@
       <view wx:if="{{canEditAttendance}}" class="lesson-actions">
         <button
           class="secondary-command"
-          disabled="{{!allMarked || submitting}}"
+          disabled="{{!allMarked || submitting || refreshing || needsReconcile}}"
           bindtap="onSaveAttendance"
         >{{submitting ? '处理中' : '保存点名'}}</button>
         <button
           class="primary-command"
-          disabled="{{!allMarked || !canComplete || submitting || balanceBlocked}}"
+          disabled="{{!allMarked || !canComplete || submitting || refreshing || balanceBlocked || needsReconcile}}"
           bindtap="onCompleteLesson"
         >{{submitting ? '处理中' : '确认完成并扣课'}}</button>
       </view>
@@ -69,6 +76,7 @@
       <button
         wx:if="{{detail.status === 'COMPLETED' || detail.status === 'REVERSED'}}"
         class="feedback-command"
+        disabled="{{submitting || refreshing || needsReconcile}}"
         bindtap="onFeedbackTap"
       >{{detail.status === 'COMPLETED' ? '去填写课堂反馈' : '查看课堂反馈'}}</button>
 
@@ -78,10 +86,11 @@
           class="reverse-panel__input"
           value="{{reverseReason}}"
           maxlength="200"
+          disabled="{{submitting || refreshing || needsReconcile}}"
           placeholder="填写撤销原因"
           bindinput="onReverseReasonInput"
         />
-        <button class="danger-command" disabled="{{submitting}}" bindtap="onReverseLesson">
+        <button class="danger-command" disabled="{{submitting || refreshing || needsReconcile}}" bindtap="onReverseLesson">
           {{submitting ? '处理中' : '确认撤销'}}
         </button>
       </view>
