@@ -4,6 +4,15 @@ export interface TeacherIdentityView {
   campusName: string;
 }
 
+export interface TeacherLessonRosterSummaryView {
+  expectedCount: number;
+  leaveCount: number;
+  warningCount: number;
+  thresholdUnits: number;
+  asOf: string;
+  source: 'CURRENT' | 'HISTORICAL_ATTENDANCE';
+}
+
 export interface TeacherLessonSummaryView {
   id: string;
   version: number;
@@ -15,6 +24,7 @@ export interface TeacherLessonSummaryView {
   lessonUnits: number;
   status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'REVERSED' | 'CANCELLED';
   studentCount: number;
+  rosterSummary?: TeacherLessonRosterSummaryView;
 }
 
 export interface PaginationMetaView {

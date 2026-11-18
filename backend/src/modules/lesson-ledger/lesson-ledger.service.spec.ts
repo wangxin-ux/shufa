@@ -19,21 +19,21 @@ describe('lesson ledger allocation', () => {
     expect(result.entries).toEqual([
       {
         packageId: 'reserved',
-        bucket: 'MAIN',
-        deltaUnits: -100,
-        balanceBeforeUnits: 1200,
-        balanceAfterUnits: 1100,
+        bucket: 'GIFT',
+        deltaUnits: -200,
+        balanceBeforeUnits: 300,
+        balanceAfterUnits: 100,
       },
       {
         packageId: 'reserved',
-        bucket: 'GIFT',
-        deltaUnits: -150,
-        balanceBeforeUnits: 300,
-        balanceAfterUnits: 150,
+        bucket: 'MAIN',
+        deltaUnits: -50,
+        balanceBeforeUnits: 1200,
+        balanceAfterUnits: 1150,
       },
     ]);
     expect(result.packages).toEqual([
-      { packageId: 'reserved', mainBalanceUnits: 1100, giftBalanceUnits: 150 },
+      { packageId: 'reserved', mainBalanceUnits: 1150, giftBalanceUnits: 100 },
     ]);
     expect(input.mainBalanceUnits).toBe(1200);
     expect(input.giftReservedUnits).toBe(100);
@@ -98,7 +98,7 @@ describe('lesson ledger allocation', () => {
     },
   );
 
-  it('skips fully reserved packages and spends all available main before any gift', () => {
+  it('skips fully reserved packages and spends all available gift before any main', () => {
     const packages = [
       {
         ...packageFixture('frozen', 100, 100),
@@ -131,9 +131,9 @@ describe('lesson ledger allocation', () => {
         deltaUnits,
       })),
     ).toEqual([
-      { packageId: 'later', bucket: 'MAIN', deltaUnits: -150 },
       { packageId: 'earliest', bucket: 'GIFT', deltaUnits: -200 },
-      { packageId: 'later', bucket: 'GIFT', deltaUnits: -50 },
+      { packageId: 'later', bucket: 'GIFT', deltaUnits: -100 },
+      { packageId: 'later', bucket: 'MAIN', deltaUnits: -100 },
     ]);
     expect(packages).toEqual(original);
   });
@@ -142,19 +142,19 @@ describe('lesson ledger allocation', () => {
 
     expect(consumeLessonUnits(balance, 200)).toEqual({
       entries: [
-        { bucket: 'MAIN', deltaUnits: -150, balanceAfterUnits: 0 },
-        { bucket: 'GIFT', deltaUnits: -50, balanceAfterUnits: 50 },
+        { bucket: 'GIFT', deltaUnits: -100, balanceAfterUnits: 0 },
+        { bucket: 'MAIN', deltaUnits: -100, balanceAfterUnits: 50 },
       ],
-      balance: { mainUnits: 0, giftUnits: 50 },
+      balance: { mainUnits: 50, giftUnits: 0 },
     });
     expect(balance).toEqual({ mainUnits: 150, giftUnits: 100 });
   });
 
-  it('consumes an exact main balance without a gift entry', () => {
-    expect(consumeLessonUnits({ mainUnits: 200, giftUnits: 100 }, 200)).toEqual(
+  it('consumes an exact gift balance without a main entry', () => {
+    expect(consumeLessonUnits({ mainUnits: 200, giftUnits: 100 }, 100)).toEqual(
       {
-        entries: [{ bucket: 'MAIN', deltaUnits: -200, balanceAfterUnits: 0 }],
-        balance: { mainUnits: 0, giftUnits: 100 },
+        entries: [{ bucket: 'GIFT', deltaUnits: -100, balanceAfterUnits: 0 }],
+        balance: { mainUnits: 200, giftUnits: 0 },
       },
     );
   });
@@ -203,17 +203,17 @@ describe('lesson ledger allocation', () => {
     ]);
   });
 
-  it('uses earliest expiry within MAIN before consuming any GIFT units', () => {
+  it('uses all eligible GIFT before earlier-expiring MAIN and sorts within buckets', () => {
     const at = new Date('2026-09-01T00:00:00Z');
     const result = planPackageConsumption(
       [
-        packageFixture('later', 200, 0, {
+        packageFixture('later', 200, 100, {
           expiresAt: new Date('2026-12-01T00:00:00Z'),
         }),
-        packageFixture('earliest', 100, 500, {
+        packageFixture('earliest', 100, 100, {
           expiresAt: new Date('2026-10-01T00:00:00Z'),
         }),
-        packageFixture('no-expiry', 100, 0),
+        packageFixture('no-expiry', 100, 25),
       ],
       250,
       at,
@@ -222,16 +222,25 @@ describe('lesson ledger allocation', () => {
     expect(result.entries).toEqual([
       expect.objectContaining({
         packageId: 'earliest',
-        bucket: 'MAIN',
+        bucket: 'GIFT',
         deltaUnits: -100,
       }),
       expect.objectContaining({
         packageId: 'later',
+        bucket: 'GIFT',
+        deltaUnits: -100,
+      }),
+      expect.objectContaining({
+        packageId: 'no-expiry',
+        bucket: 'GIFT',
+        deltaUnits: -25,
+      }),
+      expect.objectContaining({
+        packageId: 'earliest',
         bucket: 'MAIN',
-        deltaUnits: -150,
+        deltaUnits: -25,
       }),
     ]);
-    expect(result.entries.some(({ bucket }) => bucket === 'GIFT')).toBe(false);
   });
 });
 

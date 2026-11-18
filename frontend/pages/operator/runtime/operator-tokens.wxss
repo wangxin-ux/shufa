@@ -1,0 +1,20 @@
+page {
+  --operator-yellow-top: #e8b739;
+  --operator-yellow-mid: #f1c755;
+  --operator-yellow-bottom: #e4af26;
+  --operator-orange: #fe8419;
+  --operator-panel: #f6d469;
+  --operator-success: #2dc02d;
+  --operator-card-radius: 32rpx;
+  --operator-red: #990a04;
+  --operator-ink: #201d17;
+  --operator-muted: rgba(32, 29, 23, 0.54);
+  --operator-surface: #ffffff;
+  --operator-glass: rgba(250, 248, 237, 0.78);
+  --operator-frosted: rgba(142, 139, 128, 0.68);
+  --operator-font-display: "OperatorPdfDisplay", var(--parent-font-display);
+  --operator-font-body: var(--parent-font-body);
+  --operator-page-gap: 32rpx;
+  --operator-touch-min: 88rpx;
+  --operator-shadow: 0 12rpx 22rpx rgba(63, 46, 15, 0.24);
+}

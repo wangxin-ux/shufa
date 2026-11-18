@@ -16,13 +16,20 @@
 /* 顶部白色波浪：超大椭圆只露出下缘曲线 */
 .shell__wave {
   position: absolute;
-  top: -520rpx;
-  left: -50%;
-  width: 200%;
-  height: 700rpx;
-  border-radius: 50%;
+  top: var(--parent-shell-wave-top, -520rpx);
+  left: var(--parent-shell-wave-left, -50%);
+  width: var(--parent-shell-wave-width, 200%);
+  height: var(--parent-shell-wave-height, 700rpx);
+  border-radius: var(--parent-shell-wave-radius, 50%);
+  transform: var(--parent-shell-wave-transform, none);
+  transform-origin: var(--parent-shell-wave-origin, center);
   background: #ffffff;
   pointer-events: none;
+}
+
+.shell__wave--asset {
+  background: transparent;
+  filter: var(--parent-shell-wave-filter, none);
 }
 
 .shell__header {

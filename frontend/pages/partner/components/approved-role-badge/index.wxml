@@ -1,0 +1,3 @@
+<view wx:if="{{approved}}" class="approved-role" style="top: {{topPx}}px; right: {{rightPx}}px;" aria-label="已成为合作方">
+  <text>合作方</text>
+</view>

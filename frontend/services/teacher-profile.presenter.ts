@@ -10,6 +10,7 @@ export type TeacherProfileActionKey =
 
 export interface TeacherProfilePageModel {
   displayName: string;
+  avatarInitial: string;
   subjectLabel: string;
   subjectLines: string[];
   campusName: string;
@@ -38,6 +39,15 @@ const PROFILE_ROUTES: Record<TeacherProfileActionKey, string> = {
   'group-campaigns': '/pages/teacher/group-campaigns/index',
 };
 
+export const TEACHER_PRIMARY_PROFILE_ACTIONS: typeof TEACHER_PROFILE_ACTIONS = [
+  { key: 'schedule', label: '我的课表' },
+  { key: 'students', label: '我的学生' },
+  { key: 'earnings', label: '课时账户' },
+];
+export const TEACHER_MORE_PROFILE_ACTIONS = TEACHER_PROFILE_ACTIONS.filter(
+  action => !TEACHER_PRIMARY_PROFILE_ACTIONS.some(primary => primary.key === action.key),
+);
+
 export function buildTeacherProfilePageModel(
   profile: TeacherProfile,
 ): TeacherProfilePageModel {
@@ -51,12 +61,22 @@ export function buildTeacherProfilePageModel(
     .filter(Boolean);
   return {
     displayName: profile.displayName,
+    avatarInitial: teacherAvatarInitial(profile.displayName),
     subjectLabel: profile.subjectLabel,
     subjectLines: subjectLines.length ? subjectLines : ['暂未设置课程'],
     campusName: profile.campusName,
     studentCount: String(studentCount),
     studentCountCompact: studentCount >= 100,
   };
+}
+
+/**
+ * 头像徽标文字：设计稿是插画头像，无该素材时用姓名首字顶位。
+ * 只取第一个非空白字符，避免徽标里塞两个汉字把圆撑破。
+ */
+export function teacherAvatarInitial(displayName: string): string {
+  const first = Array.from((displayName ?? '').trim())[0];
+  return first ?? '师';
 }
 
 export function resolveTeacherProfileAction(

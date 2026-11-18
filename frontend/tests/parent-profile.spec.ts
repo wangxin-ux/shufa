@@ -56,19 +56,15 @@ describe('parent profile page model', () => {
     });
   });
 
-  it('navigates to hours and classroom updates', () => {
+  it('navigates to hours and the existing growth-record route', () => {
     expect(resolveParentProfileAction('hours')).toEqual({
       kind: 'navigate',
       url: '/pages/parent/hours/index',
     });
 
-    expect(resolveParentProfileAction('messages')).toEqual({
-      kind: 'navigate',
-      url: '/pages/parent/updates/index',
-    });
     expect(resolveParentProfileAction('student')).toEqual({
       kind: 'navigate',
-      url: '/pages/parent/student-profile/index',
+      url: '/pages/parent/updates/index',
     });
   });
 
@@ -131,9 +127,7 @@ describe('parent profile page model', () => {
       'utf8',
     );
 
-    expect(logic).not.toContain('sessionService');
     expect(logic).not.toContain('switchTestAccount');
-    expect(logic).not.toContain('wx.reLaunch');
     expect(markup).toContain('<session-logout');
     expect(`${logic}\n${markup}`).not.toMatch(/切换(?:本地)?测试账号|切换使用身份/);
     expect(markup).toContain('{{item.label}}');

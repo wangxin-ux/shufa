@@ -5,39 +5,46 @@
         <text class="workspace__title">登录账号</text>
         <text class="workspace__subtitle">校区及总部工作人员账号</text>
       </view>
-      <button class="head-action" bindtap="onToggleCreate">{{createOpen ? '收起' : '新建登录账号'}}</button>
+      <button class="head-action" disabled="{{pageLoading || submitting || submittingId || accountConfirming || hqBusy || hqConfirming || hqUncertain || lifecycleLocked}}" bindtap="onToggleCreate">{{createOpen ? '收起' : '新建登录账号'}}</button>
     </view>
 
     <view wx:if="{{createOpen}}" class="form">
+      <text class="form__label">账号类型</text>
+      <picker range="{{creationModes}}" value="{{hqMode ? 1 : 0}}" disabled="{{pageLoading || submitting || submittingId || accountConfirming || hqBusy || hqConfirming || hqUncertain || lifecycleLocked}}" bindchange="onCreationModeChange">
+        <view class="select creation-mode">{{creationModes[hqMode ? 1 : 0]}}</view>
+      </picker>
       <view class="form-grid">
         <view>
           <text class="form__label">姓名</text>
-          <input class="field" maxlength="100" value="{{createName}}" bindinput="onNameInput" placeholder="请输入工作人员姓名" />
+          <input class="field" maxlength="100" value="{{createName}}" disabled="{{pageLoading || submitting || submittingId || accountConfirming || hqBusy || hqConfirming || hqUncertain || lifecycleLocked}}" bindinput="onNameInput" placeholder="请输入工作人员姓名" />
         </view>
         <view>
           <text class="form__label">手机号</text>
-          <input class="field" type="number" maxlength="11" value="{{createPhone}}" bindinput="onPhoneInput" placeholder="请输入本人微信绑定手机号" />
+          <input class="field" type="number" maxlength="11" value="{{createPhone}}" disabled="{{pageLoading || submitting || submittingId || accountConfirming || hqBusy || hqConfirming || hqUncertain || lifecycleLocked}}" bindinput="onPhoneInput" placeholder="请输入本人微信绑定手机号" />
         </view>
-        <view>
+        <view wx:if="{{!hqMode}}">
           <text class="form__label">角色</text>
-          <picker range="{{roleOptions}}" range-key="label" value="{{createRoleIndex}}" bindchange="onRoleChange">
+          <picker range="{{roleOptions}}" range-key="label" value="{{createRoleIndex}}" disabled="{{pageLoading || submitting || submittingId || accountConfirming || hqBusy || hqConfirming || hqUncertain || lifecycleLocked}}" bindchange="onRoleChange">
             <view class="select">{{roleOptions[createRoleIndex].label}}</view>
           </picker>
         </view>
-        <view wx:if="{{!createHeadquarters}}">
+        <view wx:if="{{!hqMode &amp;&amp; !createHeadquarters}}">
           <text class="form__label">所属校区</text>
-          <picker range="{{campuses}}" range-key="name" value="{{createCampusIndex}}" bindchange="onCampusChange">
-            <view class="select">{{campuses[createCampusIndex].name || '请选择校区'}}</view>
+          <picker range="{{campuses}}" range-key="name" value="{{createCampusIndex}}" disabled="{{pageLoading || submitting || submittingId || accountConfirming || hqBusy || hqConfirming || hqUncertain || lifecycleLocked}}" bindchange="onCampusChange">
+            <view class="select">{{createCampusMissing ? '请选择校区' : (campuses[createCampusIndex].name || '请选择校区')}}</view>
           </picker>
         </view>
-        <view wx:else><text class="form__label">所属机构</text><view class="select">总部</view></view>
+        <view wx:elif="{{!hqMode}}"><text class="form__label">所属机构</text><view class="select">总部</view></view>
+        <view wx:else><text class="form__label">所属机构</text><view class="select">总部 · 独立只读账号</view></view>
       </view>
-      <button class="button form-submit" disabled="{{submitting || (!createHeadquarters && campuses.length === 0)}}" bindtap="onCreate">{{submitting ? '正在创建' : '确认创建'}}</button>
+      <button class="button form-submit" disabled="{{pageLoading || submitting || submittingId || accountConfirming || hqBusy || hqConfirming || hqUncertain || lifecycleLocked || (!hqMode &amp;&amp; !createHeadquarters &amp;&amp; (campuses.length === 0 || createCampusMissing))}}" bindtap="onCreate">{{submitting || hqBusy ? '正在创建' : '确认创建'}}</button>
     </view>
 
+    <include src="./lifecycle.wxml" />
+    <include src="./headquarters.wxml" />
     <view class="toolbar">
-      <input class="field search-field" value="{{keyword}}" bindinput="onKeywordInput" confirm-type="search" bindconfirm="onSearch" placeholder="搜索姓名或手机号" />
-      <button class="button search-button" bindtap="onSearch">查询</button>
+      <input class="field search-field" maxlength="100" value="{{keyword}}" disabled="{{submitting || submittingId || accountConfirming || hqBusy || hqConfirming || hqUncertain || lifecycleLocked}}" bindinput="onKeywordInput" confirm-type="search" bindconfirm="onSearch" placeholder="姓名、手机号或机构" />
+      <button class="button search-button" disabled="{{submitting || submittingId || accountConfirming || hqBusy || hqConfirming || hqUncertain || lifecycleLocked}}" bindtap="onSearch">查询</button>
     </view>
 
     <view wx:if="{{viewState === 'loading'}}" class="state">
@@ -50,7 +57,7 @@
     <view wx:elif="{{viewState === 'error' || viewState === 'forbidden'}}" class="state">
       <text class="state__title">{{viewState === 'forbidden' ? '无账号管理权限' : '账号加载失败'}}</text>
       <text class="state__message">{{errorMessage}}</text>
-      <button class="button" bindtap="onRetry">重试</button>
+      <button class="button" disabled="{{lifecycleLocked || hqBusy || hqConfirming || hqUncertain}}" bindtap="onRetry">重试</button>
     </view>
     <view wx:else class="account-list">
       <view class="account-card" wx:for="{{accounts}}" wx:key="id">
@@ -66,24 +73,37 @@
           <text>{{item.campusName}}</text>
           <text>{{item.bindingLabel}}</text>
         </view>
-        <view class="account-actions">
+        <view class="account-actions {{item.headquartersOperator ? 'account-actions--headquarters' : ''}}">
+          <button wx:if="{{item.headquartersOperator}}" class="account-action"
+            disabled="{{pageLoading || submitting || submittingId || accountConfirming || hqBusy || hqConfirming || hqUncertain || lifecycleLocked || !item.manageable}}"
+            data-id="{{item.id}}" bindtap="onHeadquartersAction">校区读取授权</button>
           <button
             class="account-action {{item.status === 'ACTIVE' ? 'account-action--danger' : ''}}"
-            disabled="{{submittingId === item.id}}"
+            disabled="{{pageLoading || submitting || submittingId || accountConfirming || hqBusy || hqConfirming || hqUncertain || lifecycleLocked || !item.manageable}}"
             data-id="{{item.id}}"
             data-version="{{item.version}}"
             data-status="{{item.status}}"
             bindtap="onStatusAction"
           >{{submittingId === item.id ? '处理中' : (item.status === 'ACTIVE' ? '停用' : '启用')}}</button>
           <button
+            wx:if="{{item.maskedPhone !== '未绑定个人手机号'}}"
             class="account-action account-action--ghost"
-            disabled="{{submittingId === item.id || item.bindingStatus === 'UNBOUND'}}"
+            disabled="{{pageLoading || submitting || submittingId || accountConfirming || hqBusy || hqConfirming || hqUncertain || lifecycleLocked || !item.manageable || item.bindingStatus !== 'BOUND'}}"
             data-id="{{item.id}}"
             data-version="{{item.version}}"
             bindtap="onUnbindAction"
           >解除绑定</button>
         </view>
       </view>
+    </view>
+    <view wx:if="{{viewState === 'success'}}" class="account-pagination">
+      <text class="account-pagination__total">共{{total}}个账号</text>
+      <view class="account-pagination__controls">
+        <button class="account-action account-action--ghost" disabled="{{pageLoading || submitting || submittingId || page <= 1 || accountConfirming || hqBusy || hqConfirming || hqUncertain || lifecycleLocked}}" bindtap="onPreviousPage">上一页</button>
+        <text class="account-pagination__page">{{pageLoading ? '正在加载' : ('第' + page + ' / ' + totalPages + '页')}}</text>
+        <button class="account-action account-action--ghost" disabled="{{pageLoading || submitting || submittingId || page >= totalPages || accountConfirming || hqBusy || hqConfirming || hqUncertain || lifecycleLocked}}" bindtap="onNextPage">下一页</button>
+      </view>
+      <text wx:if="{{pageError}}" class="account-pagination__error">{{pageError}}</text>
     </view>
   </view>
 </super-admin-page-shell>

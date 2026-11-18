@@ -1,6 +1,8 @@
+<partner-approved-role-badge id="partner-identity-badge" blocked="{{viewState === 'forbidden'}}" />
 <partner-page-shell
   markTitle="首页"
   markIcon="/pages/partner/assets/home-mark-glyph.png"
+  waveImage="/pages/partner/assets/top-wave.png"
 >
   <view class="home">
     <view wx:if="{{viewState === 'loading'}}" class="page-state" aria-live="polite">
@@ -10,6 +12,7 @@
     <view wx:elif="{{viewState === 'forbidden'}}" class="page-state" aria-live="polite">
       <text class="page-state__title">无访问权限</text>
       <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-state__retry" bindtap="onLogin" hover-class="button--hover">重新登录</button>
     </view>
 
     <view wx:elif="{{viewState === 'error'}}" class="page-state" aria-live="polite">
@@ -22,14 +25,21 @@
       wx:elif="{{viewState === 'ready' || viewState === 'empty'}}"
       class="home__content home__content--{{viewState}}"
     >
+      <view wx:if="{{refreshError}}" class="home__refresh-error" aria-live="polite">
+        <text>{{refreshError}}</text>
+        <button bindtap="onRetry" hover-class="button--hover">重试</button>
+      </view>
       <view class="home__focus-head">
         <text class="home__title">重点关注</text>
         <button
           class="home__more"
-          data-key="warnings"
+          data-key="students"
           bindtap="onActionTap"
           hover-class="button--hover"
         >查看更多</button>
+        <button class="home__menu-toggle" bindtap="onMenuToggle" aria-label="展开功能菜单" aria-expanded="{{menuExpanded}}">
+          <view class="home__menu-bars" aria-hidden="true"><view></view><view></view><view></view></view>
+        </button>
       </view>
 
       <button
@@ -41,16 +51,25 @@
       >
         <view class="focus__count">
           <view class="focus__number">
-            <text class="focus__value">{{highlightValue}}</text>
-            <text class="focus__unit">{{highlightUnit}}</text>
+            <text class="focus__value" style="font-size: {{highlightFontSizeRpx}}rpx;">{{highlightValue}}</text>
           </view>
           <text class="focus__label">剩余课时</text>
         </view>
         <view class="focus__divider" aria-hidden="true"></view>
         <view class="focus__detail">
-          <text class="focus__summary">{{highlightSummary}}</text>
-          <text class="focus__student">{{highlightStudent}}</text>
-          <text class="focus__class">{{highlightClass}}</text>
+          <view wx:if="{{highlightEnrollment}}" class="focus__enrollment">
+            <text>报名实收 {{highlightEnrollment.receivedLabel}}</text>
+            <text>已退 {{highlightEnrollment.refundedLabel}}</text>
+          </view>
+          <text wx:else class="focus__summary">{{highlightSummary}}</text>
+          <view class="focus__student-row">
+            <text class="focus__student {{highlightEnrollment ? '' : 'focus__student--empty'}}">{{highlightStudent}}</text>
+            <text class="focus__class">{{highlightClass}}</text>
+          </view>
+          <scroll-view wx:if="{{highlightCourses.length}}" class="focus__courses" scroll-y="{{true}}" enhanced="{{true}}" show-scrollbar="{{true}}" style="height: 32rpx;">
+            <text wx:for="{{highlightCourses}}" wx:key="id" class="focus__course">{{item.label}}</text>
+          </scroll-view>
+          <text wx:if="{{highlightAttendance}}" class="focus__attendance">{{highlightAttendance}}</text>
         </view>
       </button>
 
@@ -66,10 +85,10 @@
           data-key="profile"
           bindtap="onActionTap"
           hover-class="button--hover"
-          aria-label="进入合作方我的页面"
+          aria-label="{{partnerName}}，进入合作方我的页面"
         >
           <text class="home__campus">{{campusName}}</text>
-          <text class="home__partner">{{partnerName}} · 合作方</text>
+          <text class="home__partner">合作方</text>
         </button>
         <partner-stat-strip class="home__stats" items="{{stats}}" />
       </view>
@@ -88,14 +107,43 @@
             <text class="quick-action__label">{{item.label}}</text>
           </button>
         </view>
-        <button
-          class="home__campaigns"
-          data-key="more"
-          bindtap="onActionTap"
-          hover-class="button--hover"
-          aria-label="进入活动中心"
-        >查看更多</button>
       </view>
+      <button
+        class="home__application"
+        data-key="application"
+        bindtap="onActionTap"
+        hover-class="button--hover"
+        aria-label="申请入驻"
+      >
+        <image
+          class="home__application-icon"
+          src="/pages/partner/assets/icon-application.png"
+          mode="aspectFit"
+          aria-hidden="true"
+        />
+      </button>
+    </view>
+  </view>
+  <view wx:if="{{menuExpanded && (viewState === 'ready' || viewState === 'empty')}}" class="home-menu-backdrop" bindtap="onCloseMenu" catchtouchmove="noop">
+    <view class="home-menu" catchtap="noop">
+      <view class="home-menu__head">
+        <text>功能菜单</text>
+        <button class="home-menu__close" bindtap="onCloseMenu" aria-label="关闭功能菜单">×</button>
+      </view>
+      <scroll-view class="home-menu__body" scroll-y="{{true}}" enhanced="{{true}}" show-scrollbar="{{true}}">
+        <view class="home-menu__entries">
+          <button wx:for="{{primaryMenuActions}}" wx:key="key" class="home-menu__entry home-menu__entry--primary" data-key="{{item.key}}" bindtap="onActionTap">
+            <text>{{item.label}}</text><text aria-hidden="true">›</text>
+          </button>
+        </view>
+        <view class="home-menu__entries home-menu__entries--secondary">
+          <button wx:for="{{secondaryMenuActions}}" wx:key="key" class="home-menu__entry" data-key="{{item.key}}" bindtap="onActionTap">
+            <text>{{item.label}}</text><text aria-hidden="true">›</text>
+          </button>
+          <button class="home-menu__entry" data-key="profile" bindtap="onActionTap"><text>我的资料</text><text aria-hidden="true">›</text></button>
+          <button class="home-menu__entry" data-key="application" bindtap="onActionTap"><text>申请入驻</text><text aria-hidden="true">›</text></button>
+        </view>
+      </scroll-view>
     </view>
   </view>
 </partner-page-shell>

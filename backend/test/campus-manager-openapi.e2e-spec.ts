@@ -9,7 +9,7 @@ interface OpenApiSchema {
 
 interface OpenApiOperation {
   security?: Array<Record<string, string[]>>;
-  parameters?: Array<{ $ref?: string }>;
+  parameters?: Array<{ $ref?: string; name?: string }>;
   requestBody?: {
     content?: { 'application/json'?: { schema?: OpenApiSchema } };
   };
@@ -99,5 +99,21 @@ describe('campus manager OpenAPI contract', () => {
           ?.schema;
       expect(JSON.stringify(schema)).toMatch(/version/i);
     }
+  });
+
+  it('declares one reviewed-history filter without changing the page envelope', () => {
+    const operation = document.paths['/campus-managers/me/leave-requests'].get;
+    expect(
+      operation.parameters?.find(({ name }) => name === 'reviewedOnly'),
+    ).toMatchObject({
+      name: 'reviewedOnly',
+      in: 'query',
+      required: false,
+      schema: { type: 'boolean', default: false },
+    });
+    expect(operation.responses).toHaveProperty('400');
+    expect(JSON.stringify(operation.responses?.['200'])).toContain(
+      '#/components/schemas/CampusManagerLeaveRequestsPageEnvelope',
+    );
   });
 });

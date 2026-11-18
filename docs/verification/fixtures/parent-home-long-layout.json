@@ -1,0 +1,17 @@
+[
+  {
+    "course": {
+      "day": "26",
+      "weekday": "Saturday",
+      "campus": "京南一品儿童美术综合教学中心校区",
+      "name": "专业美术与创意思维综合提升课程",
+      "time": "14:00-15:30",
+      "teacher": "欧阳老师"
+    },
+    "student": {
+      "id": "pdf-visual-fixture",
+      "name": "陈晨",
+      "age": 9
+    }
+  }
+]

@@ -9,11 +9,14 @@ const PARENT_PAGES = [
   'pages/parent/leave/index',
   'pages/parent/profile/index',
   'pages/parent/student-profile/index',
+  'pages/parent/profile-setup/index',
   'pages/parent/updates/index',
   'pages/parent/group-campaigns/index',
   'pages/parent/group-detail/index',
   'pages/parent/group-orders/index',
   'pages/parent/campuses/index',
+  'pages/parent/courses/index',
+  'pages/parent/campaign-registration/index',
 ];
 
 const TEACHER_PAGES = [

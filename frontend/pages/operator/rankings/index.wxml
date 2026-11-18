@@ -1,0 +1,66 @@
+<operator-page-shell markTitle="月榜" markIcon="/pages/operator/assets/home-mark-glyph.png" showBack="{{true}}" surfacePage="{{true}}">
+  <view class="ranking-page">
+    <view class="ranking-heading">
+      <text class="ranking-title">校区月榜</text>
+      <button class="ranking-refresh" aria-label="刷新榜单" bindtap="onRefresh" disabled="{{refreshing || viewState === 'forbidden'}}" hover-class="control--hover"><text aria-hidden="true">↻</text></button>
+    </view>
+    <view class="ranking-metrics" role="tablist" aria-label="月榜指标">
+      <button wx:for="{{metricOptions}}" wx:key="value" role="tab" aria-selected="{{metric === item.value}}" class="ranking-metric {{metric === item.value ? 'ranking-metric--active' : ''}}" data-metric="{{item.value}}" bindtap="onMetricTap" disabled="{{viewState === 'forbidden'}}" hover-class="control--hover">{{item.label}}</button>
+    </view>
+    <view class="ranking-month">
+      <picker class="ranking-month__control" mode="date" fields="month" start="1000-01" value="{{month}}" end="{{monthMax}}" bindchange="onMonthChange" disabled="{{viewState === 'forbidden'}}">
+        <view class="ranking-month__picker" aria-label="选择榜单月份"><text>{{month}}</text><text class="ranking-month__arrow" aria-hidden="true">⌄</text></view>
+      </picker>
+      <button class="ranking-current" bindtap="onCurrentMonth" disabled="{{viewState === 'forbidden' || month === monthMax}}" hover-class="control--hover">本月</button>
+    </view>
+    <view wx:if="{{viewState === 'loading'}}" class="ranking-state" aria-live="polite">
+      <text class="ranking-state__title">正在加载月榜</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="ranking-state" aria-live="polite">
+      <text class="ranking-state__title">无访问权限</text>
+      <text>{{errorMessage}}</text>
+      <button class="ranking-command" bindtap="onLogin" hover-class="control--hover">重新登录</button>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="ranking-state" aria-live="polite">
+      <text class="ranking-state__title">月榜加载失败</text>
+      <text>{{errorMessage}}</text>
+      <button class="ranking-command" bindtap="onRetry" hover-class="control--hover">重试</button>
+    </view>
+    <block wx:else>
+      <view class="ranking-status"><text>{{availabilityLabel}}</text><text wx:if="{{refreshing}}">刷新中</text></view>
+      <text wx:if="{{asOfLabel}}" class="ranking-meta">截至 {{asOfLabel}} · 北京时间</text>
+      <view wx:if="{{refreshError || revisionMissing}}" class="ranking-notice" aria-live="polite">
+        <text>{{revisionMissing ? '月榜修订不可用，请刷新榜单' : refreshError}}</text>
+        <button class="ranking-command ranking-command--text" bindtap="onRefresh" disabled="{{refreshing}}" hover-class="control--hover">刷新榜单</button>
+      </view>
+      <view wx:if="{{ownCampus}}" class="ranking-own">
+        <text class="ranking-own__label">本校区</text>
+        <view class="ranking-row ranking-row--own">
+          <text class="ranking-row__rank">{{ownCampus.rank}}</text>
+          <text class="ranking-row__name">{{ownCampus.campusName}}</text>
+          <text class="ranking-row__delta ranking-row__delta--{{ownCampus.deltaDirection}}">{{ownCampus.deltaLabel}}</text>
+        </view>
+      </view>
+      <text wx:elif="{{viewState !== 'unavailable'}}" class="ranking-meta">本校区暂无排名</text>
+      <view wx:if="{{viewState === 'unavailable'}}" class="ranking-state">
+        <text class="ranking-state__title">暂无可用榜单</text>
+        <text>{{unavailableMessage}}</text>
+      </view>
+      <view wx:elif="{{viewState === 'empty'}}" class="ranking-state">
+        <text class="ranking-state__title">该月暂无排名</text>
+      </view>
+      <block wx:else>
+        <view class="ranking-list-head"><text>校区排名</text><text>共 {{total}} 个校区</text></view>
+        <view class="ranking-row ranking-row--head"><text class="ranking-row__rank">名次</text><text class="ranking-row__name">校区</text><text class="ranking-row__delta">较上月</text></view>
+        <view wx:for="{{rows}}" wx:key="rowKey" class="ranking-row {{item.isOwnCampus ? 'ranking-row--own' : ''}}">
+          <text class="ranking-row__rank">{{item.rank}}</text>
+          <view class="ranking-row__name"><text>{{item.campusName}}</text><text wx:if="{{item.isOwnCampus}}" class="ranking-own__label">本校区</text></view>
+          <text class="ranking-row__delta ranking-row__delta--{{item.deltaDirection}}">{{item.deltaLabel}}</text>
+        </view>
+        <text wx:if="{{pageError && !revisionMissing}}" class="ranking-error" aria-live="polite">{{pageError}}</text>
+        <button wx:if="{{hasMore}}" class="ranking-command ranking-more" loading="{{loadingMore}}" disabled="{{loadingMore || refreshing || refreshError}}" bindtap="onLoadMore" hover-class="control--hover">{{loadingMore ? '加载中' : pageError ? '重试加载' : '加载更多'}}</button>
+        <text wx:elif="{{rows.length && !revisionMissing}}" class="ranking-meta ranking-end">已显示全部排名</text>
+      </block>
+    </block>
+  </view>
+</operator-page-shell>

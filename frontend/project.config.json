@@ -1,6 +1,6 @@
 {
   "description": "小程序本地开发配置（临时使用用户授权 AppID，不含甲方密钥）",
-  "appid": "wx2796dc17144731b5",
+  "appid": "wx7322535713ec37e0",
   "compileType": "miniprogram",
   "libVersion": "latest",
   "projectname": "education-mini-program-frontend",
@@ -43,6 +43,10 @@
       {
         "type": "folder",
         "value": "scripts"
+      },
+      {
+        "type": "suffix",
+        "value": ".md"
       }
     ],
     "include": []

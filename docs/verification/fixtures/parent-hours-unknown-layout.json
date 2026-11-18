@@ -1,0 +1,12 @@
+[
+  {
+    "hourCards": [
+      { "key": "paid", "label": "购买课时", "remaining": 37, "grantedLabel": "待核对", "hasKnownGrant": false, "valueSize": 48 },
+      { "key": "gift", "label": "赠送课时", "remaining": 0, "grantedLabel": "待核对", "hasKnownGrant": false, "valueSize": 48 }
+    ],
+    "entries": [],
+    "isEmpty": true,
+    "hasMore": false,
+    "showFilters": false
+  }
+]

@@ -1,6 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
-import { MANAGEABLE_STAFF_ROLES, hasValidStaffCampus } from '../../common/auth/staff-roles';
+import {
+  MANAGEABLE_STAFF_ROLES,
+  hasValidStaffCampus,
+} from '../../common/auth/staff-roles';
 import { DomainError } from '../../common/errors/domain-error';
 import { ErrorCode } from '../../common/errors/error-codes';
 import { IdempotencyService } from '../../common/idempotency/idempotency.service';
@@ -152,9 +155,18 @@ export class WechatStaffAuthService {
     roles: Array<{ roleCode: string; campusId: string | null }>,
   ) {
     const allowed = roles.filter(({ roleCode }) =>
-      MANAGEABLE_STAFF_ROLES.includes(roleCode as (typeof MANAGEABLE_STAFF_ROLES)[number]),
+      MANAGEABLE_STAFF_ROLES.includes(
+        roleCode as (typeof MANAGEABLE_STAFF_ROLES)[number],
+      ),
     );
-    if (allowed.length !== 1 || roles.length !== 1 || !hasValidStaffCampus(allowed[0].roleCode, allowed[0].campusId)) {
+    if (
+      allowed.length !== 1 ||
+      roles.length !== 1 ||
+      !(
+        (allowed[0].roleCode === 'OPERATOR' && allowed[0].campusId === null) ||
+        hasValidStaffCampus(allowed[0].roleCode, allowed[0].campusId)
+      )
+    ) {
       this.unavailable();
     }
     return allowed[0] as {

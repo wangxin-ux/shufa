@@ -1,5 +1,34 @@
 @import "../../../styles/super-admin-workspace.wxss";
 
+.creation-mode { margin-bottom: 20rpx; }
+.hq-notice { margin-bottom: 22rpx; padding: 20rpx; border-left: 6rpx solid #238760; background: #eef7f2; }
+.hq-notice--conflict { border-color: #a52720; background: #fff2f1; }
+.hq-notice__title { display: block; font-size: 26rpx; font-weight: 700; }
+.hq-notice__message { display: block; margin-top: 10rpx; font-size: 24rpx; line-height: 1.5; overflow-wrap: anywhere; }
+.hq-recovery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14rpx; margin-top: 18rpx; }
+.hq-panel { padding: 24rpx 20rpx; margin-bottom: 24rpx; border-top: 4rpx solid #238760; background: rgba(255,255,255,.94); }
+.hq-panel__head { display: flex; align-items: flex-start; gap: 18rpx; justify-content: space-between; }
+.hq-panel__identity { flex: 1; min-width: 0; }
+.hq-panel__title { display: block; font-size: 30rpx; font-weight: 700; line-height: 1.4; }
+.hq-panel__name { display: block; margin-top: 12rpx; font-size: 27rpx; line-height: 1.5; overflow-wrap: anywhere; }
+.hq-panel__meta { display: block; margin-top: 8rpx; font-size: 22rpx; line-height: 1.5; color: var(--super-admin-muted); overflow-wrap: anywhere; }
+.hq-close { display: flex; flex: none; align-items: center; justify-content: center; width: 72rpx; height: 72rpx; padding: 0; margin: 0; border: 0; border-radius: 50%; background: #f1f3f2; color: var(--super-admin-ink); font-size: 36rpx; line-height: 1; }
+.hq-close::after { border: 0; }
+.hq-warning { display: block; padding: 14rpx 0; color: #a52720; font-size: 24rpx; line-height: 1.5; }
+.hq-editor { margin-top: 22rpx; }
+.hq-campus-choice { min-height: 84rpx; height: auto; padding-top: 16rpx; padding-bottom: 16rpx; line-height: 1.5; overflow-wrap: anywhere; }
+.hq-scope-line { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; margin: 24rpx 0; }
+.hq-scope-line > view { flex: 1; min-width: 0; }
+.hq-scope-line__label { display: block; font-size: 26rpx; line-height: 1.5; }
+.hq-scope-line switch { flex: none; }
+.hq-retained { margin-top: 28rpx; border-top: 2rpx solid #dce7e0; }
+.hq-retained__title { display: block; margin: 22rpx 0 12rpx; font-size: 25rpx; font-weight: 700; }
+.hq-retained__row { display: flex; justify-content: space-between; align-items: flex-start; gap: 18rpx; padding: 16rpx 0; border-bottom: 1rpx solid #dce7e0; }
+.hq-retained__name { flex: 1; min-width: 0; font-size: 24rpx; line-height: 1.5; overflow-wrap: anywhere; }
+.hq-retained__status { flex: none; width: 100rpx; text-align: right; font-size: 22rpx; line-height: 1.5; color: #238760; }
+.hq-retained__status text { display: block; }
+.hq-retained__status .hq-revoked { color: #a52720; }
+
 .workspace__head {
   gap: 20rpx;
 }
@@ -70,17 +99,17 @@
 
 .account-card__identity {
   min-width: 0;
+  flex: 1;
 }
 
 .account-card__name {
   display: block;
   max-width: 100%;
-  overflow: hidden;
   font-size: 30rpx;
   font-weight: 700;
   color: var(--super-admin-ink);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .account-card__phone {
@@ -115,6 +144,9 @@
   gap: 14rpx;
   margin-top: 22rpx;
 }
+.account-actions--headquarters > button:first-child { grid-column: 1 / -1; }
+.account-card__meta text { max-width: 100%; overflow-wrap: anywhere; }
+.account-card__head > .status { flex: none; }
 
 .account-action {
   display: flex;
@@ -146,6 +178,37 @@
 
 .account-action[disabled] {
   opacity: 0.48;
+}
+
+.account-pagination {
+  margin-top: 24rpx;
+}
+
+.account-pagination__total,
+.account-pagination__error {
+  display: block;
+  margin: 12rpx 0;
+  overflow-wrap: anywhere;
+  font-size: 24rpx;
+  color: var(--super-admin-ink);
+}
+
+.account-pagination__controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12rpx;
+  align-items: center;
+}
+
+.account-pagination__page {
+  font-size: 22rpx;
+  line-height: 1.4;
+  text-align: center;
+  word-break: break-all;
+}
+
+.account-pagination__error {
+  color: #a52720;
 }
 
 @media (max-width: 380px) {

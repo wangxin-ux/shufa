@@ -55,8 +55,6 @@
         </form>
       </block>
       <block wx:else>
-        <view class="bootstrap__wechat">
-          <text class="bootstrap__state-message">使用已绑定的微信手机号继续</text>
           <button
             class="bootstrap__primary bootstrap__primary--wechat"
             open-type="getPhoneNumber"
@@ -64,8 +62,7 @@
             disabled="{{viewState === 'submitting'}}"
             loading="{{viewState === 'submitting'}}"
             hover-class="bootstrap__button--hover"
-          >微信授权登录</button>
-        </view>
+          >微信手机号授权</button>
       </block>
       <text wx:if="{{errorMessage}}" class="bootstrap__state-message bootstrap__state-message--error">{{errorMessage}}</text>
     </view>
@@ -81,5 +78,7 @@
       <text class="bootstrap__state-message">{{errorMessage}}</text>
       <button class="bootstrap__primary" bindtap="onRetry" hover-class="bootstrap__button--hover">重试</button>
     </view>
+    <button wx:if="{{viewState === 'login' && !isTestAccountLogin}}" class="bootstrap__code-button" bindtap="onWechatLoginTap">微信登录</button>
+    <button wx:if="{{viewState === 'login' || viewState === 'forbidden' || viewState === 'error'}}" class="bootstrap__code-button" bindtap="onOpenApplication" hover-class="bootstrap__button--hover">申请入驻</button>
   </view>
 </view>

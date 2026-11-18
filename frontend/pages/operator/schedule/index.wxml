@@ -1,0 +1,196 @@
+<operator-page-shell
+  markTitle="排课"
+  markIcon="/pages/operator/assets/page-mark-pdf.png" markIconSize="44"
+  showBack="{{true}}"
+>
+  <view class="schedule-page" aria-label="排课管理">
+    <view class="schedule-utility">
+      <button class="schedule-utility__filter" bindtap="onToggleFilters" aria-expanded="{{filtersOpen}}">{{filtersOpen ? '收起筛选' : '筛选'}}</button>
+    </view>
+      <button
+        class="schedule-control schedule-page__create schedule-page__heading"
+        disabled="{{submitting || recoveryAvailable || members.blocking || navigating || viewState === 'forbidden'}}"
+        bindtap="onCreateTap"
+        hover-class="control--hover"
+      >创建课表</button>
+
+    <view wx:if="{{filtersOpen}}" class="schedule-filters">
+      <picker
+        class="schedule-filter"
+        mode="date"
+        value="{{filterDate}}"
+        disabled="{{submitting || members.blocking || viewState === 'forbidden'}}"
+        bindchange="onFilterDateChange"
+      >
+        <view class="schedule-filter__content">
+          <text class="schedule-filter__label">日期</text>
+          <text class="schedule-filter__value">{{filterDate || '全部日期'}}</text>
+        </view>
+      </picker>
+      <button
+        wx:if="{{filterDate}}"
+        class="schedule-control schedule-filter__clear"
+        aria-label="清除日期筛选"
+        disabled="{{submitting || members.blocking}}"
+        bindtap="onClearFilterDate"
+        hover-class="control--hover"
+      >×</button>
+      <picker
+        class="schedule-filter schedule-filter--status"
+        range="{{statusOptions}}"
+        range-key="label"
+        value="{{statusIndex}}"
+        disabled="{{submitting || members.blocking || viewState === 'forbidden'}}"
+        bindchange="onStatusChange"
+      >
+        <view class="schedule-filter__content">
+          <text class="schedule-filter__label">状态</text>
+          <text class="schedule-filter__value">{{statusLabel}}</text>
+        </view>
+      </picker>
+    </view>
+
+    <view wx:if="{{savedNotice}}" class="schedule-notice" aria-live="polite">
+      <text class="schedule-notice__message">{{savedNotice}}</text>
+    </view>
+
+    <view wx:if="{{recoveryAvailable}}" class="schedule-notice" aria-live="polite">
+      <text class="schedule-notice__message">操作结果待确认：{{recoveryMessage}}</text>
+      <button class="schedule-control page-state__retry" disabled="{{submitting || recoveryReading}}" bindtap="onRetryWrite" hover-class="control--hover">{{recoveryReady ? '重试原操作' : '核对最新课表'}}</button>
+    </view>
+
+    <view wx:if="{{members.recoveryAvailable}}" class="schedule-notice member-recovery" aria-live="polite">
+      <text class="schedule-notice__message">{{members.message || '名单操作结果待确认'}}</text>
+      <text wx:if="{{members.errorMessage}}" class="schedule-notice__message">{{members.errorMessage}}</text>
+      <button class="schedule-control page-state__retry" disabled="{{members.busy || members.loading}}" bindtap="onRecoverMembers" hover-class="control--hover">{{members.recoveryLabel}}</button>
+    </view>
+
+    <view wx:if="{{refreshError}}" class="schedule-notice" aria-live="polite">
+      <text class="schedule-notice__message">{{refreshError}}</text>
+      <button class="schedule-control page-state__retry" disabled="{{refreshing}}" bindtap="onRetry" hover-class="control--hover">重试刷新</button>
+    </view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">正在加载排课</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="schedule-control page-state__retry" bindtap="onLogin" hover-class="control--hover">重新登录</button>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">排课加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="schedule-control page-state__retry" bindtap="onRetry" hover-class="control--hover">重试</button>
+    </view>
+    <view wx:elif="{{viewState === 'empty'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">暂无匹配课次</text>
+      <text class="page-state__message">可调整日期或状态筛选</text>
+      <button class="schedule-control page-state__retry" disabled="{{submitting || recoveryAvailable || members.blocking || navigating}}" bindtap="onCreateTap" hover-class="control--hover">新增课次</button>
+    </view>
+
+    <view wx:elif="{{viewState === 'ready'}}" class="schedule-list">
+      <view class="lesson-row" wx:for="{{items}}" wx:key="id">
+        <button class="lesson-row__summary" data-id="{{item.id}}" bindtap="onMembersTap"
+          aria-label="{{item.dateLabel}} {{item.timeLabel}} {{item.courseName}}课次名单"
+          aria-expanded="{{members.lessonSessionId === item.id}}"
+          disabled="{{submitting || recoveryAvailable || members.blocking || refreshing || navigating}}" hover-class="control--hover">
+          <view class="lesson-row__date-time"><text>{{item.shortDateLabel}}</text><text>{{item.startTimeLabel}}</text></view>
+          <view class="lesson-row__identity {{item.courseName.length > 6 ? 'lesson-row__identity--compact' : ''}}"><text>{{item.courseName}}</text><text>{{item.teacherName}}</text></view>
+        </button>
+        <view wx:if="{{members.lessonSessionId === item.id || cancellation.id === item.id}}" class="lesson-row__expanded">
+          <view class="lesson-row__meta"><text>{{item.dateLabel}} {{item.timeLabel}} · 上海时间</text><text>{{item.className}} · {{item.teacherLabel}} · {{item.kindLabel}}</text><text class="lesson-row__status lesson-row__status--{{item.status}}">{{item.statusLabel}}</text></view>
+          <view class="lesson-row__actions">
+          <button class="schedule-control lesson-row__members" disabled="{{submitting || recoveryAvailable || members.blocking || refreshing || navigating}}" data-id="{{item.id}}" bindtap="onMembersTap" hover-class="control--hover">课次名单</button>
+          <button wx:if="{{item.canManage}}" class="schedule-control lesson-row__edit" disabled="{{submitting || recoveryAvailable || members.blocking || refreshing || navigating}}" data-id="{{item.id}}" bindtap="onEditTap" hover-class="control--hover">编辑</button>
+          <button wx:if="{{item.canManage}}" class="schedule-control lesson-row__cancel" disabled="{{submitting || recoveryAvailable || members.blocking || refreshing || navigating}}" data-id="{{item.id}}" bindtap="onCancelTap" hover-class="control--hover">取消课次</button>
+          </view>
+        </view>
+
+        <view wx:if="{{cancellation.id === item.id}}" class="cancellation-panel">
+          <view class="cancellation-panel__heading">
+            <text class="member-panel__title">取消范围</text>
+            <button class="schedule-control member-panel__quiet" bindtap="onCloseCancellation" disabled="{{submitting || recoveryAvailable}}">收起</button>
+          </view>
+          <radio-group class="cancellation-panel__modes" bindchange="onCancellationModeChange">
+            <label><radio value="THIS" checked="{{cancellation.mode === 'THIS'}}" disabled="{{submitting || recoveryAvailable}}" color="#176a4b" /><text>仅本次</text></label>
+            <label wx:if="{{cancellation.allowFollowing}}"><radio value="FOLLOWING" checked="{{cancellation.mode === 'FOLLOWING'}}" disabled="{{submitting || recoveryAvailable}}" color="#176a4b" /><text>本次及后续</text></label>
+          </radio-group>
+          <text wx:if="{{cancellation.loading}}" class="member-panel__hint">正在读取取消范围</text>
+          <text wx:if="{{cancellation.error}}" class="member-panel__error">{{cancellation.error}}</text>
+          <button wx:if="{{cancellation.error}}" class="schedule-control member-panel__quiet" bindtap="onRefreshCancellation" disabled="{{submitting || recoveryAvailable || cancellation.loading}}">重试读取</button>
+          <block wx:if="{{cancellation.preview}}">
+            <text class="member-panel__hint">上海时间 · 待取消 {{cancellation.preview.sessions.length}} 节</text>
+            <view class="cancellation-panel__row" wx:for="{{cancellation.rows}}" wx:key="id" wx:for-item="session">
+              <text>{{session.label}}</text>
+              <text class="cancellation-panel__version">版本 {{session.version}}</text>
+            </view>
+            <button class="schedule-control lesson-row__cancel cancellation-panel__confirm" bindtap="onConfirmCancellation"
+              disabled="{{submitting || recoveryAvailable || navigating || refreshing || cancellation.loading}}">确认取消 {{cancellation.preview.sessions.length}} 节</button>
+          </block>
+        </view>
+        <view wx:if="{{members.lessonSessionId === item.id}}" class="member-panel">
+          <view class="member-panel__heading">
+            <text class="member-panel__title">本课名单</text>
+            <button class="schedule-control member-panel__quiet" disabled="{{members.blocking}}" bindtap="onCloseMembers" hover-class="control--hover">收起</button>
+          </view>
+          <text wx:if="{{members.loading}}" class="member-panel__hint" aria-live="polite">正在加载名单</text>
+          <view wx:if="{{members.errorMessage && !members.recoveryAvailable}}" class="member-panel__error" aria-live="polite">
+            <text>{{members.errorMessage}}</text>
+            <button class="schedule-control member-panel__quiet" disabled="{{members.loading}}" bindtap="onRefreshMembers" hover-class="control--hover">重试</button>
+          </view>
+          <text wx:if="{{members.message && !members.recoveryAvailable}}" class="member-panel__notice" aria-live="polite">{{members.message}}</text>
+          <block wx:if="{{members.roster}}">
+            <view class="member-panel__summary">
+              <text>完整名单 {{members.roster.members.length}} 人</text>
+              <text wx:if="{{!members.roster.canChange}}" class="member-panel__hint">{{members.roster.status === 'COMPLETED' || members.roster.status === 'REVERSED' ? '最终名单 · 只读' : '本课名单只读'}}</text>
+            </view>
+            <text wx:if="{{members.roster.members.length === 0}}" class="member-panel__hint">本课暂无学员</text>
+            <view class="member-row" wx:for="{{members.roster.members}}" wx:for-item="member" wx:key="studentId">
+              <view class="member-row__identity">
+                <text class="member-row__name">{{member.displayName}}</text>
+                <text class="member-row__source member-row__source--{{member.source}}">{{member.source === 'CLASS' ? '常规' : member.source === 'TEMPORARY' ? '临时' : '历史'}}</text>
+              </view>
+              <button wx:if="{{member.canRemove && members.roster.canChange && members.removingStudentId !== member.studentId}}" class="schedule-control member-row__remove" disabled="{{members.blocking || members.loading || members.errorMessage}}" data-id="{{member.studentId}}" bindtap="onRemoveMemberTap" hover-class="control--hover">移除</button>
+              <view wx:if="{{members.removingStudentId === member.studentId}}" class="member-row__confirm">
+                <text>移出本课？</text>
+                <button class="schedule-control member-row__remove" bindtap="onConfirmRemoveMember" disabled="{{members.blocking || members.loading || members.errorMessage || navigating || submitting || recoveryAvailable || refreshing}}" hover-class="control--hover">确认移除</button>
+                <button class="schedule-control member-panel__quiet" bindtap="onCancelRemoveMember" disabled="{{members.blocking}}" hover-class="control--hover">取消</button>
+              </view>
+            </view>
+            <view wx:if="{{members.roster.canChange}}" class="member-search">
+              <text class="member-panel__title">加入临时学员</text>
+              <view class="member-search__bar">
+                <input class="member-search__input" value="{{members.searchInput}}" placeholder="搜索本校区学员" maxlength="80" disabled="{{members.blocking || members.loading || members.errorMessage}}" bindinput="onMemberSearchInput" bindconfirm="onMemberSearch" confirm-type="search" aria-label="搜索本校区学员" />
+                <button class="schedule-control member-search__button" disabled="{{members.blocking || members.loading || members.searching || members.errorMessage}}" bindtap="onMemberSearch" hover-class="control--hover">搜索</button>
+              </view>
+              <text wx:if="{{members.searching}}" class="member-panel__hint">正在加载学员</text>
+              <text wx:if="{{members.searchError}}" class="member-panel__error" aria-live="polite">{{members.searchError}}</text>
+              <text wx:if="{{members.searchPage > 0 && members.searchTotal === 0}}" class="member-panel__hint">暂无匹配学员</text>
+              <view class="member-candidate {{members.selectedStudentId === student.id ? 'member-candidate--selected' : ''}}" wx:for="{{members.students}}" wx:for-item="student" wx:key="id" data-id="{{student.id}}" bindtap="onMemberStudentTap" role="radio" aria-checked="{{members.selectedStudentId === student.id}}" aria-label="{{student.displayName}}">
+                <radio class="member-candidate__radio" checked="{{members.selectedStudentId === student.id}}" disabled="{{members.blocking || members.loading || members.errorMessage}}" color="#176a4b" />
+                <text class="member-row__name">{{student.displayName}}</text>
+              </view>
+              <button wx:if="{{members.searchError && members.searchPage === 0}}" class="schedule-control member-panel__quiet" disabled="{{members.searching || members.blocking || members.loading || members.errorMessage}}" bindtap="onMemberSearch" hover-class="control--hover">重试加载</button>
+              <button wx:elif="{{members.searchHasMore || members.searchError}}" class="schedule-control member-panel__quiet" disabled="{{members.searching || members.blocking || members.loading || members.errorMessage}}" bindtap="onMemberSearchMore" hover-class="control--hover">{{members.searchError ? '重试加载' : '加载更多学员'}}</button>
+              <view wx:if="{{members.selectedStudentId}}" class="member-search__selection">
+                <text class="member-search__selected">已选：{{members.selectedStudentName}}</text>
+                <button class="schedule-control member-search__button" disabled="{{members.blocking || members.loading || members.errorMessage || members.selectedInRoster}}" bindtap="onAddMember" hover-class="control--hover">{{members.selectedInRoster ? '已在名单' : '加入本课'}}</button>
+              </view>
+              <text wx:if="{{members.busy}}" class="member-panel__hint" aria-live="polite">正在提交名单</text>
+            </view>
+          </block>
+        </view>
+      </view>
+
+      <text wx:if="{{loadMoreError}}" class="schedule-notice__message" aria-live="polite">{{loadMoreError}}</text>
+      <button
+        wx:if="{{hasMore}}"
+        class="schedule-control load-more"
+        disabled="{{loadingMore || refreshing}}"
+        bindtap="onLoadMore"
+        hover-class="control--hover"
+      >{{loadingMore ? '加载中' : (loadMoreError ? '重试加载' : '加载更多')}}</button>
+    </view>
+  </view>
+</operator-page-shell>

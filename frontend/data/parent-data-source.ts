@@ -5,10 +5,19 @@ import {
   ParentHomeSummary,
   ParentCampusPage,
   ParentCampusQuery,
+  ParentCourseCatalogQuery,
+  ParentCourseCatalogPage,
   ParentHoursView,
+  ParentHoursQuery,
   ParentProfileView,
   ParentProfileUpdateInput,
   ParentUpdatesView,
+  ParentGrowthStudent,
+  ParentReviewDraft,
+  ParentLessonReview,
+  ParentPhotoUpload,
+  ParentProfileSetupView,
+  ParentProfileSetupInput,
 } from '../types/parent';
 import {
   GroupCampaignView,
@@ -34,17 +43,23 @@ export class ParentDataSourceError extends Error {
 }
 
 export interface ParentDataSource {
+  listCourseCatalog(query: ParentCourseCatalogQuery): Promise<ParentCourseCatalogPage>;
   listCampuses(query: ParentCampusQuery): Promise<ParentCampusPage>;
   getHomeSummary(): Promise<ParentHomeSummary>;
-  getHoursView(): Promise<ParentHoursView>;
-  getLeavePage(): Promise<LeavePageView>;
+  getHoursView(query?: ParentHoursQuery): Promise<ParentHoursView>;
+  getLeavePage(studentId?: string): Promise<LeavePageView>;
   submitLeave(draft: LeaveDraft, idempotencyKey: string): Promise<LeaveRecord>;
   getProfile(): Promise<ParentProfileView>;
+  getProfileSetup(): Promise<ParentProfileSetupView>;
+  completeProfileSetup(studentId: string, input: ParentProfileSetupInput, key: string): Promise<ParentProfileSetupView>;
   updateProfile(
     input: ParentProfileUpdateInput,
     idempotencyKey: string,
   ): Promise<ParentProfileView>;
   getUpdates(): Promise<ParentUpdatesView>;
+  uploadStudentPhoto(studentId: string, filePath: string): Promise<ParentPhotoUpload>;
+  replaceStudentPhoto(studentId: string, input: { fileId: string; expectedVersion: number }, key: string): Promise<ParentGrowthStudent>;
+  submitLessonReview(lessonId: string, studentId: string, draft: ParentReviewDraft, key: string): Promise<ParentLessonReview>;
   listGroupCampaigns(query: ParentGroupCampaignQuery): Promise<GroupPage<GroupCampaignView>>;
   getGroupCampaign(campaignId: string, teamId?: string): Promise<GroupCampaignView>;
   listGroupOrders(query: GroupOrderQuery): Promise<GroupPage<GroupOrderView>>;

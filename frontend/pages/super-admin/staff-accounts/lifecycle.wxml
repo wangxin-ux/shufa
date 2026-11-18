@@ -1,0 +1,10 @@
+<view wx:if="{{lifecycleTarget}}" class="hq-notice {{lifecycleConflict || lifecycleStale &amp;&amp; !lifecycleBusy ? 'hq-notice--conflict' : ''}}">
+  <text class="hq-notice__title">{{lifecycleUncertain ? '原操作待确认' : (lifecycleConflict ? '操作冲突' : '操作结果')}}</text>
+  <text class="hq-panel__name">{{lifecycleTarget.displayName}}</text>
+  <text class="hq-panel__meta">{{lifecycleTarget.maskedPhone}} · {{lifecycleTarget.status === 'ACTIVE' ? '已启用' : '已停用'}} · {{lifecycleTarget.bindingStatus === 'BOUND' ? '微信已绑定' : '微信未绑定'}} · 版本 {{lifecycleTarget.version}}</text>
+  <text class="hq-notice__message">{{lifecycleBusy ? '正在核对账号状态' : lifecycleMessage}}</text>
+  <view wx:if="{{lifecycleUncertain || lifecycleStale}}" class="hq-recovery">
+    <button class="account-action account-action--ghost" disabled="{{lifecycleBusy || lifecycleConfirming}}" bindtap="onLifecycleReconcile">核对最新状态</button>
+    <button wx:if="{{lifecycleUncertain}}" class="account-action" disabled="{{lifecycleBusy || lifecycleConfirming || !lifecycleReconciled || lifecycleStale}}" bindtap="onLifecycleRetry">重试原操作</button>
+  </view>
+</view>

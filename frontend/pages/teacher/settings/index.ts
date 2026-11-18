@@ -1,3 +1,5 @@
+import { loadTeacherDisplayFont } from '../runtime/teacher-display-font';
+
 import { createTeacherRuntimeEnv } from '../../../config/teacher-env';
 import { buildTeacherSettingsModel } from '../../../services/session.service';
 import { teacherService } from '../../../services/teacher-runtime';
@@ -15,6 +17,7 @@ Page({
   },
 
   onLoad() {
+    void loadTeacherDisplayFont();
     void this.loadSettings();
   },
 

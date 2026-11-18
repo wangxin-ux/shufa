@@ -1,14 +1,47 @@
+<partner-approved-role-badge id="partner-identity-badge" blocked="{{viewState === 'forbidden'}}" />
 <partner-page-shell
   markTitle="学员"
   markIcon="/pages/partner/assets/icon-students.png"
   showBack="{{true}}"
+  waveImage="/pages/partner/assets/top-wave.png"
 >
   <view class="partner-workspace students-page">
-    <view class="partner-heading">
-      <text class="partner-heading__title">学员档案</text>
-      <text class="partner-heading__count">{{total}}人</text>
-    </view>
+    <view class="students-page__filters">
+    <picker
+      class="students-page__subject"
+      range="{{subjectOptions}}"
+      range-key="label"
+      value="{{subjectIndex}}"
+      bindchange="onSubjectChange"
+      disabled="{{viewState === 'forbidden'}}"
+      aria-label="按科目筛选"
+    >
+      <view class="students-page__balance-control">
+        <text class="students-page__subject-label">{{subjectOptions[subjectIndex].label}}</text>
+        <text class="students-page__filter-arrow" aria-hidden="true">⌄</text>
+      </view>
+    </picker>
+    <picker
+      class="students-page__balance"
+      range="{{balanceOptions}}"
+      range-key="label"
+      value="{{balanceIndex}}"
+      bindchange="onBalanceChange"
+      aria-label="按剩余课时筛选"
+    >
+      <view class="students-page__balance-control">
+        <text>{{balanceOptions[balanceIndex].label}}</text>
+        <text aria-hidden="true">⌄</text>
+      </view>
+    </picker>
 
+    <view wx:if="{{subjectsLoading || subjectError}}" class="students-page__subject-status" aria-live="polite">
+      <text wx:if="{{subjectsLoading}}">正在加载科目</text>
+      <block wx:else>
+        <text>{{subjectError}}</text>
+        <button class="students-page__subject-retry" bindtap="onSubjectsRetry" hover-class="partner-control--hover">重试</button>
+      </block>
+    </view>
     <view class="partner-search">
       <image class="partner-search__icon" src="/pages/partner/assets/icon-students.png" mode="aspectFit" />
       <input
@@ -21,12 +54,14 @@
       />
     </view>
 
+    </view>
     <view wx:if="{{viewState === 'loading'}}" class="partner-state" aria-live="polite">
       <text class="partner-state__title">正在加载学员档案</text>
     </view>
     <view wx:elif="{{viewState === 'forbidden'}}" class="partner-state" aria-live="polite">
       <text class="partner-state__title">无访问权限</text>
       <text class="partner-state__message">{{errorMessage}}</text>
+      <button class="partner-command" bindtap="onLogin">重新登录</button>
     </view>
     <view wx:elif="{{viewState === 'error'}}" class="partner-state" aria-live="polite">
       <text class="partner-state__title">学员档案加载失败</text>
@@ -35,38 +70,49 @@
     </view>
     <view wx:elif="{{viewState === 'empty'}}" class="partner-state" aria-live="polite">
       <text class="partner-state__title">暂无匹配学员</text>
-      <text class="partner-state__message">可清空或调整姓名关键词</text>
     </view>
 
-    <view wx:else class="partner-list">
-      <view wx:for="{{items}}" wx:key="id" class="partner-card student-card" data-id="{{item.id}}" bindtap="onStudentTap" hover-class="partner-control--hover" role="button" aria-label="查看{{item.displayName}}的学员详情">
-        <view class="partner-card__head">
-          <view class="partner-card__identity">
-            <text class="partner-card__title">{{item.displayName}}</text>
-            <text class="partner-card__subtitle">{{item.birthDateLabel}}</text>
+    <view wx:else class="student-list">
+      <block wx:for="{{items}}" wx:key="id">
+        <button class="student-strip {{item.lowBalance ? 'student-strip--low' : ''}}" data-id="{{item.id}}" bindtap="onStudentToggle" hover-class="partner-control--hover" aria-label="{{expandedId === item.id ? '收起' : '展开'}}{{item.displayName}}的学员摘要" aria-expanded="{{expandedId === item.id}}">
+          <text class="student-strip__name" style="font-size: {{item.nameFontSize}}rpx;">{{item.displayName}}</text>
+          <view class="student-strip__summary">
+            <text class="student-strip__class">{{item.classLabel}}</text>
+            <text class="student-strip__balance">剩余<text class="student-strip__number">{{item.totalBalanceLabel}}</text>课时</text>
           </view>
-          <text class="partner-card__status">在读</text>
+        </button>
+        <view wx:if="{{expandedId === item.id}}" class="student-expanded">
+          <text wx:if="{{expandedState === 'loading'}}" class="student-expanded__state">正在加载学员信息</text>
+          <view wx:elif="{{expandedState === 'error'}}" class="student-expanded__state"><text>{{expandedError}}</text><button class="student-expanded__retry" bindtap="onRetryExpanded">重试</button></view>
+          <text wx:elif="{{expandedState === 'empty'}}" class="student-expanded__state">学员信息已不可用</text>
+          <block wx:elif="{{expandedState === 'ready'}}">
+            <image wx:if="{{expandedDetail.photo && !expandedPhotoError}}" class="student-expanded__photo" src="{{expandedDetail.photo.accessUrl}}" mode="aspectFill" data-id="{{item.id}}" data-photo-id="{{expandedDetail.photo.id}}" data-url="{{expandedDetail.photo.accessUrl}}" binderror="onExpandedPhotoError" />
+            <view wx:elif="{{expandedPhotoError}}" class="student-expanded__photo student-expanded__photo--empty" aria-live="polite">
+              <text>{{expandedPhotoError}}</text>
+              <button class="student-expanded__retry" bindtap="onRetryExpandedPhoto" loading="{{expandedPhotoRetrying}}" disabled="{{expandedPhotoRetrying}}">重试照片</button>
+            </view>
+            <view wx:else class="student-expanded__photo student-expanded__photo--empty"><text>暂无照片</text></view>
+            <view class="student-expanded__summary">
+              <text class="student-expanded__line">报名课时 {{expandedDetail.enrollment.lessonsLabel}}</text>
+              <text class="student-expanded__line">报名实收 {{expandedDetail.enrollment.receivedLabel}}</text>
+              <text class="student-expanded__line">已退 {{expandedDetail.enrollment.refundedLabel}}</text>
+              <text wx:if="{{expandedDetail.enrollment.pendingLabel}}" class="student-expanded__note">{{expandedDetail.enrollment.pendingLabel}}</text>
+              <text class="student-expanded__line">剩余{{expandedDetail.remainingLabel}}课时</text>
+              <text class="student-expanded__line">出勤率{{expandedDetail.attendanceRateLabel}}</text>
+              <text wx:if="{{expandedDetail.reservationLabel}}" class="student-expanded__note">{{expandedDetail.reservationLabel}}</text>
+              <button class="student-expanded__more" data-id="{{item.id}}" bindtap="onStudentMore" hover-class="partner-control--hover">点击查看更多</button>
+            </view>
+          </block>
         </view>
-        <text class="partner-card__line">{{item.classLabel}}</text>
-        <text wx:if="{{item.reservationLabel}}" class="partner-card__line">{{item.reservationLabel}}</text>
-        <view class="partner-card__meta">
-          <view class="partner-metric">
-            <text class="partner-metric__value">{{item.mainBalanceLabel}}</text>
-            <text class="partner-metric__label">主课时</text>
-          </view>
-          <view class="partner-metric">
-            <text class="partner-metric__value">{{item.giftBalanceLabel}}</text>
-            <text class="partner-metric__label">赠送课时</text>
-          </view>
-          <view class="partner-metric partner-metric--accent">
-            <text class="partner-metric__value">{{item.totalBalanceLabel}}</text>
-            <text class="partner-metric__label">合计课时</text>
-          </view>
-        </view>
-        <text class="student-card__command">查看详情</text>
-      </view>
+      </block>
       <button
-        wx:if="{{hasMore}}"
+        wx:if="{{paginationError}}"
+        class="partner-command partner-command--load-more"
+        bindtap="onRetryMore"
+        hover-class="partner-control--hover"
+      >{{paginationError}} · 重试</button>
+      <button
+        wx:elif="{{hasMore}}"
         class="partner-command partner-command--load-more"
         loading="{{loadingMore}}"
         disabled="{{loadingMore}}"

@@ -19,7 +19,7 @@ describe('super admin project structure', () => {
       'pages/super-admin/home/index.wxss',
       'pages/super-admin/home/index.json',
       'components/super-admin-page-shell/super-admin-page-shell.wxml',
-      'components/super-admin-stat-strip/super-admin-stat-strip.wxml',
+      'pages/super-admin/runtime/components/super-admin-stat-strip/super-admin-stat-strip.wxml',
     ]) {
       expect(fs.existsSync(path.join(root, file))).toBe(true);
     }

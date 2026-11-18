@@ -10,10 +10,16 @@ import {
   ParentHomeSummary,
   ParentCampusPage,
   ParentCampusQuery,
+  ParentCourseCatalogQuery,
+  ParentCourseCatalogPage,
   ParentHoursView,
+  ParentHoursQuery,
   ParentProfileView,
   ParentProfileUpdateInput,
   ParentUpdatesView,
+  ParentReviewDraft,
+  ParentProfileSetupView,
+  ParentProfileSetupInput,
 } from '../types/parent';
 import {
   GroupCampaignView,
@@ -42,6 +48,10 @@ export class ParentService {
     );
   }
 
+  loadCourseCatalog(query: ParentCourseCatalogQuery): Promise<RequestState<ParentCourseCatalogPage>> {
+    return loadRequestState(() => this.dataSource.listCourseCatalog(query), (page) => page.data.length === 0);
+  }
+
   loadHomeSummary(): Promise<RequestState<ParentHomeSummary>> {
     return loadRequestState(
       () => this.dataSource.getHomeSummary(),
@@ -49,19 +59,19 @@ export class ParentService {
     );
   }
 
-  loadHoursView(): Promise<RequestState<ParentHoursView>> {
+  loadHoursView(query?: ParentHoursQuery): Promise<RequestState<ParentHoursView>> {
     return loadRequestState(
       async () => {
-        const data = await this.dataSource.getHoursView();
+        const data = await this.dataSource.getHoursView(query);
         return this.featureFlags.showGiftHours ? data : { ...data, giftHours: null };
       },
       (data) => data.entries.length === 0,
     );
   }
 
-  loadLeavePage(): Promise<RequestState<LeavePageView>> {
+  loadLeavePage(studentId?: string): Promise<RequestState<LeavePageView>> {
     return loadRequestState(
-      () => this.dataSource.getLeavePage(),
+      () => this.dataSource.getLeavePage(studentId),
       (data) => data.students.length === 0 && data.lessons.length === 0 && data.records.length === 0,
     );
   }
@@ -80,6 +90,14 @@ export class ParentService {
     );
   }
 
+  loadProfileSetup(): Promise<RequestState<ParentProfileSetupView>> {
+    return loadRequestState(() => this.dataSource.getProfileSetup(), (view) => view.student === null);
+  }
+
+  completeProfileSetup(studentId: string, input: ParentProfileSetupInput, key: string) {
+    return loadRequestState(() => this.dataSource.completeProfileSetup(studentId, input, key));
+  }
+
   updateProfile(
     input: ParentProfileUpdateInput,
     idempotencyKey: string,
@@ -94,6 +112,18 @@ export class ParentService {
       () => this.dataSource.getUpdates(),
       (data) => data.records.length === 0,
     );
+  }
+
+  uploadStudentPhoto(studentId: string, filePath: string) {
+    return loadRequestState(() => this.dataSource.uploadStudentPhoto(studentId, filePath));
+  }
+
+  replaceStudentPhoto(studentId: string, input: { fileId: string; expectedVersion: number }, key: string) {
+    return loadRequestState(() => this.dataSource.replaceStudentPhoto(studentId, input, key));
+  }
+
+  submitLessonReview(lessonId: string, studentId: string, draft: ParentReviewDraft, key: string) {
+    return loadRequestState(() => this.dataSource.submitLessonReview(lessonId, studentId, draft, key));
   }
 
   loadGroupCampaigns(

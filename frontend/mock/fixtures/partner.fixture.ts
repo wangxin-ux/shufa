@@ -9,6 +9,7 @@ import {
   PartnerProfile,
   PartnerStudent,
   PartnerStudentDetail,
+  PartnerStudentGrowthRecord,
   PartnerTeacher,
   PartnerWarning,
 } from '../../types/partner';
@@ -43,13 +44,23 @@ export const PARTNER_DASHBOARD_FIXTURE: PartnerDashboard = {
   remainingGiftUnits: 1200,
   monthConsumedUnits: 7200,
   attendanceRateBasisPoints: 9600,
-  highlight: PARTNER_WARNINGS_FIXTURE[0],
+  highlight: {
+    ...PARTNER_WARNINGS_FIXTURE[0],
+    classes: [
+      { id: 'partner-class-1', className: '创意美术 A 班', courseName: '创意美术', teacherName: '林老师' },
+    ],
+    attendance: {
+      presentCount: 18, absentCount: 1, leaveCount: 1, recordedCount: 20,
+      attendanceRateBasisPoints: 9000,
+    },
+  },
   serverTime: '2026-08-31T08:00:00+08:00',
 };
 
 export const PARTNER_PROFILE_FIXTURE: PartnerProfile = {
   displayName: '朱元璋',
   roleCode: 'PARTNER',
+  activeStudentCount: 106,
   campus: {
     ...campus,
     contactPhone: '0731-88886666',
@@ -218,6 +229,7 @@ export const PARTNER_EARNINGS_FIXTURE: PartnerEarningEntry[] = [
 export const PARTNER_STUDENT_DETAILS_FIXTURE: PartnerStudentDetail[] = [
   {
     ...PARTNER_STUDENTS_FIXTURE[0],
+    photo: null,
     classes: [
       {
         id: 'partner-class-1',
@@ -238,6 +250,7 @@ export const PARTNER_STUDENT_DETAILS_FIXTURE: PartnerStudentDetail[] = [
   },
   {
     ...PARTNER_STUDENTS_FIXTURE[1],
+    photo: null,
     classes: [
       {
         id: 'partner-class-2',
@@ -255,6 +268,47 @@ export const PARTNER_STUDENT_DETAILS_FIXTURE: PartnerStudentDetail[] = [
     },
     recentAttendance: [PARTNER_ATTENDANCE_FIXTURE.items[1]],
     recentLessonLedger: [PARTNER_LESSON_ACCOUNT_FIXTURE.items[1]],
+  },
+];
+
+export const PARTNER_STUDENT_GROWTH_FIXTURE: PartnerStudentGrowthRecord[] = [
+  {
+    lessonSessionId: 'partner-growth-1',
+    studentId: PARTNER_STUDENTS_FIXTURE[0].id,
+    courseName: '硬笔书法',
+    campusName: PARTNER_PROFILE_FIXTURE.campus.name,
+    teacherName: '王老师',
+    startsAt: '2026-10-08T02:00:00.000Z',
+    lessonStatus: 'COMPLETED',
+    attendanceStatus: 'PRESENT',
+    feedback: '课堂表现进步，继续练习。',
+    performanceRating: 9,
+    feedbackImages: [],
+    feedbackUpdatedAt: '2026-10-08T03:00:00.000Z',
+    review: {
+      id: 'partner-review-1',
+      lessonSessionId: 'partner-growth-1',
+      studentId: PARTNER_STUDENTS_FIXTURE[0].id,
+      teaching: 9, communication: 8, environment: 10, overall: 9,
+      note: '谢谢老师',
+      createdAt: '2026-10-08T03:00:00.000Z',
+      valid: true,
+    },
+  },
+  {
+    lessonSessionId: 'partner-growth-2',
+    studentId: PARTNER_STUDENTS_FIXTURE[0].id,
+    courseName: '硬笔书法',
+    campusName: PARTNER_PROFILE_FIXTURE.campus.name,
+    teacherName: '王老师',
+    startsAt: '2026-10-07T02:00:00.000Z',
+    lessonStatus: 'REVERSED',
+    attendanceStatus: 'PRESENT',
+    feedback: null,
+    performanceRating: null,
+    feedbackImages: [],
+    feedbackUpdatedAt: null,
+    review: null,
   },
 ];
 

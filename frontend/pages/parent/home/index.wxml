@@ -1,4 +1,4 @@
-<parent-page-shell markTitle="首页" markIcon="/pages/parent/assets/icon-mark-home.png" bg="yellow">
+<parent-page-shell class="home-shell" markTitle="首页" markIcon="/pages/parent/assets/icon-mark-home.png" bg="yellow" waveSrc="/pages/parent/assets/top-wave.png">
   <view-state
     wx:if="{{viewState !== 'ready'}}"
     state="{{viewState}}"
@@ -13,26 +13,29 @@
         <text class="course__title">近期课程</text>
         <view class="course__more" bindtap="onMoreCourseTap" hover-class="tap-hover">查看更多</view>
       </view>
-      <view class="course__body">
+      <view wx:if="{{course}}" class="course__body">
         <view class="course__date">
           <text class="course__day">{{course.day}}</text>
           <text class="course__weekday">{{course.weekday}}</text>
         </view>
         <view class="course__divider" aria-hidden="true"></view>
         <view class="course__info">
-          <text class="course__campus">{{course.campus}}</text>
-          <text class="course__name">{{course.name}}</text>
+          <text class="course__campus"><block wx:if="{{hasLongCampusName}}">{{campusNamePrefix}}<text class="course__campus-tail">{{campusNameTail}}</text></block><block wx:else>{{course.campus}}</block></text>
+          <text class="course__name {{hasShortCourseName ? 'course__name--short' : hasLongCourseName ? 'course__name--long' : ''}}"><block wx:if="{{courseNameTail !== ''}}">{{courseNamePrefix}}<text class="course__name-tail">{{courseNameTail}}</text></block><block wx:else>{{course.name}}</block></text>
           <text class="course__time">{{course.time}} · {{course.teacher}}</text>
         </view>
       </view>
+      <view wx:else class="course__empty">暂无近期课程</view>
+      <view wx:if="{{refreshError}}" class="home__refresh-error" bindtap="onRetry">{{refreshError}}</view>
     </view>
 
     <!-- 学员 + 人物 + 统计 -->
     <view class="stage">
       <image class="stage__mascot" src="/pages/parent/assets/home-mascot.png" mode="widthFix" aria-hidden="true" />
       <view class="stage__student" bindtap="onStudentTap" hover-class="tap-hover">
-        <text class="stage__student-name">{{student.name}}</text>
-        <text class="stage__student-age">{{student.age}}岁</text>
+        <text class="stage__student-name" style="font-size: {{studentNameFontSize}}rpx;">{{student.name}}</text>
+        <text wx:if="{{student.id}}" class="stage__student-age">{{student.age}}岁</text>
+        <text wx:else class="stage__student-age">暂未绑定学员</text>
       </view>
       <view class="stage__metrics">
         <parent-metric-card
@@ -44,9 +47,10 @@
 
     <!-- 快捷入口 -->
     <view class="quickbar">
-      <view class="quickbar__capsule">
+      <view wx:if="{{menuExpanded}}" class="quickbar__capsule">
         <view
           class="quickbar__item"
+          id="quick-{{item.key}}"
           wx:for="{{quickActions}}"
           wx:key="key"
           data-key="{{item.key}}"
@@ -57,11 +61,36 @@
           <text class="quickbar__label">{{item.label}}</text>
         </view>
       </view>
-      <view class="quickbar__remind" bindtap="onCampusTap" hover-class="tap-hover">
-        <image class="quickbar__remind-icon" src="/pages/parent/assets/icon-qa-campus.png" mode="aspectFit" />
-        <text class="quickbar__remind-label">附近门店</text>
+      <view id="quick-reminders" class="quickbar__remind {{menuExpanded ? '' : 'quickbar__remind--collapsed'}}" bindtap="onRemindTap" hover-class="tap-hover">
+        <image class="quickbar__remind-icon" src="/pages/parent/assets/icon-qa-remind.png" mode="aspectFit" />
+        <text class="quickbar__remind-label">上课提醒</text>
       </view>
       <view class="quickbar__more" bindtap="onMoreCourseTap" hover-class="tap-hover">查看更多</view>
+    </view>
+  </view>
+  <view wx:if="{{activeSheet}}" class="home-sheet-backdrop" bindtap="onCloseSheet">
+    <view class="home-sheet" catchtap="onSheetTap">
+      <view class="home-sheet__head">
+        <text class="home-sheet__title">{{activeSheet === 'teachers' ? '教师团队' : '上课提醒'}}</text>
+        <button class="home-sheet__close" bindtap="onCloseSheet" aria-label="关闭">×</button>
+      </view>
+      <scroll-view scroll-y class="home-sheet__body">
+        <block wx:if="{{activeSheet === 'teachers'}}">
+          <view wx:for="{{teachers}}" wx:key="id" class="home-sheet__row">
+            <text class="home-sheet__name">{{item.name}}</text>
+            <text class="home-sheet__detail">{{item.specialtyLabel}}</text>
+          </view>
+          <view wx:if="{{!hasTeachers}}" class="home-sheet__empty">暂无教师资料</view>
+        </block>
+        <block wx:else>
+          <view wx:for="{{reminders}}" wx:key="id" class="home-sheet__row">
+            <text class="home-sheet__name">{{item.courseName}}</text>
+            <text class="home-sheet__detail">{{item.dateLabel}} {{item.timeLabel}}</text>
+            <text class="home-sheet__detail">{{item.campusName}} · {{item.teacherName}}</text>
+          </view>
+          <view wx:if="{{!hasReminders}}" class="home-sheet__empty">暂无待上课程</view>
+        </block>
+      </scroll-view>
     </view>
   </view>
 </parent-page-shell>

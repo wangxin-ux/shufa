@@ -1,0 +1,268 @@
+preview:
+  post:
+    operationId: previewOperatorLessonSeries
+    summary: Preview a finite Shanghai weekly or fortnightly series
+    description: >-
+      OPERATOR_SCHEDULE_READ; exactly one OPERATOR role and one nonempty campus.
+      Includes both dates, at most 84 local calendar days and at most 50 sessions.
+      ISO weekdays 1..7, fortnightly weeks anchored to Monday of the start-date week.
+      Fixed same-day Shanghai times; endTime must exceed startTime. No dates are skipped.
+      All generated starts must be in the future. Returns same-teacher or same-class
+      noncancelled overlap dates, with touching boundaries allowed. No room/student
+      global conflict rules. No writes. previewHash compares the pattern, effective
+      class/teacher configuration, exact dates and conflict dates; it is not authorization.
+    tags: [Operator]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/Pattern' }
+    responses:
+      '200': { $ref: '#/responses/Preview' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+create:
+  post:
+    operationId: createOperatorLessonSeries
+    summary: Confirm and atomically create the exact previewed series
+    description: >-
+      OPERATOR_SCHEDULE_CREATE and Idempotency-Key. Recomputes the finite dates,
+      locks and rechecks effective same-campus class/teacher/user configuration,
+      compares previewHash and checks all conflicts again. A new conflict returns
+      HTTP 409 CONFLICT with details.conflictDates (local YYYY-MM-DD only).
+      Changed preview/configuration also returns 409 and requires another preview.
+      All ordinary linked lessons and series/session audits commit together or all
+      roll back. Uses per-class and per-teacher transaction advisory locks shared
+      with ordinary operator create/update, not a global lock. Original successful
+      same-key/body receipts replay before rechecking historical dates/configuration.
+      No debits, reservations or infinite scheduler. Single-session edits remain supported.
+    tags: [Operator]
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/IdempotencyKey'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            unevaluatedProperties: false
+            allOf:
+              - $ref: '#/schemas/Pattern'
+              - type: object
+                required: [previewHash]
+                properties:
+                  previewHash: { $ref: '#/schemas/Hash' }
+    responses:
+      '200': { $ref: '#/responses/Created' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+cancellationPreview:
+  parameters:
+    - $ref: './openapi.yaml#/components/parameters/LessonSessionId'
+  post:
+    operationId: previewOperatorLessonCancellation
+    summary: Read the exact future scheduled sessions affected by a cancellation
+    description: >-
+      OPERATOR_SCHEDULE_READ and the ordinary campus scope. The selected session
+      must still be future SCHEDULED. THIS selects only it; FOLLOWING requires a
+      series and includes that series' future SCHEDULED sessions whose current
+      start is at or after the selected start. Completed, reversed, cancelled and
+      already-started rows are preserved. Lists actual IDs, versions and times,
+      sorted by start and ID, in one RepeatableRead snapshot. No writes.
+    tags: [Operator]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/Cancellation' }
+    responses:
+      '200': { $ref: '#/responses/CancellationPreview' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+cancel:
+  parameters:
+    - $ref: './openapi.yaml#/components/parameters/LessonSessionId'
+  post:
+    operationId: cancelOperatorLessonSelection
+    summary: Confirm and atomically cancel the exact previewed selection
+    description: >-
+      OPERATOR_SCHEDULE_UPDATE and Idempotency-Key. Locks the series' existing
+      lesson rows in ID order (only the selected row for THIS), then rechecks
+      the clock, selected session, exact affected set and every version against
+      previewHash. Changed times/versions/state or membership changes incrementing
+      lesson version require a new preview (409); no silent partial cancellation.
+      Conditional updates increment lesson versions, series version when present,
+      and write series/session audits in one transaction. Facts and ledger entries
+      remain intact. Unknown writes must be reconciled with the original body/key;
+      original successful receipts replay even after starts or later changes.
+    tags: [Operator]
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/IdempotencyKey'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [mode, previewHash]
+            properties:
+              mode: { type: string, enum: [THIS, FOLLOWING] }
+              previewHash: { $ref: '#/schemas/Hash' }
+    responses:
+      '200': { $ref: '#/responses/Cancelled' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+schemas:
+  Hash: { type: string, pattern: '^[0-9a-f]{64}$' }
+  Pattern:
+    type: object
+    required: [classGroupId, startDate, endDate, intervalWeeks, weekdays, startTime, endTime, kind]
+    properties:
+      classGroupId: { type: string, format: uuid }
+      startDate: { type: string, format: date }
+      endDate: { type: string, format: date }
+      intervalWeeks: { type: integer, enum: [1, 2] }
+      weekdays:
+        type: array
+        minItems: 1
+        maxItems: 7
+        uniqueItems: true
+        items: { type: integer, minimum: 1, maximum: 7 }
+      startTime: { type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$' }
+      endTime: { type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$' }
+      kind: { $ref: './openapi.yaml#/components/schemas/LessonKind' }
+  Cancellation:
+    type: object
+    additionalProperties: false
+    required: [mode]
+    properties:
+      mode: { type: string, enum: [THIS, FOLLOWING] }
+  PlannedSession:
+    type: object
+    additionalProperties: false
+    required: [date, startsAt, endsAt]
+    properties:
+      date: { type: string, format: date }
+      startsAt: { type: string, format: date-time }
+      endsAt: { type: string, format: date-time }
+  SelectedSession:
+    type: object
+    additionalProperties: false
+    required: [id, version, startsAt, endsAt]
+    properties:
+      id: { type: string, format: uuid }
+      version: { type: integer, minimum: 1, maximum: 2147483647 }
+      startsAt: { type: string, format: date-time }
+      endsAt: { type: string, format: date-time }
+  Preview:
+    type: object
+    additionalProperties: false
+    required: [timezone, previewHash, sessions, conflictDates]
+    properties:
+      timezone: { type: string, const: Asia/Shanghai }
+      previewHash: { $ref: '#/schemas/Hash' }
+      sessions:
+        type: array
+        minItems: 1
+        maxItems: 50
+        items: { $ref: '#/schemas/PlannedSession' }
+      conflictDates:
+        type: array
+        uniqueItems: true
+        items: { type: string, format: date }
+  CancellationPreview:
+    type: object
+    additionalProperties: false
+    required: [seriesId, previewHash, sessions]
+    properties:
+      seriesId: { type: [string, 'null'], format: uuid }
+      previewHash: { $ref: '#/schemas/Hash' }
+      sessions:
+        type: array
+        minItems: 1
+        maxItems: 50
+        items: { $ref: '#/schemas/SelectedSession' }
+  Created:
+    type: object
+    additionalProperties: false
+    required: [seriesId, version, sessions]
+    properties:
+      seriesId: { type: string, format: uuid }
+      version: { type: integer, minimum: 1 }
+      sessions:
+        type: array
+        minItems: 1
+        maxItems: 50
+        items: { $ref: '#/schemas/SelectedSession' }
+  Cancelled:
+    type: object
+    additionalProperties: false
+    required: [seriesId, sessions]
+    properties:
+      seriesId: { type: [string, 'null'], format: uuid }
+      sessions:
+        type: array
+        minItems: 1
+        maxItems: 50
+        items:
+          type: object
+          additionalProperties: false
+          required: [id, version, startsAt, endsAt, status]
+          properties:
+            id: { type: string, format: uuid }
+            version: { type: integer, minimum: 1, maximum: 2147483647 }
+            startsAt: { type: string, format: date-time }
+            endsAt: { type: string, format: date-time }
+            status: { type: string, const: CANCELLED }
+responses:
+  Preview:
+    description: Finite preview, including every conflict date.
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [data]
+          properties:
+            data: { $ref: '#/schemas/Preview' }
+  Created:
+    description: All ordinary linked lessons created, or original successful replay.
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [data]
+          properties:
+            data: { $ref: '#/schemas/Created' }
+  CancellationPreview:
+    description: Exact actual affected sessions and versions before confirmation.
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [data]
+          properties:
+            data: { $ref: '#/schemas/CancellationPreview' }
+  Cancelled:
+    description: Exact affected sessions cancelled, or original successful replay.
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [data]
+          properties:
+            data: { $ref: '#/schemas/Cancelled' }

@@ -23,6 +23,8 @@ import { IdempotencyKey } from '../../common/idempotency/idempotency-key.decorat
 import { AccessTokenGuard } from '../auth/access-token.guard';
 import {
   GroupCampaignMutationDto,
+  CourseProductMutationDto,
+  VersionedCourseProductMutationDto,
   GroupCampaignPosterOrderDto,
   ManagementCourseProductsQueryDto,
   ManagementGroupCampaignsQueryDto,
@@ -33,6 +35,7 @@ import {
 } from './dto/group-buying.dto';
 import { GroupBuyingManagementService } from './group-buying-management.service';
 import { GroupBuyingQueryService } from './group-buying-query.service';
+import { CourseProductService } from './course-product.service';
 
 @Controller('management')
 @UseGuards(AccessTokenGuard, PermissionsGuard)
@@ -40,12 +43,59 @@ export class ManagementGroupBuyingController {
   constructor(
     private readonly queryService: GroupBuyingQueryService,
     private readonly managementService: GroupBuyingManagementService,
+    private readonly courseProductService: CourseProductService,
   ) {}
 
   @Get('course-products')
   @RequirePermissions('COURSE_PRODUCT_MANAGE')
   listCourseProducts(@Query() query: ManagementCourseProductsQueryDto) {
     return this.queryService.listManagementCourseProducts(query);
+  }
+
+  @Post('course-products')
+  @HttpCode(200)
+  @RequirePermissions('COURSE_PRODUCT_MANAGE')
+  createCourseProduct(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: CourseProductMutationDto,
+    @IdempotencyKey() key: string,
+  ) {
+    return this.courseProductService.create(user, dto, key);
+  }
+
+  @Patch('course-products/:productId')
+  @RequirePermissions('COURSE_PRODUCT_MANAGE')
+  updateCourseProduct(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('productId', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() dto: VersionedCourseProductMutationDto,
+    @IdempotencyKey() key: string,
+  ) {
+    return this.courseProductService.update(user, id, dto, key);
+  }
+
+  @Post('course-products/:productId/activate')
+  @HttpCode(200)
+  @RequirePermissions('COURSE_PRODUCT_MANAGE')
+  activateCourseProduct(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('productId', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() dto: VersionedGroupActionDto,
+    @IdempotencyKey() key: string,
+  ) {
+    return this.courseProductService.transition(user, id, 'activate', dto, key);
+  }
+
+  @Post('course-products/:productId/retire')
+  @HttpCode(200)
+  @RequirePermissions('COURSE_PRODUCT_MANAGE')
+  retireCourseProduct(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('productId', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() dto: VersionedGroupActionDto,
+    @IdempotencyKey() key: string,
+  ) {
+    return this.courseProductService.transition(user, id, 'retire', dto, key);
   }
 
   @Get('group-campaigns')

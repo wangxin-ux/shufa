@@ -34,15 +34,15 @@
 .metric-card__divider {
   position: absolute;
   left: 0;
-  top: 26%;
-  height: 56%;
+  top: 12%;
+  height: 92%;
   width: 5rpx;
   background: #ffffff;
 }
 
 .metric-card__label {
   font-size: 15rpx;
-  color: #fb6c3f;
+  color: var(--parent-metric-label-color, #fb6c3f);
 }
 
 .metric-card__value-row {
@@ -54,12 +54,13 @@
 .metric-card__value {
   font-size: 49rpx;
   font-family: var(--parent-font-display);
-  font-weight: 700;
+  font-weight: 400;
   color: #000000;
 }
 
 .metric-card__unit {
   font-size: 15rpx;
+  font-family: var(--parent-font-display);
   color: #000000;
   margin-left: 4rpx;
 }
@@ -67,8 +68,7 @@
 .metric-card__unit--percent {
   margin-left: 0;
   font-size: 49rpx;
-  font-family: var(--parent-font-display);
-  font-weight: 700;
+  font-weight: 400;
   line-height: 1;
 }
 

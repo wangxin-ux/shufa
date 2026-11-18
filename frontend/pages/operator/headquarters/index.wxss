@@ -1,0 +1,41 @@
+@import "../runtime/operator-tokens.wxss";
+
+.hq-page { padding: 24rpx 0 64rpx; color: var(--operator-ink); font-family: var(--operator-font-body), "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 26rpx; line-height: 1.6; letter-spacing: 0; }
+.hq-page view, .hq-page text, .hq-page button, .hq-page input { box-sizing: border-box; min-width: 0; max-width: 100%; overflow-wrap: anywhere; word-break: break-word; letter-spacing: 0; }
+.hq-page button { font-family: inherit; white-space: normal; line-height: 1.5; }
+.hq-page button::after { border: 0; }
+.hq-page button[disabled] { opacity: 0.5; }
+.hq-heading { display: flex; align-items: center; gap: 18rpx; }
+.hq-heading-text { flex: 1; }
+.hq-title { display: block; font-family: var(--operator-font-display); font-size: 38rpx; font-weight: 700; }
+.hq-back, .hq-icon { display: flex; flex: none; align-items: center; justify-content: center; width: 88rpx; height: 88rpx; margin: 0; padding: 0; background: transparent; color: var(--operator-ink); font-size: 44rpx; }
+.hq-back { border-radius: 50%; background: var(--role-back-background); box-shadow: var(--role-back-shadow); font-size: var(--role-back-icon-size); }
+.hq-back > text { transform: translateY(var(--role-back-icon-offset-y)); }
+.hq-meta { display: block; margin-top: 10rpx; color: #666; font-size: 23rpx; line-height: 1.65; }
+.hq-heading .hq-meta { margin-top: 0; }
+.hq-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 28rpx 0 12rpx; border-bottom: 2rpx solid #ddd; }
+.hq-tab { width: 100%; min-height: 88rpx; margin: 0; padding: 18rpx 8rpx; border-radius: 0; background: transparent; color: #666; font-size: 27rpx; border-bottom: 4rpx solid transparent; }
+.hq-tab--active { border-bottom-color: #8e442b; color: #292623; font-weight: 700; }
+.hq-search { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16rpx; margin-top: 24rpx; align-items: center; }
+.hq-input { display: block; width: 100%; height: 88rpx; padding: 12rpx 16rpx; border: 2rpx solid #ccc; border-radius: 8rpx; font-size: 26rpx; }
+.hq-command { display: flex; align-items: center; justify-content: center; min-height: 88rpx; margin: 0; padding: 16rpx 24rpx; border-radius: 8rpx; background: #f1f1f1; color: var(--operator-ink); font-size: 25rpx; }
+.hq-state { display: flex; flex-direction: column; align-items: flex-start; gap: 18rpx; min-height: 200rpx; padding: 36rpx 0; }
+.hq-notice { display: flex; flex-wrap: wrap; align-items: center; gap: 16rpx; margin-top: 20rpx; color: #8b2929; }
+.hq-notice > text { flex: 1 1 280rpx; }
+.hq-campus { display: grid; grid-template-columns: minmax(0, 1fr) 32rpx; gap: 12rpx; width: 100%; min-height: 110rpx; margin: 0; padding: 20rpx 0; text-align: left; background: transparent; color: var(--operator-ink); border-radius: 0; border-bottom: 1rpx solid #ddd; font-size: 27rpx; }
+.hq-campus > text { align-self: center; text-align: center; font-size: 38rpx; }
+.hq-campus--selected { border-left: 6rpx solid #42745b; padding-left: 16rpx; }
+.hq-campus-name { display: block; font-weight: 700; }
+.hq-more { width: 100%; margin-top: 24rpx; }
+.hq-end { padding: 24rpx 0; text-align: center; }
+.hq-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12rpx; margin: 28rpx 0 16rpx; }
+.hq-stats > view { display: flex; flex-direction: column; font-size: 23rpx; }
+.hq-stat { font-size: 38rpx; font-weight: 700; font-variant-numeric: tabular-nums; color: #315f4c; }
+.hq-section { margin-top: 32rpx; padding-top: 24rpx; border-top: 2rpx solid #ddd; }
+.hq-section-title { display: block; font-size: 30rpx; font-weight: 700; line-height: 1.5; }
+.hq-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) repeat(3, minmax(0, 1fr)); align-items: start; gap: 12rpx; padding: 20rpx 0; border-bottom: 1rpx solid #e7e7e7; font-size: 24rpx; font-variant-numeric: tabular-nums; }
+.hq-grid > text:not(:first-child) { text-align: right; }
+.hq-grid--head { color: #666; font-size: 22rpx; }
+.hq-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 20rpx; padding: 20rpx 0; border-bottom: 1rpx solid #e7e7e7; }
+.hq-pair > text:first-child { color: #595959; }
+.hq-pair > text:last-child { text-align: right; font-variant-numeric: tabular-nums; }

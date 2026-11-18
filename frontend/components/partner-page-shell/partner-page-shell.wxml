@@ -1,5 +1,6 @@
 <view class="shell {{surfacePage ? 'shell--surface' : ''}}">
-  <view wx:if="{{!surfacePage && !plainGradient}}" class="shell__wave" aria-hidden="true"></view>
+  <image wx:if="{{!surfacePage && waveImage}}" class="shell__wave-image" src="{{waveImage}}" mode="scaleToFill" aria-hidden="true" />
+  <view wx:elif="{{!surfacePage && !plainGradient}}" class="shell__wave" aria-hidden="true"></view>
   <view class="shell__header {{fixedHeader ? 'shell__header--fixed' : ''}}" style="padding-top: {{headerTopPx}}px;">
     <view
       class="shell__header-inner {{surfacePage ? 'shell__header-inner--surface' : ''}}"
@@ -33,5 +34,5 @@
       </view>
     </view>
   </view>
-  <view class="shell__body"><slot /></view>
+  <view class="shell__body" style="--partner-body-height: calc(100vh - {{headerTopPx}}px - 150rpx - 42rpx);"><slot /></view>
 </view>

@@ -1,0 +1,150 @@
+detail:
+  parameters:
+    - { $ref: './partner-campaign-drafts.openapi.yaml#/parameters/DraftId' }
+  get:
+    operationId: getPartnerCampaignDraftImages
+    summary: Read two private image slots in the authenticated partner campus
+    description: Requires PARTNER_CAMPAIGN_DRAFT_READ. Recheck active single PARTNER role/campus. Foreign and unknown drafts return 404. Signed image capabilities expire after 15 minutes; no unsigned public access. Lists and basic/content responses exclude images.
+    tags: [Partner]
+    responses:
+      '200':
+        description: Images and the shared draft version.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data, requestId]
+              properties:
+                requestId: { type: string }
+                data:
+                  type: object
+                  additionalProperties: false
+                  required: [draftId, version, images]
+                  properties:
+                    draftId: { type: string, format: uuid }
+                    version: { type: integer, minimum: 1, maximum: 2147483647 }
+                    images: { $ref: '#/schemas/Images' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+slot:
+  parameters:
+    - { $ref: './partner-campaign-drafts.openapi.yaml#/parameters/DraftId' }
+    - name: slot
+      in: path
+      required: true
+      schema: { type: string, enum: [cover, share] }
+  post:
+    operationId: uploadPartnerCampaignDraftImage
+    summary: Replace one image slot with an immutable uploaded image
+    description: >-
+      Requires PARTNER_CAMPAIGN_DRAFT_WRITE and a single active campus PARTNER.
+      Lock User, UserRole then draft. Accept JPEG/PNG at most 3 MiB, fully decode
+      one frame at most 16 million pixels. Normalize orientation and strip metadata.
+      Cover must be 750x1125; share must be 4:3. No automatic crop or URL/file-ID linking.
+      Claim actor/campus-scoped idempotency using slot, expectedVersion and original SHA256.
+      Exact replays do not duplicate file/link/version/audit; changed key payload or stale
+      version is 409. Commit stored-file metadata, reference, version and audit atomically.
+      Replaced files are retained; a later draft change never alters a frozen submission.
+    tags: [Partner]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [expectedVersion, file]
+            properties:
+              expectedVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+              file: { type: string, format: binary }
+    responses:
+      '200':
+        description: Minimal draft receipt; reread images to refresh signed URLs.
+        content:
+          application/json:
+            schema: { $ref: './partner-campaign-drafts.openapi.yaml#/schemas/ReceiptEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+      '413': { description: Upload exceeds 3 MiB. }
+  put:
+    operationId: clearPartnerCampaignDraftImage
+    summary: Clear one image reference without deleting any stored file
+    description: Same actor/campus/lock boundary as upload. Version and minimal audit are atomic. Already-empty current/previous-version retry returns the unchanged receipt; conflicting stale writes return 409.
+    tags: [Partner]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [expectedVersion]
+            properties:
+              expectedVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+    responses:
+      '200':
+        description: Minimal cleared or unchanged draft receipt.
+        content:
+          application/json:
+            schema: { $ref: './partner-campaign-drafts.openapi.yaml#/schemas/ReceiptEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+media:
+  get:
+    operationId: readPartnerCampaignImage
+    summary: Read an image using an expiring signed capability
+    tags: [Partner]
+    security: []
+    parameters:
+      - name: storedFileId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      - name: expires
+        in: query
+        required: true
+        schema: { type: integer }
+      - name: signature
+        in: query
+        required: true
+        schema: { type: string, pattern: '^[a-f0-9]{64}$' }
+    responses:
+      '200':
+        description: Private immutable image bytes.
+        content:
+          image/png: { schema: { type: string, format: binary } }
+          image/jpeg: { schema: { type: string, format: binary } }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+schemas:
+  Image:
+    type: object
+    additionalProperties: false
+    required: [id, mimeType, sizeBytes, accessUrl, accessUrlExpiresAt]
+    properties:
+      id: { type: string, format: uuid }
+      mimeType: { type: string, enum: [image/png, image/jpeg] }
+      sizeBytes: { type: integer, minimum: 1, maximum: 3145728 }
+      accessUrl: { type: string, description: 'Relative signed /media/partner-campaign-images/{id} URL.' }
+      accessUrlExpiresAt: { type: string, format: date-time }
+  Images:
+    type: object
+    additionalProperties: false
+    required: [cover, share]
+    properties:
+      cover:
+        oneOf:
+          - { $ref: '#/schemas/Image' }
+          - { type: 'null' }
+      share:
+        oneOf:
+          - { $ref: '#/schemas/Image' }
+          - { type: 'null' }

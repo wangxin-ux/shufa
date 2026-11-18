@@ -1,0 +1,622 @@
+application:
+  get:
+    operationId: getOwnPartnerApplication
+    summary: Read the current applicant's institution basic draft
+    description: >-
+      Identity is determined only by the restricted applicant session.
+      No record returns null without creating a draft. This increment exposes
+      institution basics and its contact phone only, not personal identities, bank details,
+      files or review commands. Non-draft states remain read-only.
+    tags: [Auth]
+    security: [{ partnerApplicantAuth: [] }]
+    responses:
+      '200':
+        description: The owned application basics, or null.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/ApplicationEnvelope' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+formalArchive:
+  get:
+    operationId: getOwnFormalPartnerApplication
+    summary: Read the formal partner's own institution application archive
+    description: >-
+      Requires PARTNER_PROFILE_READ and exactly one campus-scoped PARTNER role.
+      Ownership is determined only by the authenticated user ID, not campus
+      membership, name, phone, or client-selected applicant/application IDs.
+      No applicant or application returns null without creating either.
+      Returns the same minimal institution basics in any existing status;
+      all formal reads are read-only, including DRAFT. The institution contact
+      phone is visible only to its owner, never used as a verified staff phone.
+      No private identity, bank, file, review, login, or write permissions are added.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    responses:
+      '200':
+        description: The owned application basics, or null.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/ApplicationEnvelope' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+basicInformation:
+  put:
+    operationId: saveOwnPartnerApplicationBasics
+    summary: Replace only the current applicant's institution basic draft section
+    description: >-
+      expectedVersion is zero for the first save. Values are trimmed; omitted,
+      empty or null location/name fields deliberately clear that field in this section.
+      An omitted contactPhone preserves the existing value for older clients;
+      explicit null or blank contactPhone clears it. The optional draft phone
+      is trimmed text of at most 30 characters, preserving leading zeroes and
+      formatting. Saving does not verify the phone or bind a login identity.
+      Other application sections are never replaced. No formal role is created.
+      Concurrent writes are serialized per applicant. An identical immediately
+      repeated save returns the same version without a new audit; a conflicting
+      stale version returns 409. Non-draft applications and applicants with a
+      formal role cannot be edited here. Region text in a partial draft is not
+      a verified administrative hierarchy. Submission/review/material upload
+      are not enabled by this operation.
+    tags: [Auth]
+    security: [{ partnerApplicantAuth: [] }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [expectedVersion, basicInformation]
+            properties:
+              expectedVersion: { type: integer, minimum: 0, maximum: 2147483647 }
+              basicInformation: { $ref: '#/schemas/BasicInformationInput' }
+            additionalProperties: false
+    responses:
+      '200':
+        description: Saved or unchanged owned basic draft.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/SavedApplicationEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '409':
+        description: CONFLICT; stale version, non-draft state, formal account, or exhausted version.
+        content:
+          application/json:
+            schema: { $ref: './openapi.yaml#/components/schemas/ErrorEnvelope' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+bankInformation:
+  get:
+    operationId: getOwnPartnerApplicationBank
+    summary: Read the applicant's own private bank draft on demand
+    description: >-
+      Restricted applicant credentials determine ownership. Formal bearer tokens
+      cannot use this route. No bank record returns a null partition without
+      creating an application or read audit. An existing bank record requires
+      authenticated decryption and a successful access audit before delivery.
+      Non-draft or formal-ready applicants retain only their own read-only access.
+      The default private-key provider is unavailable; this increment permits
+      process-only synthetic keys in the dedicated local test environment.
+      Missing keys or invalid ciphertext fail closed. No formal private-bank
+      archive or administrator read permission is implemented here.
+    tags: [Auth]
+    security: [{ partnerApplicantAuth: [] }]
+    responses:
+      '200':
+        description: Owned private partition, or an empty partition.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/BankEnvelope' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '503':
+        description: INTERNAL_SERVER_ERROR; private storage is unavailable. Sensitive diagnostics are withheld.
+        content:
+          application/json:
+            schema: { $ref: './openapi.yaml#/components/schemas/ErrorEnvelope' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+  put:
+    operationId: saveOwnPartnerApplicationBank
+    summary: Replace only the applicant's own bank draft partition
+    description: >-
+      All three values remain text; preserve account leading zeroes. Trim outer
+      whitespace; omitted, null or blank bank fields clear the corresponding value.
+      expectedVersion uses the application's shared optimistic version, zero before
+      the first save. Preserve all institution basics. Store an immutable encrypted
+      record and a minimal audit with the current pointer and version in one
+      transaction. An identical immediate retry at the current or previous version
+      returns the same receipt without a second write. Differing stale requests,
+      non-draft state, a formal role or exhausted version return CONFLICT.
+      No plaintext, account digest or key is included in the save receipt or audit.
+      The same test-only private-key availability boundary as GET applies.
+    tags: [Auth]
+    security: [{ partnerApplicantAuth: [] }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [expectedVersion, bankInformation]
+            properties:
+              expectedVersion: { type: integer, minimum: 0, maximum: 2147483647 }
+              bankInformation: { $ref: '#/schemas/BankInformationInput' }
+            additionalProperties: false
+    responses:
+      '200':
+        description: Minimal receipt for a saved or immediately repeated bank draft.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/BankReceiptEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '409':
+        description: CONFLICT; stale version, non-draft state, formal account or exhausted version.
+        content:
+          application/json:
+            schema: { $ref: './openapi.yaml#/components/schemas/ErrorEnvelope' }
+      '503':
+        description: INTERNAL_SERVER_ERROR; private storage is unavailable. Sensitive diagnostics are withheld.
+        content:
+          application/json:
+            schema: { $ref: './openapi.yaml#/components/schemas/ErrorEnvelope' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+materials:
+  get:
+    operationId: getOwnPartnerApplicationMaterials
+    summary: Read the owned current material partition and outstanding upload intents
+    description: >-
+      Restricted applicant session only; no public or signed file URLs, storage
+      paths, key metadata or original filenames. Formal-ready and non-DRAFT
+      applicants are read-only. No record returns an empty partition. Outstanding
+      intents include completed files not yet adopted into a saved partition.
+      Historical adopted files do not consume the outstanding quota.
+    tags: [Auth]
+    security: [{ partnerApplicantAuth: [] }]
+    responses:
+      '200':
+        description: Owned private material metadata.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/MaterialViewEnvelope' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '503': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+  put:
+    operationId: saveOwnPartnerApplicationMaterials
+    summary: Replace only the owned draft material partition
+    description: >-
+      Partial drafts may contain zero to fourteen distinct completed file IDs;
+      ENVIRONMENT allows nine, other kinds one each. STORE_FRONT is explicit,
+      complete validation is performed by the separate submit operation. Only files belonging to this
+      application, owner and kind are accepted. Preserve immutable old partitions
+      and files. Share the optimistic application version; preserve basics and
+      bank data. Same immediate retry at current or previous version returns the
+      same receipt; stale changes, non-DRAFT or formal roles return 409.
+    tags: [Auth]
+    security: [{ partnerApplicantAuth: [] }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/MaterialSaveInput' }
+    responses:
+      '200':
+        description: Minimal saved partition receipt.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/MaterialReceiptEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+      '503': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+materialUploads:
+  post:
+    operationId: reserveOwnPartnerMaterialUpload
+    summary: Persist bounded upload ownership before accepting private bytes
+    description: >-
+      Requires an existing owned DRAFT at expectedVersion and no formal role.
+      Same requestKey with the same kind and original expectedVersion returns the
+      original intent. Same key with different input returns 409. At most three
+      unadopted intents per owner, including interrupted and completed unsaved
+      files. No implicit deletion, quota reset or new object on retry.
+      Default providers are unavailable; only dedicated local test DI with
+      synthetic inputs and process keys is enabled.
+    tags: [Auth]
+    security: [{ partnerApplicantAuth: [] }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [expectedVersion, requestKey, kind]
+            properties:
+              expectedVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+              requestKey: { type: string, format: uuid }
+              kind: { $ref: '#/schemas/MaterialKind' }
+            additionalProperties: false
+    responses:
+      '200':
+        description: Original or new owned upload intent.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/MaterialUploadEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+      '503': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+materialUploadFile:
+  parameters:
+    - name: uploadId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  post:
+    operationId: uploadOwnPartnerMaterialFile
+    summary: Complete or resume the same owned encrypted image upload
+    description: >-
+      JPEG/PNG only, at most 3145728 bytes; complete decoding, each dimension
+      1..8192, at most 16777216 pixels, one frame, decode timeout five seconds,
+      at most two concurrent decodes per process. MIME must match decoded format.
+      Reuse original upload ID and identical input after prepared interruption;
+      different bytes return 409. A RESERVED validation failure can reselect
+      another valid image under the same ID. Persist encryption metadata before
+      exclusive creation. Partial failed objects are retained; resumption registers
+      and commits an owned successor before writing, at most three objects per
+      upload. Exhaustion fails closed without creating further files.
+      Retained failed objects are never overwritten or deleted. Completion
+      creates file metadata and an audit transactionally but does not save the
+      application partition or increment its version. No original filename,
+      plaintext digest or key is persisted. Default production entry is closed.
+    tags: [Auth]
+    security: [{ partnerApplicantAuth: [] }]
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required: [file]
+            properties:
+              file: { type: string, format: binary }
+            additionalProperties: false
+    responses:
+      '200':
+        description: Owned immutable completed material metadata.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/MaterialFileEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+      '413':
+        description: BAD_REQUEST; multipart file exceeds three MiB.
+      '429':
+        description: TOO_MANY_REQUESTS; decoding capacity is occupied.
+      '503': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+materialContent:
+  parameters:
+    - name: storedFileId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  get:
+    operationId: readOwnPartnerMaterialContent
+    summary: Audit and deliver the owned currently saved private image bytes
+    description: >-
+      Restricted applicant bearer only; no token in URL. Current saved partition
+      must reference this owned application file and kind. Decrypt with immutable
+      AAD, require successful read audit, then recheck session/account and current
+      partition before delivery. Replacement during read refuses old content.
+      Cache-Control no-store, X-Content-Type-Options nosniff; safe purpose-based
+      filename. Unsaved and historical files are not readable by this increment.
+    tags: [Auth]
+    security: [{ partnerApplicantAuth: [] }]
+    responses:
+      '200':
+        description: Private image bytes after authorization and audit.
+        headers:
+          Cache-Control: { schema: { type: string, const: 'no-store' } }
+          X-Content-Type-Options: { schema: { type: string, const: nosniff } }
+        content:
+          image/jpeg:
+            schema: { type: string, format: binary }
+          image/png:
+            schema: { type: string, format: binary }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+      '503': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+submit:
+  post:
+    operationId: submitOwnPartnerApplication
+    summary: Validate saved private partitions and freeze an immutable submission
+    description: >-
+      Restricted applicant session only. Lock User then ApplicantSession and
+      reauthorize inside the transaction; owner must be ACTIVE with no formal roles.
+      Require a DRAFT at expectedVersion, complete institution name, location,
+      address and contactPhone, all three nonempty bank texts, and all six material
+      kinds. ENVIRONMENT requires one to nine images; other kinds exactly one.
+      STORE_FRONT cannot be substituted with ENVIRONMENT. Validate file ownership,
+      kind, COMPLETED state and authenticated encrypted storage before freezing.
+      Contact phone allows an optional leading plus, decimal digits and common
+      spaces, hyphens and paired parentheses, with seven to fifteen digits and
+      at most thirty characters; this neither verifies nor binds a phone identity.
+      Region names must match a backend catalog hierarchy; persist its version
+      with the snapshot. The catalog defaults to unavailable. Synthetic catalog
+      and process-only keys are injected only in dedicated local tests; official
+      geographic data and formal private-material governance are still pending.
+      Store a snapshot of institution basics referencing immutable bank and
+      material records, without duplicating bank plaintext. Increment the shared
+      version, set SUBMITTED and commit snapshot, audit and idempotency atomically.
+      Same key and expectedVersion replays the original minimal receipt; altered
+      input or key ownership yields IDEMPOTENCY_CONFLICT. A new key on an already
+      submitted application or a stale version yields CONFLICT. No review,
+      approval, account activation or formal permission is granted.
+    tags: [Auth]
+    security: [{ partnerApplicantAuth: [] }]
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/IdempotencyKey'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [expectedVersion]
+            properties:
+              expectedVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+            additionalProperties: false
+    responses:
+      '200':
+        description: Submitted or replayed minimal receipt. submittedAt is absolute UTC.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/SubmissionReceiptEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '404':
+        description: RESOURCE_NOT_FOUND; referenced materials are unavailable or owned by another applicant.
+        content:
+          application/json:
+            schema: { $ref: './openapi.yaml#/components/schemas/ErrorEnvelope' }
+      '409':
+        description: CONFLICT or IDEMPOTENCY_CONFLICT; stale version, state, formal role, exhausted version or key reuse.
+        content:
+          application/json:
+            schema: { $ref: './openapi.yaml#/components/schemas/ErrorEnvelope' }
+      '503':
+        description: INTERNAL_SERVER_ERROR; private storage or region catalog unavailable, fail closed.
+        content:
+          application/json:
+            schema: { $ref: './openapi.yaml#/components/schemas/ErrorEnvelope' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+schemas:
+  SubmissionReceipt:
+    type: object
+    required: [applicationId, submissionId, version, status, submittedAt]
+    properties:
+      applicationId: { type: string, format: uuid }
+      submissionId: { type: string, format: uuid }
+      version: { type: integer, minimum: 2, maximum: 2147483647 }
+      status: { type: string, enum: [SUBMITTED] }
+      submittedAt: { type: string, format: date-time, description: Absolute UTC submission time. }
+    additionalProperties: false
+  SubmissionReceiptEnvelope:
+    type: object
+    required: [data, requestId]
+    properties:
+      data: { $ref: '#/schemas/SubmissionReceipt' }
+      requestId: { type: string }
+    additionalProperties: false
+  MaterialKind:
+    type: string
+    enum: [BUSINESS_LICENSE, INSTITUTION_LOGO, LEGAL_ID_FRONT, LEGAL_ID_BACK, STORE_FRONT, ENVIRONMENT]
+  MaterialReference:
+    type: object
+    required: [storedFileId, kind]
+    properties:
+      storedFileId: { type: string, format: uuid }
+      kind: { $ref: '#/schemas/MaterialKind' }
+    additionalProperties: false
+  MaterialFile:
+    type: object
+    required: [storedFileId, kind, mimeType, sizeBytes, width, height]
+    properties:
+      storedFileId: { type: string, format: uuid }
+      kind: { $ref: '#/schemas/MaterialKind' }
+      mimeType: { type: string, enum: [image/jpeg, image/png] }
+      sizeBytes: { type: integer, minimum: 1, maximum: 3145728 }
+      width: { type: integer, minimum: 1, maximum: 8192 }
+      height: { type: integer, minimum: 1, maximum: 8192 }
+    additionalProperties: false
+  MaterialUpload:
+    type: object
+    required: [uploadId, storedFileId, kind, state, expectedVersion, requestKey]
+    properties:
+      uploadId: { type: string, format: uuid }
+      storedFileId: { type: string, format: uuid }
+      kind: { $ref: '#/schemas/MaterialKind' }
+      state: { type: string, enum: [RESERVED, WRITING, COMPLETED] }
+      expectedVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+      requestKey: { type: string, format: uuid }
+    additionalProperties: false
+  MaterialSaveInput:
+    type: object
+    required: [expectedVersion, materials]
+    properties:
+      expectedVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+      materials:
+        type: array
+        maxItems: 14
+        items: { $ref: '#/schemas/MaterialReference' }
+    additionalProperties: false
+  MaterialView:
+    type: object
+    required: [applicationId, status, version, readonly, materials, uploads]
+    properties:
+      applicationId: { type: [string, 'null'], format: uuid }
+      status:
+        oneOf:
+          - { $ref: '#/schemas/ApplicationStatus' }
+          - { type: 'null' }
+      version: { type: integer, minimum: 0, maximum: 2147483647 }
+      readonly: { type: boolean }
+      materials:
+        type: array
+        maxItems: 14
+        items: { $ref: '#/schemas/MaterialFile' }
+      uploads:
+        type: array
+        maxItems: 3
+        items: { $ref: '#/schemas/MaterialUpload' }
+    additionalProperties: false
+  MaterialReceipt:
+    type: object
+    required: [applicationId, version, materialRecordId]
+    properties:
+      applicationId: { type: string, format: uuid }
+      version: { type: integer, minimum: 1, maximum: 2147483647 }
+      materialRecordId: { type: string, format: uuid }
+    additionalProperties: false
+  MaterialViewEnvelope:
+    type: object
+    required: [data, requestId]
+    properties:
+      data: { $ref: '#/schemas/MaterialView' }
+      requestId: { type: string }
+    additionalProperties: false
+  MaterialUploadEnvelope:
+    type: object
+    required: [data, requestId]
+    properties:
+      data: { $ref: '#/schemas/MaterialUpload' }
+      requestId: { type: string }
+    additionalProperties: false
+  MaterialFileEnvelope:
+    type: object
+    required: [data, requestId]
+    properties:
+      data: { $ref: '#/schemas/MaterialFile' }
+      requestId: { type: string }
+    additionalProperties: false
+  MaterialReceiptEnvelope:
+    type: object
+    required: [data, requestId]
+    properties:
+      data: { $ref: '#/schemas/MaterialReceipt' }
+      requestId: { type: string }
+    additionalProperties: false
+  BankInformationInput:
+    type: object
+    properties:
+      bankName: { type: [string, 'null'], maxLength: 200 }
+      accountHolder: { type: [string, 'null'], maxLength: 200 }
+      accountNumber: { type: [string, 'null'], maxLength: 80 }
+    additionalProperties: false
+  BankInformation:
+    type: object
+    required: [bankName, accountHolder, accountNumber]
+    properties:
+      bankName: { type: [string, 'null'], maxLength: 200 }
+      accountHolder: { type: [string, 'null'], maxLength: 200 }
+      accountNumber: { type: [string, 'null'], maxLength: 80 }
+    additionalProperties: false
+  BankView:
+    type: object
+    required: [applicationId, status, version, bankInformation, readonly]
+    properties:
+      applicationId: { type: [string, 'null'], format: uuid }
+      status:
+        oneOf:
+          - { $ref: '#/schemas/ApplicationStatus' }
+          - { type: 'null' }
+      version: { type: integer, minimum: 0, maximum: 2147483647 }
+      bankInformation:
+        oneOf:
+          - { $ref: '#/schemas/BankInformation' }
+          - { type: 'null' }
+      readonly: { type: boolean }
+    additionalProperties: false
+  BankEnvelope:
+    type: object
+    required: [data, requestId]
+    properties:
+      data: { $ref: '#/schemas/BankView' }
+      requestId: { type: string }
+    additionalProperties: false
+  BankReceipt:
+    type: object
+    required: [applicationId, version, bankRecordId]
+    properties:
+      applicationId: { type: string, format: uuid }
+      version: { type: integer, minimum: 1, maximum: 2147483647 }
+      bankRecordId: { type: string, format: uuid }
+    additionalProperties: false
+  BankReceiptEnvelope:
+    type: object
+    required: [data, requestId]
+    properties:
+      data: { $ref: '#/schemas/BankReceipt' }
+      requestId: { type: string }
+    additionalProperties: false
+  ApplicationStatus:
+    type: string
+    enum: [DRAFT, SUBMITTED, REJECTED, APPROVED]
+    description: DRAFT may transition to SUBMITTED through complete validation; review transitions remain pending.
+  BasicInformationInput:
+    type: object
+    properties:
+      institutionName: { type: [string, 'null'], maxLength: 200 }
+      province: { type: [string, 'null'], maxLength: 100 }
+      city: { type: [string, 'null'], maxLength: 100 }
+      district: { type: [string, 'null'], maxLength: 100 }
+      detailedAddress: { type: [string, 'null'], maxLength: 300 }
+      contactPhone:
+        type: [string, 'null']
+        maxLength: 30
+        description: Optional institution contact text; omission preserves the current phone.
+    additionalProperties: false
+  BasicInformation:
+    type: object
+    required: [institutionName, province, city, district, detailedAddress]
+    properties:
+      institutionName: { type: [string, 'null'], maxLength: 200 }
+      province: { type: [string, 'null'], maxLength: 100 }
+      city: { type: [string, 'null'], maxLength: 100 }
+      district: { type: [string, 'null'], maxLength: 100 }
+      detailedAddress: { type: [string, 'null'], maxLength: 300 }
+      contactPhone:
+        type: [string, 'null']
+        maxLength: 30
+        description: Owned institution contact text. Older responses may omit it; clients display an empty value.
+    additionalProperties: false
+  Application:
+    type: object
+    required: [applicationId, status, version, basicInformation, createdAt, updatedAt]
+    properties:
+      applicationId: { type: string, format: uuid }
+      status: { $ref: '#/schemas/ApplicationStatus' }
+      version: { type: integer, minimum: 1, maximum: 2147483647 }
+      basicInformation: { $ref: '#/schemas/BasicInformation' }
+      createdAt: { type: string, format: date-time, description: Absolute UTC creation time. }
+      updatedAt: { type: string, format: date-time, description: Absolute UTC last changed time. }
+    additionalProperties: false
+  ApplicationEnvelope:
+    type: object
+    required: [data, requestId]
+    properties:
+      data:
+        oneOf:
+          - { $ref: '#/schemas/Application' }
+          - { type: 'null' }
+      requestId: { type: string }
+    additionalProperties: false
+  SavedApplicationEnvelope:
+    type: object
+    required: [data, requestId]
+    properties:
+      data: { $ref: '#/schemas/Application' }
+      requestId: { type: string }
+    additionalProperties: false

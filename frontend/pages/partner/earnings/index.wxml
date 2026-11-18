@@ -1,3 +1,4 @@
+<partner-approved-role-badge id="partner-identity-badge" blocked="{{viewState === 'forbidden'}}" />
 <partner-page-shell
   markTitle="收益"
   markIcon="/pages/partner/assets/profile-mark-glyph.png"
@@ -28,6 +29,7 @@
     <view wx:elif="{{viewState === 'forbidden'}}" class="partner-state">
       <text class="partner-state__title">无访问权限</text>
       <text class="partner-state__message">{{errorMessage}}</text>
+      <button class="partner-command" bindtap="onLogin">重新登录</button>
     </view>
     <view wx:elif="{{viewState === 'error'}}" class="partner-state">
       <text class="partner-state__title">合作收益加载失败</text>
@@ -36,6 +38,10 @@
     </view>
 
     <block wx:else>
+      <view wx:if="{{refreshError}}" class="earnings-refresh-error">
+        <text class="partner-state__message">{{refreshError}}</text>
+        <button class="partner-command" bindtap="onRetry">重试刷新</button>
+      </view>
       <view class="earnings-summary">
         <view class="earnings-summary__top">
           <text class="earnings-summary__label">内部预计收益</text>
@@ -66,7 +72,7 @@
         <view class="earning-rule__grid">
           <view class="earning-rule__item"><text class="earning-rule__label">课耗单价</text><text class="earning-rule__value">{{rule.unitPriceLabel}} / 人次</text></view>
           <view class="earning-rule__item"><text class="earning-rule__label">合作比例</text><text class="earning-rule__value">{{rule.shareLabel}}</text></view>
-          <view class="earning-rule__item"><text class="earning-rule__label">有效出勤</text><text class="earning-rule__value">{{rule.attendanceLabel}}</text></view>
+          <view class="earning-rule__item"><text class="earning-rule__label">计收益状态</text><text class="earning-rule__value">{{rule.attendanceLabel}}</text></view>
           <view class="earning-rule__item"><text class="earning-rule__label">生效时间</text><text class="earning-rule__value">{{rule.effectiveFromLabel}}</text></view>
         </view>
       </view>
@@ -92,11 +98,13 @@
       <view wx:else class="earnings-list">
         <view wx:for="{{entries}}" wx:key="id" class="earning-row earning-row--{{item.status}}">
           <view class="earning-row__head"><text class="earning-row__course">{{item.courseName}}</text><text class="earning-row__amount">{{item.amountLabel}}</text></view>
-          <text class="earning-row__meta">{{item.completedAtLabel}} · 有效 {{item.attendeeLabel}}</text>
+          <text class="earning-row__meta">{{item.completedAtLabel}}</text>
+          <text class="earning-row__meta">实际到课 {{item.actualAttendeeLabel}} · 计收益 {{item.attendeeLabel}}</text>
           <text class="earning-row__meta">课耗 {{item.unitPriceLabel}} × {{item.shareLabel}} = 每人 {{item.perAttendeeLabel}}</text>
           <view class="earning-row__foot"><text class="earning-row__status">{{item.statusLabel}}</text><text wx:if="{{item.reviewReason}}" class="earning-row__reason">{{item.reviewReason}}</text></view>
         </view>
-        <button wx:if="{{hasMore}}" class="partner-command partner-command--load-more" loading="{{loadingMore}}" disabled="{{loadingMore}}" bindtap="onLoadMore">{{loadingMore ? '加载中' : '加载更多'}}</button>
+        <text wx:if="{{pageError}}" class="partner-state__message">{{pageError}}</text>
+        <button wx:if="{{hasMore}}" class="partner-command partner-command--load-more" loading="{{loadingMore}}" disabled="{{loadingMore || refreshError}}" bindtap="onLoadMore">{{loadingMore ? '加载中' : pageError ? '重试加载' : '加载更多'}}</button>
       </view>
     </block>
   </view>

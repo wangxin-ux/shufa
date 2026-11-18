@@ -43,6 +43,7 @@ const completedDetail: TeacherLessonDetail = {
     {
       id: 'student-1',
       displayName: '陈晨',
+      canEditFeedback: true,
       attendanceStatus: 'PRESENT',
       expectedConsumeUnits: 100,
       feedback: '观察认真，构图完整',
@@ -59,6 +60,7 @@ const completedDetail: TeacherLessonDetail = {
     {
       id: 'student-2',
       displayName: '安然',
+      canEditFeedback: true,
       attendanceStatus: 'LEAVE',
       expectedConsumeUnits: 0,
       feedback: null,
@@ -70,6 +72,37 @@ const completedDetail: TeacherLessonDetail = {
 };
 
 describe('teacher feedback module', () => {
+  it('keeps student photos and the immutable family review read-only', () => {
+    const detail = JSON.parse(JSON.stringify(completedDetail));
+    detail.students[0].photo = { id: 'photo', accessUrl: 'https://example.test/photo' };
+    detail.students[0].parentReview = { id: 'review', teaching: 9, communication: 8,
+      environment: 10, overall: 9, note: '进步明显', valid: false };
+    expect(buildTeacherFeedbackStudentModels(detail)[0]).toMatchObject({
+      photo: { id: 'photo' },
+      parentReview: { id: 'review', valid: false },
+      parentReviewRows: [
+        { label: '老师教学', ratingLabel: '4.5 星' },
+        { label: '课后沟通', ratingLabel: '4 星' },
+        { label: '教室环境', ratingLabel: '5 星' },
+        { label: '整体评价', ratingLabel: '4.5 星' },
+      ],
+    });
+  });
+  it('keeps old teacher ratings empty and presents authored half-star scores', () => {
+    const detail = JSON.parse(JSON.stringify(completedDetail));
+    detail.students[0].performanceRating = 9;
+    const students = buildTeacherFeedbackStudentModels(detail);
+    expect(students[0]).toMatchObject({
+      performanceRating: 9,
+      performanceRatingDraft: 9,
+      performanceRatingLabel: '4.5 星',
+    });
+    expect(students[1]).toMatchObject({
+      performanceRating: null,
+      performanceRatingDraft: null,
+      performanceRatingLabel: '未评分',
+    });
+  });
   it('presents pending, partial, completed, and reversed lesson progress', () => {
     const items = buildTeacherFeedbackPageModel([
       record(),

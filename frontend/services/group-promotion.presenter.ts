@@ -1,8 +1,8 @@
-import { GroupPromotionCampaignView } from '../types/group-buying';
+import { GroupPromotionCampaignView, PartnerCampaignView } from '../types/group-buying';
 import { formatDateTimeLabel } from '../utils/format';
 
 export function presentGroupPromotionCampaign(
-  campaign: GroupPromotionCampaignView,
+  campaign: GroupPromotionCampaignView | PartnerCampaignView,
 ) {
   const endsAtLabel = formatDateTimeLabel(campaign.endsAt);
   return {

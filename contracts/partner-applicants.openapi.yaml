@@ -1,0 +1,127 @@
+login:
+  post:
+    operationId: loginPartnerApplicant
+    summary: Verify a WeChat identity and issue a restricted applicant session
+    description: >-
+      The identity gateway verifies the code; client user IDs, phone numbers,
+      roles and campus scope are forbidden. No formal role is created.
+      Mock exchange is limited to explicitly configured local development/test.
+      An existing formal identity without its own applicant record is rejected,
+      never merged. The short-lived session has no refresh token.
+    tags: [Auth]
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: './openapi.yaml#/components/schemas/WechatLoginRequest'
+    responses:
+      '200':
+        description: A restricted 15-minute applicant session; not a formal account.
+        content:
+          application/json:
+            schema:
+              $ref: '#/schemas/SessionEnvelope'
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+      '429':
+        description: Too many login attempts.
+        content:
+          application/json:
+            schema: { $ref: './openapi.yaml#/components/schemas/ErrorEnvelope' }
+      '503':
+        description: Admission service is unavailable; authentication fails closed.
+        content:
+          application/json:
+            schema: { $ref: './openapi.yaml#/components/schemas/ErrorEnvelope' }
+      '502':
+        description: WeChat identity verification failed at the provider; no session is issued.
+        content:
+          application/json:
+            schema: { $ref: './openapi.yaml#/components/schemas/ErrorEnvelope' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+me:
+  get:
+    operationId: getPartnerApplicantIdentity
+    summary: Read only the current applicant identity
+    description: >-
+      Requires a live applicant session with the partner_application kind and
+      audience. The server determines the identity. No campus, formal roles,
+      WeChat subject, phone, student or money information is returned.
+      A later formal PARTNER account does not upgrade this token.
+    tags: [Auth]
+    security: [{ partnerApplicantAuth: [] }]
+    responses:
+      '200':
+        description: The current applicant identity.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/IdentityEnvelope' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+logout:
+  post:
+    operationId: logoutPartnerApplicant
+    summary: Revoke the current restricted applicant session
+    description: >-
+      The session is determined from the verified token, not a client-selected
+      identity or session ID. Concurrent revocation is naturally idempotent.
+      A token already revoked before authentication returns 401.
+    tags: [Auth]
+    security: [{ partnerApplicantAuth: [] }]
+    responses:
+      '200':
+        description: This session is revoked; other identities are unchanged.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data, requestId]
+              properties:
+                requestId: { type: string }
+                data:
+                  type: object
+                  required: [revoked]
+                  properties:
+                    revoked: { type: boolean, const: true }
+                  additionalProperties: false
+              additionalProperties: false
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+schemas:
+  Identity:
+    type: object
+    required: [applicantId, displayName, formalAccountReady]
+    properties:
+      applicantId: { type: string, format: uuid }
+      displayName: { type: string, maxLength: 100 }
+      formalAccountReady:
+        type: boolean
+        description: A separate scoped PARTNER account exists; this is not a formal login grant.
+    additionalProperties: false
+  SessionEnvelope:
+    type: object
+    required: [data, requestId]
+    properties:
+      requestId: { type: string }
+      data:
+        type: object
+        required: [token, expiresAt, me]
+        properties:
+          token: { type: string, minLength: 1 }
+          expiresAt:
+            type: string
+            format: date-time
+            description: Absolute UTC expiry; checked by the server as well as the JWT.
+          me: { $ref: '#/schemas/Identity' }
+        additionalProperties: false
+    additionalProperties: false
+  IdentityEnvelope:
+    type: object
+    required: [data, requestId]
+    properties:
+      requestId: { type: string }
+      data: { $ref: '#/schemas/Identity' }
+    additionalProperties: false

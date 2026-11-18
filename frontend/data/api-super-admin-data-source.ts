@@ -46,6 +46,7 @@ import {
   GroupPage,
   ManagementCourseProductQuery,
   ManagementCourseProductView,
+  CourseProductMutationInput,
   ManagementGroupCampaignQuery,
 } from "../types/group-buying";
 import {
@@ -558,6 +559,16 @@ export class ApiSuperAdminDataSource implements SuperAdminDataSource {
       input,
       idempotencyKey,
     ).then((campaign) => this.mapGroupCampaign(campaign));
+  }
+
+  createCourseProduct(input: CourseProductMutationInput, key: string): Promise<ManagementCourseProductView> {
+    return this.envelope('/management/course-products', 'POST', input, key);
+  }
+  updateCourseProduct(id: string, input: CourseProductMutationInput, version: number, key: string): Promise<ManagementCourseProductView> {
+    return this.envelope(`/management/course-products/${encodeURIComponent(id)}`, 'PATCH', { ...input, expectedVersion: version }, key);
+  }
+  transitionCourseProduct(id: string, action: 'activate' | 'retire', version: number, key: string): Promise<ManagementCourseProductView> {
+    return this.envelope(`/management/course-products/${encodeURIComponent(id)}/${action}`, 'POST', { expectedVersion: version }, key);
   }
 
   updateGroupCampaign(

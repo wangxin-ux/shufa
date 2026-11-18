@@ -1,0 +1,25 @@
+/* Parent artwork colors are scoped to the six reference pages. */
+page {
+  --parent-yellow: #f6d468;
+  --parent-yellow-card: #f6d468;
+  --parent-yellow-bright: #f6d468;
+  --parent-orange: #fe8319;
+  --parent-orange-deep: #fe8319;
+  --parent-ink: #2c4240;
+  --parent-date-red: #8c0003;
+  --parent-on-color: #ffffff;
+  --parent-text-muted: rgba(44, 66, 64, 0.55);
+  --parent-pdf-plus: #fe0000;
+  --parent-pdf-metric-label: #f66b40;
+  --parent-pdf-home-gradient: linear-gradient(
+    180deg,
+    #e1ab20 0%,
+    #f1c958 48%,
+    #e4af25 100%
+  );
+  --parent-pdf-bottom-gradient: linear-gradient(
+    180deg,
+    #e6b22e 0%,
+    #e4af25 100%
+  );
+}

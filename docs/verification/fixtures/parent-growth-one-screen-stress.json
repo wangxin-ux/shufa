@@ -1,0 +1,48 @@
+[
+  {
+    "student": { "id": "visual-student", "name": "欧阳陈晨陈晨陈晨陈晨", "age": 100, "profileVersion": 1, "photo": null },
+    "records": [
+      {
+        "lessonSessionId": "visual-long-lesson",
+        "studentId": "visual-student",
+        "courseName": "专业美术与创意思维综合提升课程",
+        "campusName": "京南一品儿童美术综合教学中心校区",
+        "teacherName": "欧阳老师",
+        "startsAt": "2026-10-06T01:00:00Z",
+        "lessonStatus": "COMPLETED",
+        "attendanceStatus": "PRESENT",
+        "feedback": "课堂反馈第一段：学员认真观察并能够独立表达，对于较复杂的形状也愿意多次调整；接下来继续练习线条与色彩的配合，保持专注并大胆尝试。\n课堂反馈第二段：本节课表现很棒，课堂上专注认真，能够跟着老师思路，大胆表达自己的绘画想法。画面构图饱满，色彩搭配富有想象力，敢于尝试不同笔触，看得出用心投入。\n课堂反馈第三段：遇到难点时愿意耐心调整，动手能力很不错。如果后续作画时可以再多留意细节，把线条收拾得更干净，作品会更加出彩。\n课堂反馈第四段：孩子愿意分享课堂的学习过程，老师继续关注每一次绘画尝试和学习习惯的培养。保持这份对美术的热爱，期待下次更精彩的作品！\n课堂反馈末尾：完整保留。",
+        "feedbackImages": [],
+        "performanceRating": 7,
+        "canReview": true,
+        "review": null
+      },
+      {
+        "lessonSessionId": "visual-long-reversed",
+        "studentId": "visual-student",
+        "courseName": "专业美术与创意思维综合提升课程",
+        "campusName": "京南一品儿童美术综合教学中心校区",
+        "teacherName": "欧阳老师",
+        "startsAt": "2026-10-05T01:00:00Z",
+        "lessonStatus": "REVERSED",
+        "attendanceStatus": "PRESENT",
+        "feedback": "本课次已撤销，历史课堂反馈和家长评价仍然保留。学员认真观察并能够独立表达，对于较复杂的形状也愿意多次调整；接下来继续练习线条与色彩的配合，保持专注并大胆尝试。",
+        "feedbackImages": [],
+        "performanceRating": null,
+        "canReview": false,
+        "review": {
+          "id": "visual-long-review",
+          "lessonSessionId": "visual-long-reversed",
+          "studentId": "visual-student",
+          "teaching": 9,
+          "communication": 8,
+          "environment": 10,
+          "overall": 9,
+          "note": "家长备注第一段：孩子回家后愿意分享课堂的学习过程，希望老师继续关注每一次绘画尝试和学习习惯的培养。校区环境与课后沟通体验良好。\n家长备注第二段：孩子愿意尝试更多绘画方法，遇到难点能够主动沟通，希望继续保持观察、表达与专注的学习习惯。\n家长备注末尾：完整保留。",
+          "createdAt": "2026-10-05T02:00:00Z",
+          "valid": false
+        }
+      }
+    ]
+  }
+]

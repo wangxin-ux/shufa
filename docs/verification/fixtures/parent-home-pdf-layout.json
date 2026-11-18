@@ -1,0 +1,23 @@
+[
+  {
+    "viewState": "ready",
+    "errorMessage": "",
+    "refreshError": "",
+    "activeSheet": "",
+    "menuExpanded": true,
+    "course": {
+      "day": "26",
+      "weekday": "Saturday",
+      "campus": "上谷校区",
+      "name": "硬笔书法",
+      "time": "14:00-15:30",
+      "teacher": "王老师"
+    },
+    "student": { "id": "pdf-visual-fixture", "name": "朱元璋", "age": 9 },
+    "metrics": [
+      { "label": "剩余课时", "value": "48", "unit": "节", "sub": "实时更新" },
+      { "label": "下次上课", "value": "周六", "unit": "14:00", "sub": "实时更新" },
+      { "label": "出勤率", "value": "100", "unit": "%", "sub": "实时更新" }
+    ]
+  }
+]

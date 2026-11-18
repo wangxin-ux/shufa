@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsUUID,
   Max,
+  Matches,
   Min,
 } from 'class-validator';
 import { PaginationQueryDto } from '../../scheduling/dto/teacher-read-query.dto';
@@ -53,6 +54,7 @@ export class PartnerEarningPeriodQueryDto {
 
   @IsOptional()
   @IsISO8601({ strict: true })
+  @Matches(/^\d{4}-\d{2}-\d{2}$/)
   anchorDate?: string;
 }
 
@@ -67,6 +69,7 @@ export class PartnerEarningsQueryDto extends PaginationQueryDto {
 
   @IsOptional()
   @IsISO8601({ strict: true })
+  @Matches(/^\d{4}-\d{2}-\d{2}$/)
   anchorDate?: string;
 }
 

@@ -115,10 +115,28 @@ describe('teacher schedule presenter', () => {
     );
     expect(markup).toContain("viewState === 'empty'");
     expect(markup).toContain("viewState === 'error'");
-    expect(logic).toMatch(/onRetry\(\)\s*\{\s*void this\.loadSchedule\(true\)/s);
+    expect(logic).toMatch(
+      /onRetry\(\)\s*\{[^}]*void this\.loadSchedule\(this\.failedReadMode !== 'more'\)/s,
+    );
   });
 
-  it('presents lesson time as a dedicated visual block instead of muted metadata', () => {
+  it('marks today lessons and keeps start time as the dominant figure', () => {
+    const [today, other] = buildTeacherSchedulePageModel(
+      [
+        lesson(),
+        lesson({ id: 'lesson-2', startsAt: '2026-09-02T11:00:00+08:00', endsAt: '2026-09-02T12:30:00+08:00' }),
+      ],
+      '2026-09-01',
+    );
+
+    expect(today.isToday).toBe(true);
+    expect(other.isToday).toBe(false);
+    expect(today.startLabel).toBe('09:00');
+    expect(today.endLabel).toBe('10:30');
+    expect(today.timeLabel).toBe('09:00-10:30');
+  });
+
+  it('presents lesson time as the PSD headline figure inside a colored card', () => {
     const root = path.resolve(__dirname, '..');
     const markup = fs.readFileSync(
       path.join(root, 'pages/teacher/schedule/index.wxml'),
@@ -130,11 +148,15 @@ describe('teacher schedule presenter', () => {
     );
 
     expect(markup).toContain('class="lesson-row__time"');
-    expect(markup).toContain('class="lesson-row__time-icon"');
-    expect(markup).toContain('{{item.timeLabel}}');
+    expect(markup).toContain('{{item.startLabel}}');
+    // PSD 折叠卡只有大号开始时间，结束时间不上卡面。
+    expect(markup).not.toContain('{{item.endLabel}}');
+    expect(markup).not.toContain('lesson-row__time-icon');
     expect(styles).toMatch(
-      /\.lesson-row__time\s*\{[^}]*display:\s*flex[^}]*background:/s,
+      /\.lesson-row__time-value\s*\{[^}]*font-size:\s*95rpx[^}]*font-weight:\s*400[^}]*color:\s*#ffffff/s,
     );
-    expect(styles).toMatch(/\.lesson-row__time-value\s*\{[^}]*font-weight:\s*700/s);
+    expect(styles).toMatch(
+      /\.lesson-row--today\s+\.lesson-row__toggle\s*\{[^}]*background:\s*#2dc02d/s,
+    );
   });
 });

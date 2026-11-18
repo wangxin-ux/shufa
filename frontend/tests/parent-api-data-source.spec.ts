@@ -2,6 +2,7 @@ import {
   ApiParentDataSource,
   ParentHttpRequest,
 } from '../data/api-parent-data-source';
+import { buildParentHoursPageModel } from '../services/parent-hours.presenter';
 
 describe('parent API data source', () => {
   it('displays backend available lessons and retains gross and refund-reserved breakdown', async () => {
@@ -129,6 +130,15 @@ describe('parent API data source', () => {
             },
             remainingUnits: 3650,
             attendanceRatePercent: 98,
+            teachers: [{ id: 'teacher-1', name: '林老师', specialties: ['创意书写'] }],
+            reminders: [{
+              id: 'lesson-1',
+              startsAt: '2026-09-01T01:00:00.000Z',
+              endsAt: '2026-09-01T02:00:00.000Z',
+              campusName: '启明成长中心',
+              courseName: '创意书写',
+              teacherName: '林老师',
+            }],
           },
           requestId: 'request-parent-home',
         },
@@ -148,6 +158,7 @@ describe('parent API data source', () => {
       header: { Authorization: 'Bearer parent-token' },
     });
     expect(home).toEqual({
+      profileSetupRequired: false,
       student: { id: 'student-1', name: '林小禾', age: 9 },
       nextLesson: {
         id: 'lesson-1',
@@ -159,11 +170,21 @@ describe('parent API data source', () => {
       },
       remainingHoursLabel: '36.5',
       attendanceRateLabel: '98%',
+      teachers: [{ id: 'teacher-1', name: '林老师', specialties: ['创意书写'] }],
+      reminders: [{
+        id: 'lesson-1',
+        dateLabel: '9月1日 周二',
+        timeLabel: '09:00-10:00',
+        campusName: '启明成长中心',
+        courseName: '创意书写',
+        teacherName: '林老师',
+      }],
     });
   });
 
   it('maps immutable ledger rows without recalculating backend balances', async () => {
     const request: ParentHttpRequest = (options) => {
+      expect(options.data).toEqual({ page: 2, pageSize: 20, direction: 'debit', courseName: '创意书写' });
       options.success({
         statusCode: 200,
         data: {
@@ -172,6 +193,10 @@ describe('parent API data source', () => {
             mainBalanceUnits: 900,
             giftBalanceUnits: 200,
             paidAmountFen: 480000,
+            grantedMainUnits: 4800,
+            grantedGiftUnits: 1200,
+            courseNames: ['创意书写', '未分类'],
+            meta: { page: 2, pageSize: 20, total: 21, totalPages: 2 },
             validUntil: '2027-08-23',
             entries: [
               {
@@ -197,9 +222,13 @@ describe('parent API data source', () => {
       request,
     });
 
-    const hours = await source.getHoursView();
+    const hours = await source.getHoursView({ page: 2, pageSize: 20, direction: 'debit', courseName: '创意书写' });
 
     expect(hours).toEqual({
+      grantedPaidHours: 48,
+      grantedGiftHours: 12,
+      courseNames: ['创意书写', '未分类'],
+      meta: { page: 2, pageSize: 20, total: 21, totalPages: 2 },
       grossTotal: 11,
       reservedPaidHours: 0,
       reservedGiftHours: 0,
@@ -211,13 +240,50 @@ describe('parent API data source', () => {
       entries: [
         {
           id: 'ledger-1',
+          courseName: '创意书写',
           title: '创意书写',
           occurredAtLabel: '2026-08-28 10:00',
           detailLabel: '林老师 · 正常上课',
+          summaryLabel: '8月28日 10:00 林老师',
           delta: -1,
         },
       ],
     });
+  });
+
+  it.each([
+    ['CONSUME', 'lesson-1', '林老师'],
+    ['REVERSAL', 'lesson-1', '撤销扣课 林老师'],
+    ['GRANT', null, '课时发放'],
+    ['CONSUME', null, '课时扣除'],
+    ['REVERSAL', null, '撤销扣课'],
+    ['ADJUSTMENT', null, '课时调整'],
+    ['REFUND', null, '退费扣课'],
+    ['CORRECTION', null, '课时纠错'],
+    ['UNKNOWN', null, '课时变动'],
+  ])('summarizes %s from structured facts, not administrative reasons', async (entryType, lessonSessionId, context) => {
+    const reason = '财务收款发包 0a3bd5de-e1dc-4376-8a8e-cdd2c2ff611a';
+    const source = new ApiParentDataSource({
+      baseUrl: 'https://example.test', accessToken: 'parent-token',
+      request: (options) => options.success({ statusCode: 200, data: { data: {
+        remainingTotalUnits: 1100, mainBalanceUnits: 900, giftBalanceUnits: 200,
+        grantedMainUnits: null, grantedGiftUnits: null,
+        paidAmountFen: 480000, validUntil: '2027-08-23',
+        entries: [{
+          id: 'ledger-compact', lessonSessionId, courseName: '创意书写',
+          teacherName: '林老师', attendanceStatus: 'PRESENT', entryType,
+          deltaUnits: -50, occurredAt: '2026-08-27T16:05:00.000Z', reason,
+        }],
+      } } }),
+    });
+    const view = await source.getHoursView();
+    const model = buildParentHoursPageModel(view, 'all');
+    expect(model.entries[0].subtitleLabel).toBe(`8月28日 00:05 ${context}`);
+    expect(model.entries[0].subtitleLabel).not.toContain(reason);
+    expect(view.entries[0].detailLabel).toBe(`林老师 · ${reason}`);
+    expect(model.remainingTotal).toBe(11);
+    expect(model.entries[0].deltaLabel).toBe('-0.5节');
+    expect(model.hourCards.map((card) => card.grantedLabel)).toEqual(['待核对', '待核对']);
   });
 
   it('sends an idempotency key for leave and preserves server errors', async () => {

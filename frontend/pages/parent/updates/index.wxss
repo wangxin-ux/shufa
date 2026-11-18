@@ -1,149 +1,173 @@
-.updates {
-  padding: 76rpx 0 72rpx;
+@import "../../../styles/parent-pdf.wxss";
+@import "../styles/pdf-typography.wxss";
+
+parent-page-shell {
+  --parent-yellow: var(--parent-pdf-home-gradient);
+  --parent-shell-wave-top: 0;
+  --parent-shell-wave-left: 0;
+  --parent-shell-wave-width: 100%;
+  --parent-shell-wave-height: 240rpx;
+  --parent-shell-wave-radius: 0;
+  --parent-shell-wave-transform: none;
+  --parent-shell-wave-origin: center;
+  --parent-shell-wave-filter: drop-shadow(0 5rpx 17rpx rgba(24, 18, 14, 0.28));
 }
 
-.updates__heading {
-  margin-bottom: 34rpx;
+.growth {
+  box-sizing: border-box;
+  padding: 40rpx 9rpx 16rpx;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
 }
-
-.updates__title,
-.updates__subtitle {
-  display: block;
-}
-
-.updates__title {
-  font-size: 60rpx;
-  font-family: var(--parent-font-display);
-  line-height: 1.15;
-  font-weight: 800;
-  color: var(--parent-orange);
-}
-
-.updates__subtitle {
-  margin-top: 8rpx;
-  font-size: 24rpx;
-  color: rgba(42, 35, 30, 0.62);
-}
-
-.updates__list {
-  display: flex;
-  flex-direction: column;
-  gap: 24rpx;
-}
-
-.update-card {
+.growth-identity {
   position: relative;
-  padding: 30rpx 30rpx 32rpx;
-  border: 2rpx solid rgba(255, 255, 255, 0.82);
-  border-left: 8rpx solid var(--parent-orange);
-  border-radius: 18rpx;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(255, 248, 226, 0.94));
-  box-shadow: 0 14rpx 26rpx rgba(99, 70, 28, 0.16), 0 3rpx 7rpx rgba(99, 70, 28, 0.08), inset 0 2rpx 0 rgba(255, 255, 255, 0.96);
+  flex: none;
+  height: 216rpx;
+  overflow: hidden;
+  border-radius: 24rpx;
+  background: var(--parent-yellow-card);
+  box-shadow: 0 8rpx 10rpx rgba(101, 70, 25, 0.22);
 }
-
-.update-card__head,
-.update-card__course,
-.update-card__attendance {
+.growth-identity__photo,
+.growth-identity__empty { width: 100%; height: 100%; }
+.growth-identity__empty {
   display: flex;
   align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding-bottom: 100rpx;
+  color: var(--parent-ink);
+  font-size: 26rpx;
 }
-
-.update-card__head,
-.update-card__attendance {
-  justify-content: space-between;
-  gap: 24rpx;
+.growth-identity__name {
+  position: absolute;
+  left: 28rpx;
+  right: 28rpx;
+  bottom: 24rpx;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  font-family: var(--parent-font-display);
+  color: #fff;
+  line-height: 1.15;
+  word-break: break-all;
+  text-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.3);
+  pointer-events: none;
 }
-
-.update-card__course {
-  min-width: 0;
-  gap: 14rpx;
+.growth-identity__age { font-size: 63rpx; flex: none; }
+.growth-review__submit::after,
+.growth__retry-photo::after { border: 0; }
+.growth-notices { margin-top: 8rpx; }
+.growth__message { padding: 4rpx 0; color: #77280b; font-size: 26rpx; line-height: 1.5; word-break: break-all; }
+.growth__busy { display: block; font-size: 24rpx; line-height: 1.5; color: #73561e; }
+.growth__retry-photo { height: 56rpx; line-height: 56rpx; margin: 4rpx 0; font-size: 26rpx; color: #fff; background: var(--parent-orange-deep); }
+.growth-feedback,
+.growth-review {
+  margin-top: 24rpx;
+  padding: 20rpx;
+  box-sizing: border-box;
+  border-radius: 24rpx;
+  color: #fff;
+  box-shadow: 0 7rpx 6rpx 1rpx rgba(24, 18, 14, 0.33);
 }
-
-.update-card__dot {
-  flex: none;
-  width: 12rpx;
-  height: 12rpx;
-  border-radius: 50%;
+.growth-feedback {
   background: var(--parent-orange);
 }
-
-.update-card__name {
-  min-width: 0;
-  font-size: 34rpx;
-  font-weight: 700;
-  color: #2a231e;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.update-card__status {
-  flex: none;
-  padding: 8rpx 16rpx;
-  border-radius: 12rpx;
-  font-size: 22rpx;
-}
-
-.update-card__status--green {
-  background: rgba(35, 181, 116, 0.14);
-  color: #168358;
-}
-
-.update-card__status--gray {
-  background: rgba(107, 111, 110, 0.14);
-  color: #666b69;
-}
-
-.update-card__meta {
-  display: block;
-  margin: 12rpx 0 20rpx 26rpx;
-  font-size: 23rpx;
-  color: rgba(42, 35, 30, 0.58);
-}
-
-.update-card__attendance {
-  padding: 18rpx 0;
-  border-top: 2rpx solid rgba(42, 35, 30, 0.08);
-  border-bottom: 2rpx solid rgba(42, 35, 30, 0.08);
-}
-
-.update-card__label {
-  flex: none;
+.growth-feedback__inner { box-sizing: border-box; padding-right: 16rpx; }
+.growth-feedback__head { display: grid; grid-template-columns: 196rpx minmax(0, 1fr); gap: 24rpx; align-items: start; }
+.growth-feedback__photo { width: 196rpx; height: 260rpx; }
+.growth-feedback__photo--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.15);
   font-size: 24rpx;
-  font-weight: 600;
-  color: #7d5a3e;
+  text-align: center;
 }
-
-.update-card__value {
-  font-size: 26rpx;
-  color: #2a231e;
-}
-
-.update-card__feedback {
-  margin-top: 22rpx;
-}
-
-.update-card__feedback-text {
+.growth-feedback__summary { min-width: 0; text-align: right; font-family: var(--parent-font-display); }
+.growth-feedback__campus,
+.growth-feedback__course,
+.growth-feedback__meta,
+.growth-feedback__unrated { display: block; word-break: break-all; }
+.growth-feedback__campus { font-size: 44rpx; line-height: 1.2; }
+.growth-feedback__course { font-size: 73rpx; line-height: 1.15; margin: 4rpx 0; }
+.growth-feedback__meta { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 0 16rpx; font-size: 44rpx; line-height: 1.3; }
+.growth-feedback__meta text { max-width: 100%; }
+.growth-feedback__unrated { font-size: 24rpx; margin-top: 4rpx; }
+.growth-stars { display: flex; gap: 8rpx; flex: none; align-items: center; }
+.growth-stars--performance { margin-top: 18rpx; justify-content: flex-end; gap: 6rpx; }
+.growth-star { position: relative; width: 64rpx; height: 64rpx; flex: none; }
+.growth-stars--performance .growth-star { width: 60rpx; height: 60rpx; }
+.growth-star__base { width: 100%; height: 100%; opacity: 0.6; display: block; }
+.growth-star__fill { position: absolute; top: 0; left: 0; height: 100%; overflow: hidden; pointer-events: none; }
+.growth-star__fill image { width: 64rpx; height: 64rpx; display: block; max-width: none; }
+.growth-stars--performance .growth-star__fill image { width: 60rpx; height: 60rpx; }
+.growth-star__tap { position: absolute; top: 0; bottom: 0; width: 50%; z-index: 2; }
+.growth-star__tap--half { left: 0; }
+.growth-star__tap--full { right: 0; }
+.growth-feedback__content {
   display: block;
-  margin-top: 10rpx;
-  font-size: 26rpx;
-  line-height: 1.65;
-  color: #2a231e;
-  word-break: break-all;
-}
-
-.update-card__images {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12rpx;
   margin-top: 16rpx;
+  font-size: 27rpx;
+  line-height: 1.4;
+  font-family: var(--parent-font-display);
+  word-break: break-all;
+  white-space: pre-wrap;
 }
-
-.update-card__image {
+.growth-feedback__status { display: block; margin-top: 16rpx; font-size: 26rpx; }
+.growth-feedback__gallery { display: flex; gap: 12rpx; margin-top: 20rpx; flex-wrap: wrap; }
+.growth-feedback__gallery image { width: 120rpx; height: 120rpx; }
+.growth-review {
+  flex: none;
+  background: linear-gradient(180deg, #fd8c2c 0%, #fd8d29 100%);
+}
+.growth-review__row { display: flex; justify-content: space-between; align-items: center; gap: 12rpx; min-height: 64rpx; }
+.growth-review__label { flex: none; font-size: 44rpx; line-height: 1.3; font-family: var(--parent-font-display); }
+.growth-review__note {
   display: block;
   width: 100%;
-  height: 100%;
-  aspect-ratio: 1;
-  border-radius: 16rpx;
-  background: rgba(42, 35, 30, 0.08);
+  min-height: 88rpx;
+  box-sizing: border-box;
+  margin-top: 10rpx;
+  padding: 12rpx 16rpx;
+  border-radius: 14rpx;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--parent-ink);
+  font-size: 27rpx;
+  line-height: 1.5;
+  font-family: var(--parent-font-display);
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+.growth-review__submit {
+  height: 72rpx;
+  line-height: 72rpx;
+  margin: 12rpx 0 0;
+  padding: 0 16rpx;
+  border-radius: 14rpx;
+  font-size: 30rpx;
+  color: #fff;
+  background: var(--parent-orange-deep);
+  font-family: var(--parent-font-display);
+}
+.growth-review__state { display: block; margin-top: 16rpx; font-size: 26rpx; text-align: center; }
+.growth-teacher-ratings {
+  margin: 18rpx 0;
+  padding-top: 16rpx;
+  border-top: 2rpx solid rgba(30, 50, 40, 0.15);
+  font-size: 26rpx;
+  line-height: 1.5;
+}
+
+.growth-teacher-ratings__author {
+  display: block;
+  margin-bottom: 12rpx;
+  overflow-wrap: anywhere;
+}
+
+.growth-teacher-ratings__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20rpx;
+  padding: 4rpx 0;
 }

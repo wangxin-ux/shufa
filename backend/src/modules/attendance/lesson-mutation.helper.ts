@@ -3,6 +3,7 @@ import type { TeacherScope } from '../../common/auth/teacher-scope.service';
 import { DomainError } from '../../common/errors/domain-error';
 import { ErrorCode } from '../../common/errors/error-codes';
 import type { AttendanceItemDto, AttendanceStatus } from './dto/attendance.dto';
+import { lockRosterRelations, readActiveLessonMembers } from './lesson-membership';
 
 export interface LockedLessonSession {
   id: string;
@@ -71,24 +72,9 @@ export async function loadActiveRoster(
   transaction: Prisma.TransactionClient,
   lesson: LockedLessonSession,
 ): Promise<ActiveRosterMember[]> {
-  const members = await transaction.classMember.findMany({
-    where: {
-      campusId: lesson.campusId,
-      classGroupId: lesson.classGroupId,
-      leftAt: null,
-      student: { isActive: true },
-    },
-    orderBy: [{ student: { displayName: 'asc' } }, { studentId: 'asc' }],
-    select: {
-      studentId: true,
-      student: { select: { displayName: true } },
-    },
-  });
-
-  return members.map(({ studentId, student }) => ({
-    studentId,
-    displayName: student.displayName,
-  }));
+  await lockRosterRelations(transaction, lesson);
+  return (await readActiveLessonMembers(transaction, lesson))
+    .map(({ studentId, displayName }) => ({ studentId, displayName }));
 }
 
 export function assertLessonVersion(

@@ -1,0 +1,11 @@
+<view class="formal-login">
+  <view class="formal-login__header" style="padding-top: {{headerTopPx}}px; padding-right: {{headerRightPx}}px;">
+    <button class="formal-login__back" aria-label="返回登录页" bindtap="onBack" disabled="{{wechatLoggingIn}}" hover-class="formal-login__hover">‹</button>
+    <text class="formal-login__title">微信登录</text>
+  </view>
+  <view class="formal-login__body">
+    <text wx:if="{{viewState === 'loading'}}" class="formal-login__message">正在读取会话</text>
+    <button wx:else id="formal-wechat-login" class="formal-login__primary" bindtap="onWechatLoginTap" disabled="{{viewState === 'submitting'}}" loading="{{wechatLoggingIn}}" hover-class="formal-login__hover">{{wechatLoggingIn ? '登录中' : '微信登录'}}</button>
+    <text wx:if="{{errorMessage}}" class="formal-login__error" aria-live="polite">{{errorMessage}}</text>
+  </view>
+</view>

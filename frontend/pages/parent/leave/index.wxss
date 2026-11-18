@@ -1,3 +1,6 @@
+@import "../../../styles/parent-pdf.wxss";
+@import "../styles/pdf-typography.wxss";
+
 .leave {
   position: relative;
   padding: 64rpx 0 80rpx;
@@ -6,6 +9,7 @@
 .leave parent-action-card {
   display: block;
   margin: 0 9rpx;
+  --parent-yellow-bright: #ffd75e;
   --parent-action-card-shadow: 0 8rpx 9rpx rgba(24, 18, 14, 0.1);
 }
 
@@ -27,7 +31,7 @@
   font-size: 64rpx;
   font-family: var(--parent-font-display);
   line-height: 1.1;
-  font-weight: 800;
+  font-weight: 400;
 }
 
 .form-card__title {
@@ -55,18 +59,18 @@
   margin-bottom: 8rpx;
   font-size: 24rpx;
   font-weight: 600;
-  color: var(--parent-text-muted);
+  color: var(--parent-ink);
 }
 
 .field__control,
 .field__textarea {
   width: 100%;
   box-sizing: border-box;
-  border: 2rpx solid rgba(214, 168, 47, 0.55);
+  border: 2rpx solid rgba(44, 66, 64, 0.18);
   border-radius: 24rpx;
-  background: rgba(234, 186, 61, 0.22);
+  background: #fbd45d;
   color: var(--parent-ink);
-  font-size: 26rpx;
+  font-size: 28rpx;
 }
 
 .field__control {
@@ -74,22 +78,33 @@
   align-items: center;
   justify-content: space-between;
   min-height: 68rpx;
-  padding: 0 24rpx;
+  padding: 12rpx 24rpx;
 }
 
 .field__value {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .field__arrow {
   flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28rpx;
+  height: 28rpx;
   margin-left: 20rpx;
-  font-size: 36rpx;
-  font-weight: 700;
+}
+
+.field__arrow::before {
+  content: '';
+  width: 12rpx;
+  height: 12rpx;
+  border-right: 4rpx solid currentColor;
+  border-bottom: 4rpx solid currentColor;
+  transform: translateY(-3rpx) rotate(45deg);
 }
 
 .field__textarea {
@@ -145,9 +160,36 @@
   align-items: flex-end;
 }
 
+.leave__contact,
+.leave__refresh-error {
+  position: relative;
+  margin-bottom: 24rpx;
+  padding: 16rpx 0;
+  border-top: 2rpx solid var(--parent-orange);
+  border-bottom: 2rpx solid var(--parent-orange);
+  font-size: 24rpx;
+  line-height: 1.5;
+  color: var(--parent-ink);
+  background: #ffffff;
+  overflow-wrap: anywhere;
+}
+.leave__contact-campus { display: block; margin-top: 8rpx; }
+.leave__contact-call,
+.leave__refresh-error button {
+  margin: 8rpx 0 0;
+  padding: 0;
+  background: transparent;
+  text-align: left;
+  font-size: 24rpx;
+  line-height: 1.5;
+  color: #bf5600;
+}
+.leave__contact-call::after,
+.leave__refresh-error button::after { border: none; }
+
 .records__title {
   margin-left: 43rpx;
-  color: #29220e;
+  color: #000000;
 }
 
 .records__list {
@@ -159,14 +201,33 @@
   margin: 0 6rpx 0 7rpx;
 }
 
-.leave parent-record-card {
+.records__list {
   --parent-record-card-padding: 48rpx 32rpx;
-  --parent-record-card-subtitle-size: 16rpx;
-  --parent-record-card-background: #f6d469;
-  --parent-record-card-border: 4rpx dashed #ffc97d;
+  --parent-record-card-subtitle-size: 20rpx;
+  --parent-record-card-subtitle-family: var(--parent-font-display);
+  --parent-record-card-subtitle-weight: 600;
+  --parent-record-card-background: var(--parent-yellow-card);
+  --parent-record-card-border: 0;
   --parent-record-card-shadow: none;
-  --parent-record-card-subtitle-color: #2c453f;
-  --parent-record-card-plain-tag-size: 28rpx;
+  --parent-record-card-subtitle-color: var(--parent-ink);
+  --parent-record-card-plain-tag-size: 32rpx;
+}
+
+.records__item {
+  border: 4rpx dashed rgba(254, 131, 25, 0.4);
+  border-radius: 16rpx;
+  background: var(--parent-yellow-card);
+  background-clip: padding-box;
+  overflow: hidden;
+}
+
+.records__review-note {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  line-height: 1.5;
+  color: var(--parent-ink);
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 350px) {

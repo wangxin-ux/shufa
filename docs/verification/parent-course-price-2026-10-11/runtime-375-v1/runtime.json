@@ -1,0 +1,27 @@
+{
+  "expectedWidth": 375,
+  "scope": "Synthetic raw GET data through actual Page/presenter; no business writes",
+  "events": [
+    {
+      "label": "mock-home-baseline",
+      "tool": "automation_evaluate",
+      "response": {
+        "ok": false,
+        "errorType": "MCP_TOOL_ERROR",
+        "message": "Uncaught Unexpected token ')'",
+        "source": "mcp_business",
+        "detail": {
+          "rawResult": {
+            "success": false,
+            "error": "Uncaught Unexpected token ')'"
+          }
+        },
+        "reason": "mcp_business_fail",
+        "tool": "automation_evaluate",
+        "clientName": "Codex",
+        "suggestions": "查看该工具完整参数, wechatide -c Codex automation_evaluate -h"
+      }
+    }
+  ],
+  "failure": "[wechatide] skill-call: client=Codex tool=automation_evaluate\r\n{\r\n  \"ok\": false,\r\n  \"errorType\": \"MCP_TOOL_ERROR\",\r\n  \"message\": \"Uncaught Unexpected token ')'\",\r\n  \"source\": \"mcp_business\",\r\n  \"detail\": {\r\n    \"rawResult\": {\r\n      \"success\": false,\r\n      \"error\": \"Uncaught Unexpected token ')'\"\r\n    }\r\n  },\r\n  \"reason\": \"mcp_business_fail\",\r\n  \"tool\": \"automation_evaluate\",\r\n  \"clientName\": \"Codex\",\r\n  \"suggestions\": \"查看该工具完整参数, wechatide -c Codex automation_evaluate -h\"\r\n}\r\n"
+}

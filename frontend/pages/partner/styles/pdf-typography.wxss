@@ -1,0 +1,9 @@
+page {
+  --partner-font-display: "PartnerPdfDisplay", "Microsoft YaHei", sans-serif;
+  --partner-font-body: "Microsoft YaHei Light", "Microsoft YaHei", sans-serif;
+  font-family: var(--partner-font-body);
+}
+
+session-logout {
+  --parent-font-display: var(--partner-font-display);
+}

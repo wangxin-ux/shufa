@@ -13,9 +13,10 @@ import {
   formatPartnerShare,
   partnerEarningStatusLabel,
   presentPartnerEarningEntry,
+  presentPartnerEarningRule,
 } from '../services/partner-earnings.presenter';
 import { PartnerService } from '../services/partner.service';
-import { PartnerEarningEntry } from '../types/partner';
+import { PartnerEarningEntry, PartnerEarningRule } from '../types/partner';
 
 const entry: PartnerEarningEntry = {
   id: 'earning-1',
@@ -42,6 +43,25 @@ const entry: PartnerEarningEntry = {
 };
 
 describe('partner earnings data and presentation', () => {
+  it.each([
+    [['PRESENT'], '实际到课'],
+    [['PRESENT', 'LEAVE'], '实际到课、请假'],
+    [['ABSENT', 'PRESENT', 'LEAVE'], '实际到课、请假、缺勤'],
+    [['LEAVE'], '请假'],
+  ])('describes all configured counted attendance statuses %j', (statuses, label) => {
+    const rule = { countedAttendanceStatuses: statuses } as PartnerEarningRule;
+    expect(presentPartnerEarningRule(rule)?.attendanceLabel).toBe(label);
+  });
+
+  it('distinguishes actual attendance from the counted earning headcount', () => {
+    expect(presentPartnerEarningEntry({
+      ...entry, actualAttendeeCount: 8, countedAttendeeCount: 10,
+    })).toMatchObject({
+      actualAttendeeLabel: '8 人',
+      attendeeLabel: '10 人',
+    });
+  });
+
   it('formats integer money, ratios, statuses, and the video example', () => {
     expect(formatPartnerEarningMoney(4000)).toBe('¥40.00');
     expect(formatPartnerEarningMoney(-4000)).toBe('-¥40.00');

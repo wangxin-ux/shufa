@@ -65,6 +65,86 @@ function portValue(environment: Environment): number {
   return port;
 }
 
+function credentialSource(environment: Environment, key: string): Environment {
+  const inline = environment[key];
+  const file = environment[`${key}_FILE`];
+  const hasInline = typeof inline === 'string' && inline.trim().length > 0;
+  const hasFile = typeof file === 'string' && file.trim().length > 0;
+  if (hasInline === hasFile) {
+    configurationError(key, 'requires exactly one inline value or _FILE path');
+  }
+  return hasInline
+    ? { [key]: requiredString(environment, key) }
+    : { [`${key}_FILE`]: requiredString(environment, `${key}_FILE`) };
+}
+
+function paymentConfiguration(environment: Environment): Environment {
+  const configuration: Environment = {
+    WECHAT_APP_ID: requiredString(environment, 'WECHAT_APP_ID'),
+    WECHAT_MCH_ID: requiredString(environment, 'WECHAT_MCH_ID'),
+    ...credentialSource(environment, 'WECHAT_PAY_API_V3_KEY'),
+    ...credentialSource(environment, 'WECHAT_PAY_PRIVATE_KEY'),
+    WECHAT_PAY_CERT_SERIAL_NO: requiredString(
+      environment,
+      'WECHAT_PAY_CERT_SERIAL_NO',
+    ),
+    WECHAT_PAY_NOTIFY_URL: urlValue(environment, 'WECHAT_PAY_NOTIFY_URL', [
+      'https:',
+    ]),
+  };
+  if (
+    typeof configuration.WECHAT_PAY_API_V3_KEY === 'string' &&
+    Buffer.byteLength(configuration.WECHAT_PAY_API_V3_KEY, 'utf8') !== 32
+  ) {
+    configurationError(
+      'WECHAT_PAY_API_V3_KEY',
+      'must contain exactly 32 bytes',
+    );
+  }
+  const publicKeyMode = [
+    'WECHAT_PAY_PUBLIC_KEY_ID',
+    'WECHAT_PAY_PUBLIC_KEY',
+    'WECHAT_PAY_PUBLIC_KEY_FILE',
+  ].some(
+    (key) =>
+      typeof environment[key] === 'string' &&
+      environment[key].trim().length > 0,
+  );
+  if (publicKeyMode) {
+    configuration.WECHAT_PAY_PUBLIC_KEY_ID = requiredString(
+      environment,
+      'WECHAT_PAY_PUBLIC_KEY_ID',
+    );
+    if (
+      !/^PUB_KEY_ID_\d+$/.test(configuration.WECHAT_PAY_PUBLIC_KEY_ID as string)
+    ) {
+      configurationError(
+        'WECHAT_PAY_PUBLIC_KEY_ID',
+        'must use PUB_KEY_ID_ followed by digits',
+      );
+    }
+    Object.assign(
+      configuration,
+      credentialSource(environment, 'WECHAT_PAY_PUBLIC_KEY'),
+    );
+    if (
+      typeof environment.WECHAT_PAY_PLATFORM_CERT === 'string' &&
+      environment.WECHAT_PAY_PLATFORM_CERT.trim()
+    ) {
+      configurationError(
+        'WECHAT_PAY_PLATFORM_CERT',
+        'cannot be combined with public-key mode',
+      );
+    }
+  } else {
+    configuration.WECHAT_PAY_PLATFORM_CERT = requiredString(
+      environment,
+      'WECHAT_PAY_PLATFORM_CERT',
+    );
+  }
+  return configuration;
+}
+
 function secretValue(
   environment: Environment,
   key: 'JWT_ACCESS_SECRET' | 'JWT_REFRESH_SECRET',
@@ -151,33 +231,7 @@ export function validateEnvironment(environment: Environment): Environment {
       : {};
 
   const wechatPaymentConfiguration =
-    paymentDriver === 'wechat'
-      ? {
-          WECHAT_APP_ID: requiredString(environment, 'WECHAT_APP_ID'),
-          WECHAT_MCH_ID: requiredString(environment, 'WECHAT_MCH_ID'),
-          WECHAT_PAY_API_V3_KEY: requiredString(
-            environment,
-            'WECHAT_PAY_API_V3_KEY',
-          ),
-          WECHAT_PAY_PRIVATE_KEY: requiredString(
-            environment,
-            'WECHAT_PAY_PRIVATE_KEY',
-          ),
-          WECHAT_PAY_CERT_SERIAL_NO: requiredString(
-            environment,
-            'WECHAT_PAY_CERT_SERIAL_NO',
-          ),
-          WECHAT_PAY_PLATFORM_CERT: requiredString(
-            environment,
-            'WECHAT_PAY_PLATFORM_CERT',
-          ),
-          WECHAT_PAY_NOTIFY_URL: urlValue(
-            environment,
-            'WECHAT_PAY_NOTIFY_URL',
-            ['https:'],
-          ),
-        }
-      : {};
+    paymentDriver === 'wechat' ? paymentConfiguration(environment) : {};
 
   const validated: Environment = {
     ...environment,

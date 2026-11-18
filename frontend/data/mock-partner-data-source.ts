@@ -1,4 +1,5 @@
 import { PartnerMockScenario } from '../config/partner-env';
+import { PARTNER_VISUAL_DASHBOARD_FIXTURE } from '../mock/fixtures/partner-visual.fixture';
 import {
   PARTNER_ATTENDANCE_FIXTURE,
   PARTNER_DASHBOARD_FIXTURE,
@@ -9,6 +10,7 @@ import {
   PARTNER_PROFILE_FIXTURE,
   PARTNER_STUDENTS_FIXTURE,
   PARTNER_STUDENT_DETAILS_FIXTURE,
+  PARTNER_STUDENT_GROWTH_FIXTURE,
   PARTNER_TEACHERS_FIXTURE,
   PARTNER_WARNINGS_FIXTURE,
 } from '../mock/fixtures/partner.fixture';
@@ -28,16 +30,16 @@ import {
   PartnerPeriodQuery,
   PartnerSearchQuery,
   PartnerStudent,
+  PartnerStudentQuery,
   PartnerStudentDetail,
+  PartnerStudentGrowth,
   PartnerTeacher,
   PartnerWarning,
 } from '../types/partner';
 import {
-  GroupPage,
-  GroupPromotionCampaignQuery,
-  GroupPromotionCampaignView,
+  PartnerCampaignQuery,
+  PartnerCampaignView,
 } from '../types/group-buying';
-import { GROUP_PROMOTION_CAMPAIGN_FIXTURE } from '../mock/fixtures/group-promotion.fixture';
 import { PartnerDataSource, PartnerDataSourceError } from './partner-data-source';
 
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
@@ -49,6 +51,9 @@ export class MockPartnerDataSource implements PartnerDataSource {
 
   async getDashboard(): Promise<PartnerDashboard> {
     this.assertAvailable();
+    if (this.options.scenario === 'visual') {
+      return clone(PARTNER_VISUAL_DASHBOARD_FIXTURE);
+    }
     if (this.options.scenario === 'empty') {
       return {
         ...clone(PARTNER_DASHBOARD_FIXTURE),
@@ -67,42 +72,58 @@ export class MockPartnerDataSource implements PartnerDataSource {
 
   async getProfile(): Promise<PartnerProfile> {
     this.assertAvailable();
-    return clone(PARTNER_PROFILE_FIXTURE);
+    return {
+      ...clone(PARTNER_PROFILE_FIXTURE),
+      activeStudentCount: this.options.scenario === 'empty' ? 0 : PARTNER_PROFILE_FIXTURE.activeStudentCount,
+    };
   }
 
-  async listGroupPromotionCampaigns(
-    query: GroupPromotionCampaignQuery,
-  ): Promise<GroupPage<GroupPromotionCampaignView>> {
+  async listGroupPromotionCampaigns(query: PartnerCampaignQuery) {
     this.assertAvailable();
     const data =
       this.options.scenario === 'empty'
         ? []
-        : [GROUP_PROMOTION_CAMPAIGN_FIXTURE];
+        : this.promotionCampaigns().filter(
+          (campaign) => query.phase === 'ENDED' ? !campaign.canPromote : campaign.canPromote,
+        );
     const page = this.nestedPage(data, query);
     return { data: page.items, meta: page.meta };
   }
 
-  async getGroupPromotionCampaign(
-    id: string,
-  ): Promise<GroupPromotionCampaignView> {
+  async getGroupPromotionCampaign(id: string) {
     this.assertAvailable();
-    if (
-      this.options.scenario === 'empty' ||
-      id !== GROUP_PROMOTION_CAMPAIGN_FIXTURE.id
-    ) {
+    const campaign = this.promotionCampaigns().find((item) => item.id === id);
+    if (this.options.scenario === 'empty' || !campaign) {
       throw new PartnerDataSourceError(
         404,
         'RESOURCE_NOT_FOUND',
         '未找到拼团活动',
       );
     }
-    return clone(GROUP_PROMOTION_CAMPAIGN_FIXTURE);
+    return campaign;
+  }
+
+  private promotionCampaigns() {
+    // Requires the loaded partner subpackage.
+    const runtime = require('../pages/partner/runtime/group-promotion') as {
+      createMockPartnerCampaigns(): PartnerCampaignView[];
+    };
+    return runtime.createMockPartnerCampaigns();
   }
 
   async listStudents(
-    query: PartnerSearchQuery,
+    query: PartnerStudentQuery,
   ): Promise<PartnerPage<PartnerStudent>> {
-    return this.searchPage(PARTNER_STUDENTS_FIXTURE, query, (item) =>
+    const students = PARTNER_STUDENTS_FIXTURE.filter((student) => {
+      const available = student.availableTotalUnits ?? (
+        student.mainBalanceUnits + student.giftBalanceUnits
+        - (student.mainReservedUnits ?? 0) - (student.giftReservedUnits ?? 0)
+      );
+      return query.balanceBand === 'ZERO' ? available === 0
+        : query.balanceBand === 'LTE_FIVE' ? available <= 500
+        : query.balanceBand === 'GT_FIVE' ? available > 500 : true;
+    });
+    return this.searchPage(students, query, (item) =>
       item.displayName,
     );
   }
@@ -120,6 +141,18 @@ export class MockPartnerDataSource implements PartnerDataSource {
       );
     }
     return clone(detail);
+  }
+
+  async getStudentGrowth(studentId: string, query: PartnerPageQuery): Promise<PartnerStudentGrowth> {
+    const detail = await this.getStudent(studentId);
+    const records = this.options.scenario === 'empty' ? []
+      : PARTNER_STUDENT_GROWTH_FIXTURE.filter((item) => item.studentId === studentId);
+    const page = this.nestedPage(records, query);
+    return {
+      student: { id: detail.id, displayName: detail.displayName, photo: detail.photo },
+      items: page.items,
+      meta: page.meta,
+    };
   }
 
   async getOperationsSummary(

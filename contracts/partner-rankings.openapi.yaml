@@ -1,0 +1,90 @@
+rankings:
+  get:
+    operationId: listPartnerMonthlyRankings
+    summary: Read three independent monthly campus rankings without financial values
+    description: >-
+      Requires PARTNER_RANKING_READ and exactly one active campus-scoped PARTNER.
+      Only campus IDs, names, dense ranks, previous ranks and changes are exposed;
+      no metric value, amount, person, order or material is returned.
+      STUDENTS counts active student entities, including students without packages.
+      Historical student counts require coverage of the month-end cutoff.
+      Revenue metrics reuse internal partner and headquarters retained earnings,
+      include pending entries, exclude rejected entries and include negative
+      reversals, grouped by each entry's createdAt in Asia/Shanghai.
+      They are not cash, paid funds or withdrawable balances.
+      The first page creates or reuses an immutable derived revision; later pages
+      should supply revisionId to retain the same ordering and previous comparison.
+      An ID for another metric or month returns 404. Future months return 400.
+      Missing historical coverage returns UNAVAILABLE without fabricated rows.
+      Current authorization is rechecked outside the ranking read snapshot.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - name: metric
+        in: query
+        schema: { $ref: '#/schemas/Metric' }
+      - name: month
+        in: query
+        description: Beijing calendar month; defaults to the current month.
+        schema: { type: string, pattern: '^[0-9]{4}-(0[1-9]|1[0-2])$' }
+      - name: revisionId
+        in: query
+        schema: { type: string, format: uuid }
+      - { $ref: './openapi.yaml#/components/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+    responses:
+      '200':
+        description: Rank-only page and independent own-campus row, or explicit unavailability.
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [data]
+              properties:
+                data: { $ref: '#/schemas/RankingPage' }
+                requestId: { type: string }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+schemas:
+  Metric:
+    type: string
+    enum: [STUDENTS, PARTNER_EARNINGS, HEADQUARTERS_EARNINGS]
+    default: STUDENTS
+  Row:
+    type: object
+    additionalProperties: false
+    required: [campusId, campusName, rank, previousRank, rankDelta, isOwnCampus]
+    properties:
+      campusId: { type: string, format: uuid }
+      campusName: { type: string }
+      rank: { type: integer, minimum: 1 }
+      previousRank: { type: [integer, 'null'], minimum: 1 }
+      rankDelta: { type: [integer, 'null'] }
+      isOwnCampus: { type: boolean }
+  RankingPage:
+    type: object
+    additionalProperties: false
+    required: [metric, month, timezone, asOf, calculationVersion, availability, unavailableReason, revisionId, data, ownCampus, meta]
+    properties:
+      metric: { $ref: '#/schemas/Metric' }
+      month: { type: string, pattern: '^[0-9]{4}-(0[1-9]|1[0-2])$' }
+      timezone: { type: string, const: Asia/Shanghai }
+      asOf: { type: string, format: date-time }
+      calculationVersion: { type: string }
+      availability: { type: string, enum: [LIVE, SNAPSHOT, UNAVAILABLE] }
+      unavailableReason: { type: [string, 'null'], enum: [HISTORY_UNAVAILABLE, SOURCE_DATA_INVALID, null] }
+      revisionId: { type: [string, 'null'], format: uuid }
+      data: { type: array, items: { $ref: '#/schemas/Row' } }
+      ownCampus: { anyOf: [{ $ref: '#/schemas/Row' }, { type: 'null' }] }
+      meta:
+        type: object
+        additionalProperties: false
+        required: [page, pageSize, total, totalPages]
+        properties:
+          page: { type: integer, minimum: 1 }
+          pageSize: { type: integer, minimum: 1, maximum: 100 }
+          total: { type: integer, minimum: 0 }
+          totalPages: { type: integer, minimum: 0 }

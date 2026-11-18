@@ -8,6 +8,8 @@ from psd_tools import PSDImage
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+# 角色专用 PNG 一律导到分包目录；assets/super-admin 只保留素材说明 README.md，
+# 避免总端专用位图继续占主包额度（见 subpackage-layout.spec.ts 的主包/分包预算）。
 SHARED_OUTPUT_DIR = PROJECT_ROOT / "frontend" / "assets" / "super-admin"
 PACKAGE_OUTPUT_DIR = PROJECT_ROOT / "frontend" / "pages" / "super-admin" / "assets"
 PSD_SIZE_BYTES = 50_258_135
@@ -115,7 +117,7 @@ def main() -> None:
     stat_glass = composite_layer(
         select_layer(layers, "矩形 3", (72, 1686, 1050, 1951))
     )
-    save_png(stat_glass, SHARED_OUTPUT_DIR / "home-stat-glass.png", 654)
+    save_png(stat_glass, PACKAGE_OUTPUT_DIR / "home-stat-glass.png", 654)
 
     mark = select_layer(layers, "下部按钮", (37, 179, 174, 316))
     mark_image = composite_layer(mark)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import shutil
 from pathlib import Path
 from typing import Iterable
 
@@ -281,6 +282,11 @@ def main() -> None:
         PACKAGE_OUTPUT_DIR / "profile-mark-glyph.png",
         64,
     )
+
+    wave_source = PROJECT_ROOT / "frontend" / "pages" / "parent" / "assets" / "top-wave.png"
+    if sha256(wave_source) != "C4586E4F766D6A982F603E52A4AA189B21DA84AD8ADF4ECB74CFC2A60EDF8B83":
+        raise RuntimeError("Approved non-character curve changed; remeasure before reuse")
+    shutil.copyfile(wave_source, PACKAGE_OUTPUT_DIR / "top-wave.png")
 
     for target in sorted([
         *SHARED_OUTPUT_DIR.glob("*.png"),

@@ -17,6 +17,7 @@
     <view wx:elif="{{viewState === 'forbidden'}}" class="page-state">
       <text class="page-state__title">无访问权限</text>
       <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-command" bindtap="onLogin">重新登录</button>
     </view>
     <view wx:elif="{{viewState === 'error'}}" class="page-state">
       <text class="page-state__title">课堂反馈加载失败</text>
@@ -26,9 +27,18 @@
     <view wx:elif="{{viewState === 'empty'}}" class="page-state">
       <text class="page-state__title">暂无可填写的课堂反馈</text>
       <text class="page-state__message">完成课次后会在这里生成反馈任务</text>
+      <block wx:if="{{refreshError}}">
+        <text class="page-state__message">{{refreshError}}</text>
+        <button class="page-command" bindtap="onRetry">重试刷新</button>
+      </block>
     </view>
 
     <view wx:else class="feedback-list">
+      <view wx:if="{{refreshError}}" class="page-state__message">
+        <text>{{refreshError}}</text>
+        <button class="page-command" bindtap="onRetry">重试刷新</button>
+      </view>
+      <text wx:if="{{loadMoreError}}" class="page-state__message">{{loadMoreError}}</text>
       <button
         wx:for="{{items}}"
         wx:key="id"
@@ -58,7 +68,7 @@
         disabled="{{loadingMore}}"
         bindtap="onLoadMore"
         hover-class="control--hover"
-      >{{loadingMore ? '加载中' : '加载更多'}}</button>
+      >{{loadingMore ? '加载中' : loadMoreError ? '重试加载更多' : '加载更多'}}</button>
     </view>
   </view>
 </teacher-page-shell>

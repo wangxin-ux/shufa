@@ -56,20 +56,39 @@ export class CampusManagerLeaveService {
     query: CampusManagerLeaveRequestsQueryDto,
   ) {
     const scope = this.scopeService.require(user);
+    if (query.reviewedOnly !== undefined && query.status !== undefined) {
+      throw new DomainError(
+        ErrorCode.BAD_REQUEST,
+        'reviewedOnly and status cannot be combined',
+        400,
+      );
+    }
     const where: Prisma.ParentLeaveRequestWhereInput = {
       campusId: scope.campusId,
-      ...(query.status ? { status: query.status } : {}),
+      ...(query.reviewedOnly
+        ? { status: { in: ['APPROVED', 'REJECTED'] } }
+        : query.status
+          ? { status: query.status }
+          : {}),
     };
-    const [total, requests] = await Promise.all([
-      this.prisma.parentLeaveRequest.count({ where }),
-      this.prisma.parentLeaveRequest.findMany({
-        where,
-        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-        skip: (query.page - 1) * query.pageSize,
-        take: query.pageSize,
-        select: leaveViewSelect,
-      }),
-    ]);
+    const orderBy: Prisma.ParentLeaveRequestOrderByWithRelationInput[] =
+      query.reviewedOnly
+        ? [{ reviewedAt: { sort: 'desc', nulls: 'last' } }, { id: 'desc' }]
+        : [{ createdAt: 'desc' }, { id: 'desc' }];
+    const [total, requests] = await this.prisma.$transaction(
+      (transaction) =>
+        Promise.all([
+          transaction.parentLeaveRequest.count({ where }),
+          transaction.parentLeaveRequest.findMany({
+            where,
+            orderBy,
+            skip: (query.page - 1) * query.pageSize,
+            take: query.pageSize,
+            select: leaveViewSelect,
+          }),
+        ]),
+      { isolationLevel: 'RepeatableRead' },
+    );
 
     return {
       data: requests.map((request) => this.toView(request)),

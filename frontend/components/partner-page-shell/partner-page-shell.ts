@@ -11,6 +11,7 @@ Component({
     fixedHeader: { type: Boolean, value: false },
     surfacePage: { type: Boolean, value: false },
     plainGradient: { type: Boolean, value: false },
+    waveImage: { type: String, value: '' },
     plainMark: { type: Boolean, value: false },
   },
   data: {

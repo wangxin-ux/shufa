@@ -1,0 +1,9 @@
+[
+  {
+    "reviewSubmitting": false,
+    "photoBusy": false,
+    "refreshError": "刷新失败，请点击重试。现有课堂记录和评价草稿仍然保留。",
+    "mutationMessage": "照片保存失败，请重试。现有照片仍然保留。",
+    "pendingPhoto": { "fileId": "visual-file", "expectedVersion": 1, "key": "visual-only-not-for-submit", "conflict": false }
+  }
+]

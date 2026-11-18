@@ -188,14 +188,6 @@ button.bootstrap__primary--login[disabled] {
   opacity: 1;
 }
 
-.bootstrap__wechat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 600rpx;
-}
-
 .bootstrap__state--error {
   align-items: center;
   width: 100%;

@@ -11,6 +11,7 @@ interface ParameterRef {
 interface OpenApiOperation {
   parameters?: ParameterRef[];
   security?: Array<Record<string, string[]>>;
+  responses?: Record<string, unknown>;
 }
 
 interface OpenApiDocument {
@@ -101,6 +102,26 @@ describe('group buying OpenAPI and permission contract', () => {
     expect(
       document.paths['/payments/wechat/notifications']?.post?.security,
     ).toEqual([]);
+  });
+
+  it('documents payment verification headers and unavailable-provider responses', () => {
+    const callback = document.paths['/payments/wechat/notifications'].post;
+    for (const name of [
+      'Wechatpay-Serial',
+      'Wechatpay-Signature',
+      'Wechatpay-Timestamp',
+      'Wechatpay-Nonce',
+    ]) {
+      expect(hasParameter(callback, name)).toBe(true);
+    }
+    for (const route of [
+      '/parents/me/group-teams',
+      '/parents/me/group-teams/{teamId}/members',
+      '/parents/me/group-members/{memberId}/prepay',
+      '/payments/wechat/notifications',
+    ]) {
+      expect(document.paths[route].post.responses?.['503']).toBeDefined();
+    }
   });
 
   it('separates staff promotion reads from parent and management actions', () => {

@@ -1,0 +1,132 @@
+<operator-page-shell id="accountShell" markTitle="账户" markIcon="/pages/operator/assets/page-mark-pdf.png" markIconSize="44" showBack="{{true}}" surfacePage="{{true}}" tone="account">
+  <view slot="tools"><button wx:if="{{viewState !== 'forbidden'}}" class="visual-tools-button" bindtap="onOpenTools" aria-label="账本明细与筛选">⋯</button></view>
+  <view class="visual-account">
+    <text class="visual-title">课时账户</text>
+    <view wx:if="{{viewState === 'forbidden'}}" class="account-state"><text class="account-state__title">无访问权限</text><text>{{errorMessage}}</text><button class="account-command" bindtap="onLogin">重新登录</button></view>
+    <block wx:else>
+      <view class="visual-hero">
+        <image class="visual-hero__character" src="/pages/operator/assets/leave-character.png" mode="widthFix" aria-hidden="true" />
+        <view class="visual-hero__copy">
+          <text class="visual-hero__label">累计收益 · 内部预计</text>
+          <text wx:if="{{visualSummaryState === 'ready'}}" class="visual-hero__amount {{visualSummary.estimatedLabel.length > 9 ? 'visual-hero__amount--compact' : ''}}">{{visualSummary.estimatedLabel}}</text>
+          <text wx:elif="{{visualSummaryState === 'loading'}}" class="visual-hero__hint" aria-live="polite">正在加载收益</text>
+          <button wx:else class="visual-inline-retry" bindtap="onVisualRetry">{{visualSummaryError}} · 重试</button>
+        </view>
+        <view wx:if="{{visualSummaryState === 'ready'}}" class="visual-hero__facts"><text>其中待审核 {{visualSummary.pendingLabel}}</text><text>截至 {{visualSummaryAsOf}}</text><text>校区内部统计 · 人民币元</text></view>
+      </view>
+      <view class="visual-section-head"><text class="visual-title">课时流水</text><button class="visual-filter" bindtap="onOpenTools">筛选</button></view>
+      <view class="visual-ledger">
+        <text wx:if="{{viewState === 'loading'}}" class="visual-message">正在加载流水</text>
+        <view wx:elif="{{viewState === 'error'}}" class="visual-message"><text>{{errorMessage}}</text><button class="account-command" bindtap="onRetry">重试</button></view>
+        <text wx:elif="{{!rows.length}}" class="visual-message">暂无符合条件的流水</text>
+        <block wx:for="{{rows}}" wx:key="id">
+          <view wx:if="{{index < 2}}" class="visual-ledger-row">
+            <view class="visual-dot {{item.deltaDirection === 'positive' ? 'visual-dot--incoming' : ''}}"></view>
+            <view class="visual-ledger-copy"><text class="visual-ledger-name">{{item.subjectLabel === '未归类' ? item.entryLabel : item.subjectLabel}}</text><text class="visual-ledger-meta">{{item.createdLabel}} {{item.studentName}}</text></view>
+            <text class="visual-delta">{{item.deltaLabel}}课时</text>
+          </view>
+        </block>
+        <button wx:if="{{rows.length > 2}}" class="visual-ledger-more" bindtap="onOpenTools">查看全部流水</button>
+      </view>
+      <view class="visual-rank-section">
+        <image class="visual-rank-character" src="/pages/operator/assets/profile-lower-character.png" mode="widthFix" aria-hidden="true" />
+        <text class="visual-title">贡献度排名</text>
+        <picker mode="date" fields="month" value="{{visualMonth}}" bindchange="onVisualMonthChange"><text class="visual-period">{{visualMonth}}</text></picker>
+        <view class="visual-rank-panel">
+          <text wx:if="{{visualRankState === 'loading'}}" class="visual-message" aria-live="polite">正在加载月榜</text>
+          <view wx:elif="{{visualRankState === 'error' || visualRankState === 'unavailable'}}" class="visual-message"><text>{{visualRankError}}</text><button class="account-command" bindtap="onVisualRetry">重试</button></view>
+          <text wx:elif="{{visualRankState === 'empty'}}" class="visual-message">本月暂无排名</text>
+          <view wx:for="{{visualRankRows}}" wx:key="rowKey" class="visual-rank-row">
+            <view class="visual-dot {{item.isOwnCampus ? 'visual-dot--incoming' : ''}}"></view><text class="visual-campus">{{item.campusName}}</text>
+            <text class="visual-rank-delta" aria-label="{{item.deltaLabel}}">{{item.rankDelta === null || item.rankDelta === 0 ? '—' : item.rankDelta > 0 ? '+' + item.rankDelta : item.rankDelta}}</text>
+          </view>
+          <button class="visual-rank-more" bindtap="onVisualRankings">查看更多</button>
+        </view>
+      </view>
+    </block>
+  </view>
+  <view wx:if="{{toolsOpen}}" class="account-tools-layer">
+    <view class="account-tools-backdrop" bindtap="onCloseTools"></view>
+    <scroll-view class="account-tools-sheet" scroll-y="{{true}}">
+      <view class="account-tools-heading"><text>账本明细与筛选</text><button bindtap="onCloseTools" aria-label="关闭账本明细">×</button></view>
+      <picker range="{{visualMetricOptions}}" range-key="label" value="{{visualMetricIndex}}" bindchange="onVisualMetricChange"><view class="account-picker__value">排名口径：{{visualMetricOptions[visualMetricIndex].label}} ⌄</view></picker>
+  <view class="account-page">
+    <view class="account-heading">
+      <text class="account-title">课时账户</text>
+      <button class="account-refresh" aria-label="刷新账户" bindtap="onRefresh" disabled="{{refreshing || viewState === 'forbidden'}}" hover-class="control--hover"><text aria-hidden="true">↻</text></button>
+    </view>
+    <view wx:if="{{viewState === 'forbidden'}}" class="account-state" aria-live="polite">
+      <text class="account-state__title">无访问权限</text><text>{{errorMessage}}</text>
+      <button class="account-command" bindtap="onLogin">重新登录</button>
+    </view>
+    <view wx:elif="{{viewState === 'loading'}}" class="account-state" aria-live="polite"><text>正在加载课时账户</text></view>
+    <view wx:elif="{{viewState === 'error'}}" class="account-state" aria-live="polite">
+      <text class="account-state__title">账户加载失败</text><text>{{errorMessage}}</text>
+      <button class="account-command" bindtap="onRetry">重试</button>
+    </view>
+    <block wx:else>
+      <button class="account-earnings" bindtap="onEarnings" disabled="{{earningsOpening}}" hover-class="control--hover"><text>内部收益</text><text aria-hidden="true">›</text></button>
+      <view wx:if="{{refreshError}}" class="account-notice" aria-live="polite">
+        <text>{{refreshError}}</text><button class="account-command" bindtap="onRetry">重试</button>
+      </view>
+      <text wx:if="{{refreshing}}" class="account-meta" aria-live="polite">刷新中</text>
+      <text class="account-meta">校区汇总截至 {{summaryAsOfLabel}}</text>
+      <text class="account-meta">时区 {{timezone}} · 课时单位：课时</text>
+      <view class="account-section">
+        <text class="account-section__title">当前课时</text>
+        <view class="account-grid account-grid--head"><text>课时</text><text>主课时</text><text>赠课时</text><text>合计</text></view>
+        <view wx:for="{{summary.balances}}" wx:key="label" class="account-grid">
+          <text>{{item.label}}</text><text>{{item.main}}</text><text>{{item.gift}}</text><text>{{item.total}}</text>
+        </view>
+      </view>
+      <view class="account-section">
+        <text class="account-section__title">报名累计</text>
+        <view wx:for="{{summary.enrollment}}" wx:key="label" class="account-pair">
+          <text class="account-pair__label">{{item.label}}</text><text class="account-pair__value">{{item.value}}</text>
+        </view>
+      </view>
+      <view class="account-section">
+        <text class="account-section__title">历史课时变化</text>
+        <view class="account-grid account-grid--head"><text>类别</text><text>主课时</text><text>赠课时</text><text>合计</text></view>
+        <view wx:for="{{summary.activities}}" wx:key="key" class="account-grid">
+          <text>{{item.label}}</text><text>{{item.main}}</text><text>{{item.gift}}</text><text>{{item.total}}</text>
+        </view>
+      </view>
+      <view class="account-section">
+        <view class="account-detail-heading"><text class="account-section__title">课时流水</text><text class="account-meta">共 {{total}} 条</text></view>
+        <view class="account-filters">
+          <picker class="account-picker" mode="selector" range="{{subjectOptions}}" range-key="label" value="{{subjectIndex}}" bindchange="onSubjectChange" disabled="{{subjectsState !== 'ready'}}">
+            <view class="account-picker__value"><text>{{subjectLabel}}</text><text aria-hidden="true">⌄</text></view>
+          </picker>
+          <picker class="account-picker" mode="selector" range="{{categoryOptions}}" range-key="label" value="{{categoryIndex}}" bindchange="onCategoryChange">
+            <view class="account-picker__value"><text>{{categoryLabel}}</text><text aria-hidden="true">⌄</text></view>
+          </picker>
+        </view>
+        <text wx:if="{{subjectsState === 'loading'}}" class="account-meta" aria-live="polite">正在加载科目</text>
+        <view wx:elif="{{subjectsState === 'error'}}" class="account-notice" aria-live="polite">
+          <text>{{subjectsError}}</text><button class="account-command" bindtap="onRetrySubjects">重试科目</button>
+        </view>
+        <text wx:if="{{detailAsOfLabel}}" class="account-meta">流水截至 {{detailAsOfLabel}}</text>
+        <view wx:if="{{detailState === 'loading'}}" class="account-state" aria-live="polite"><text>正在加载流水</text></view>
+        <view wx:elif="{{detailState === 'empty'}}" class="account-state"><text>暂无符合条件的流水</text></view>
+        <view wx:for="{{rows}}" wx:key="id" class="account-ledger">
+          <view class="account-ledger__heading"><text class="account-ledger__name">{{item.studentName}}</text><text class="account-delta account-delta--{{item.deltaDirection}}">{{item.deltaLabel}}</text></view>
+          <text class="account-ledger__line">{{item.entryLabel}} · {{item.bucketLabel}} · {{item.subjectLabel}}</text>
+          <text class="account-ledger__line">{{item.packageName}}</text>
+          <text class="account-meta">余额 {{item.beforeLabel}} → {{item.afterLabel}}</text>
+          <text class="account-meta">{{item.paymentLabel}}</text>
+          <text wx:if="{{item.teachingLabel}}" class="account-meta">授课 {{item.teachingLabel}}</text>
+          <text class="account-meta">登记时间 {{item.createdLabel}}</text>
+          <text wx:if="{{item.reason}}" class="account-ledger__line">{{item.reason}}</text>
+        </view>
+        <view wx:if="{{detailError}}" class="account-notice" aria-live="polite">
+          <text>{{detailError}}</text><button class="account-command" bindtap="onRetryDetail">重试流水</button>
+        </view>
+        <button wx:if="{{hasMore && !detailError}}" class="account-command account-more" bindtap="onLoadMore" loading="{{loadingMore}}" disabled="{{loadingMore || refreshing || refreshError}}">{{loadingMore ? '加载中' : '加载更多'}}</button>
+        <text wx:elif="{{rows.length && !hasMore}}" class="account-meta account-end">已显示全部流水</text>
+      </view>
+    </block>
+  </view>
+    </scroll-view>
+  </view>
+</operator-page-shell>

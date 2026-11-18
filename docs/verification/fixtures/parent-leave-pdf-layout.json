@@ -1,0 +1,19 @@
+[
+  {
+    "viewState": "ready",
+    "students": [{ "id": "visual-student", "name": "小明 · 初二" }],
+    "lessons": [{ "id": "visual-lesson", "title": "初中数学", "startsAt": "2030-10-02T06:00:00Z", "label": "10月2日 14:00 · 初中数学" }],
+    "studentIndex": 0,
+    "lessonIndex": 0,
+    "draft": { "studentId": "visual-student", "lessonId": "visual-lesson", "reason": "家庭临时有事" },
+    "records": [
+      { "id": "visual-one", "courseName": "专业美术 A", "subtitle": "10月1日 已批准 不扣课时", "reviewNote": "", "status": "approved", "statusLabel": "已批准", "tagTone": "green", "dotColor": "#23b574" },
+      { "id": "visual-two", "courseName": "专业美术 A", "subtitle": "10月2日 已批准 不扣课时", "reviewNote": "", "status": "approved", "statusLabel": "已批准", "tagTone": "green", "dotColor": "#23b574" }
+    ],
+    "recordsEmpty": false,
+    "cutoffText": "须提前 2 小时提交",
+    "contactWarning": null,
+    "contactWarningText": "",
+    "refreshError": ""
+  }
+]

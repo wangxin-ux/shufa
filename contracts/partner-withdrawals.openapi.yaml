@@ -1,0 +1,365 @@
+summary:
+  get:
+    operationId: getPartnerWithdrawalSummary
+    summary: Read own campus settlement and withdrawal summary
+    description: PARTNER_WITHDRAWAL_READ, single PARTNER. Defaults to disabled. Mock requires explicit mock driver, mock auth/payment and the selected local isolated test database. All money is integer CNY fen, never the internal earning summary alias.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    responses:
+      '200': { $ref: '#/responses/Summary' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+withdrawals:
+  get:
+    operationId: listOwnPartnerWithdrawals
+    summary: Read own campus withdrawal records
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+    responses:
+      '200': { $ref: '#/responses/Page' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+  post:
+    operationId: createPartnerWithdrawal
+    summary: Reserve confirmed settlement sources in an atomic simulated application
+    description: PARTNER_WITHDRAWAL_CREATE. Takes no caller campus or recipient. Profile version freezes payer, beneficiary, masked account and policy. One successful new application consumes the Beijing calendar day quota even after rejection or cancellation. Replays do not consume more. PAID allocations remain permanently occupied. Disabled returns 409.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    parameters: [{ $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [amountFen, expectedProfileVersion]
+            properties:
+              amountFen: { type: integer, minimum: 1, maximum: 2147483647 }
+              expectedProfileVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+    responses:
+      '200': { $ref: '#/responses/Withdrawal' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+detail:
+  parameters: [{ $ref: '#/parameters/Id' }]
+  get:
+    operationId: getOwnPartnerWithdrawal
+    summary: Read a withdrawal inside own campus
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    responses:
+      '200': { $ref: '#/responses/Withdrawal' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+cancel:
+  parameters: [{ $ref: '#/parameters/Id' }]
+  post:
+    operationId: cancelOwnPartnerWithdrawal
+    summary: Cancel own campus SUBMITTED withdrawal and release only unpaid allocations
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    parameters: [{ $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }]
+    requestBody: { $ref: '#/bodies/Version' }
+    responses:
+      '200': { $ref: '#/responses/Withdrawal' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+settlement:
+  parameters: [{ $ref: '#/parameters/Campus' }]
+  get:
+    operationId: getManagedPartnerSettlement
+    summary: Read selected campus simulated settlement
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    responses:
+      '200': { $ref: '#/responses/Summary' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+  put:
+    operationId: configurePartnerMockSettlement
+    summary: Explicitly confirm a synthetic payer, beneficiary, masked account and versioned policy
+    description: Single SUPER_ADMIN with PARTNER_SETTLEMENT_MANAGE. Local simulation only. Names must begin with 模拟. Only four account tail digits accepted, no real full bank account. A beneficiary or payer cannot change after sources exist. Every update increments the version and audits the reason. Existing withdrawal snapshots remain immutable.
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    parameters: [{ $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [expectedVersion, payerName, beneficiaryName, accountLastFour, minimumAmountFen, dailyRequestLimit, reason]
+            properties:
+              expectedVersion: { type: integer, minimum: 0, maximum: 2147483646 }
+              payerName: { type: string, pattern: '^模拟', minLength: 3, maxLength: 100 }
+              beneficiaryName: { type: string, pattern: '^模拟', minLength: 3, maxLength: 100 }
+              accountLastFour: { type: string, pattern: '^[0-9]{4}$' }
+              minimumAmountFen: { type: integer, minimum: 1, maximum: 2147483647 }
+              dailyRequestLimit: { type: integer, minimum: 1, maximum: 100 }
+              reason: { type: string, minLength: 1, maxLength: 500 }
+    responses:
+      '200': { $ref: '#/responses/Summary' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+sources:
+  parameters: [{ $ref: '#/parameters/Campus' }]
+  get:
+    operationId: listPartnerSettlementCandidates
+    summary: Read paginated reviewed earning candidates and their settlement state
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+    responses:
+      '200':
+        description: Reviewed accrual candidates; no parent contacts, orders or bank details.
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [data, meta, requestId]
+              properties:
+                requestId: { type: string }
+                meta: { $ref: './openapi.yaml#/components/schemas/PaginationMeta' }
+                data:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [id, amountFen, version, createdAt, confirmed]
+                    properties:
+                      id: { type: string, format: uuid }
+                      amountFen: { type: integer, minimum: 0, maximum: 2147483647 }
+                      version: { type: integer, minimum: 1 }
+                      createdAt: { type: string, format: date-time }
+                      confirmed: { type: boolean }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+source:
+  parameters:
+    - { $ref: '#/parameters/Campus' }
+    - { name: earningId, in: path, required: true, schema: { type: string, format: uuid } }
+  post:
+    operationId: confirmPartnerSettlementSource
+    summary: Confirm the whole reviewed accrual as a synthetic settlement source exactly once
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    parameters: [{ $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [expectedVersion, expectedProfileVersion, reason]
+            properties:
+              expectedVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+              expectedProfileVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+              reason: { type: string, minLength: 1, maxLength: 500 }
+    responses:
+      '200': { $ref: '#/responses/Summary' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+managed:
+  get:
+    operationId: listManagedPartnerWithdrawals
+    summary: Read simulated partner withdrawals under headquarters permission
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+      - { name: campusId, in: query, schema: { type: string, format: uuid } }
+    responses:
+      '200': { $ref: '#/responses/Page' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+managedDetail:
+  parameters: [{ $ref: '#/parameters/Id' }]
+  get:
+    operationId: getManagedPartnerWithdrawal
+    summary: Read simulated partner withdrawal details
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    responses:
+      '200': { $ref: '#/responses/Withdrawal' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+action:
+  parameters:
+    - { $ref: '#/parameters/Id' }
+    - { name: action, in: path, required: true, schema: { type: string, enum: [approve, reject, mark-paying, mark-unknown, mark-paid, mark-failed, mock-proof] } }
+  post:
+    operationId: actOnPartnerWithdrawal
+    summary: Review or record a simulated partner payout with optimistic version and idempotency
+    description: Single SUPER_ADMIN with PARTNER_WITHDRAWAL_MANAGE. No self review. approve SUBMITTED->APPROVED; reject SUBMITTED->REJECTED (reason); mark-paying APPROVED->PAYING only without any existing proof; mark-unknown PAYING->RECONCILING (reason); mark-failed APPROVED/PAYING/RECONCILING->FAILED requires reason, bound UNPAID proof and confirmedUnpaid=true; mark-paid PAYING/RECONCILING->PAID requires matched amountFen, accountVersion, unique whitespace-free SIM-prefixed payoutReference, bound PAID proofFileId and nonfuture paidAt. mock-proof requires reason and evidenceOutcome and creates an immutable synthetic PDF for APPROVED/PAYING/RECONCILING, with PAID evidence forbidden before PAYING. A proof cannot be replaced with another outcome. Irrelevant fields for each action are rejected. Unknown results never release allocations; invalid sources stop unpaid requests or create source-specific issues after paid. No external payout occurs.
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    parameters: [{ $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/Action' }
+    responses:
+      '200': { $ref: '#/responses/Withdrawal' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+proof:
+  parameters: [{ $ref: '#/parameters/Id' }]
+  get:
+    operationId: readOwnPartnerPayoutProof
+    summary: Read privately bound simulated PDF inside own campus or as an authorized headquarters reviewer
+    tags: [Partner, Management]
+    security: [{ bearerAuth: [] }]
+    responses:
+      '200':
+        description: Authenticated synthetic PDF, Cache-Control no-store, read audited. No bearer-in-URL or public signed URL.
+        content:
+          application/pdf:
+            schema: { type: string, format: binary }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+parameters:
+  Id: { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+  Campus: { name: campusId, in: path, required: true, schema: { type: string, format: uuid } }
+bodies:
+  Version:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: false
+          required: [expectedVersion]
+          properties:
+            expectedVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+responses:
+  Summary:
+    description: Server computed settlement, occupations and source-specific unresolved differences.
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: false
+          required: [data, requestId]
+          properties:
+            requestId: { type: string }
+            data: { $ref: '#/schemas/Summary' }
+  Withdrawal:
+    description: Simulated withdrawal snapshot, no actual bank account number or payment action.
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: false
+          required: [data, requestId]
+          properties:
+            requestId: { type: string }
+            data: { $ref: '#/schemas/Withdrawal' }
+  Page:
+    description: Consistent count and current withdrawal page.
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: false
+          required: [data, meta, requestId]
+          properties:
+            requestId: { type: string }
+            data: { type: array, items: { $ref: '#/schemas/Withdrawal' } }
+            meta: { $ref: './openapi.yaml#/components/schemas/PaginationMeta' }
+schemas:
+  Summary:
+    type: object
+    additionalProperties: false
+    required: [simulated, enabled, campusId, profile, settledEntitlementFen, reservedFen, paidFen, availableFen, unresolvedFen, requestsToday, canApply, blockReason]
+    properties:
+      simulated: { type: boolean }
+      enabled: { type: boolean }
+      campusId: { type: string, format: uuid }
+      profile:
+        anyOf: [{ $ref: '#/schemas/Profile' }, { type: 'null' }]
+      settledEntitlementFen: { type: integer, minimum: 0 }
+      reservedFen: { type: integer, minimum: 0 }
+      paidFen: { type: integer, minimum: 0 }
+      availableFen: { type: integer, minimum: 0 }
+      unresolvedFen: { type: integer, minimum: 0 }
+      requestsToday: { type: integer, minimum: 0 }
+      canApply: { type: boolean }
+      blockReason: { type: string, enum: [SIMULATION_DISABLED, PROFILE_REQUIRED, RECONCILIATION_REQUIRED, DAILY_LIMIT, BELOW_MINIMUM, ''] }
+  Profile:
+    type: object
+    additionalProperties: false
+    required: [version, payerName, beneficiaryName, accountLabel, minimumAmountFen, dailyRequestLimit]
+    properties:
+      version: { type: integer, minimum: 1 }
+      payerName: { type: string }
+      beneficiaryName: { type: string }
+      accountLabel: { type: string }
+      minimumAmountFen: { type: integer, minimum: 1, maximum: 2147483647 }
+      dailyRequestLimit: { type: integer, minimum: 1, maximum: 100 }
+  Withdrawal:
+    type: object
+    additionalProperties: false
+    required: [id, campusId, campusName, requestNo, amountFen, status, version, simulated, profile, requestedAt, reviewedAt, payingAt, paidAt, reason, payoutReference, proofFileId, proofOutcome, unresolvedFen]
+    properties:
+      id: { type: string, format: uuid }
+      campusId: { type: string, format: uuid }
+      campusName: { type: string }
+      requestNo: { type: string }
+      amountFen: { type: integer, minimum: 1, maximum: 2147483647 }
+      status: { type: string, enum: [SUBMITTED, APPROVED, PAYING, RECONCILING, PAID, CANCELLED, REJECTED, FAILED, INVALIDATED] }
+      version: { type: integer, minimum: 1 }
+      simulated: { type: boolean, const: true }
+      profile: { $ref: '#/schemas/Profile' }
+      requestedAt: { type: string, format: date-time }
+      reviewedAt: { type: [string, 'null'], format: date-time }
+      payingAt: { type: [string, 'null'], format: date-time }
+      paidAt: { type: [string, 'null'], format: date-time }
+      reason: { type: [string, 'null'] }
+      payoutReference: { type: [string, 'null'] }
+      proofFileId: { type: [string, 'null'], format: uuid }
+      proofOutcome: { type: [string, 'null'], enum: [PAID, UNPAID, null] }
+      unresolvedFen: { type: integer, minimum: 0 }
+  Action:
+    type: object
+    additionalProperties: false
+    required: [expectedVersion]
+    properties:
+      expectedVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+      reason: { type: string, minLength: 1, maxLength: 500 }
+      confirmedUnpaid: { type: boolean }
+      amountFen: { type: integer, minimum: 1, maximum: 2147483647 }
+      accountVersion: { type: integer, minimum: 1 }
+      payoutReference: { type: string, pattern: '^SIM-\S+$', minLength: 5, maxLength: 128 }
+      evidenceOutcome: { type: string, enum: [PAID, UNPAID] }
+      proofFileId: { type: string, format: uuid }
+      paidAt: { type: string, format: date-time }

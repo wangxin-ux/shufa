@@ -1,0 +1,25 @@
+[
+  {
+    "items": [
+      {"id":"partner-student-1","displayName":"姓名很长也必须完整显示的学员同学","nameFontSize":36,"lowBalance":false,"classLabel":"创意美术综合材料探索与硬笔书法周末提高班","totalBalanceLabel":"123.75"},
+      {"id":"partner-student-2","displayName":"陈晨","nameFontSize":78,"lowBalance":true,"classLabel":"硬笔书法","totalBalanceLabel":"0"},
+      {"id":"layout-student-3","displayName":"布局学员三","nameFontSize":48,"lowBalance":true,"classLabel":"创意美术","totalBalanceLabel":"5"},
+      {"id":"layout-student-4","displayName":"布局学员四","nameFontSize":48,"lowBalance":false,"classLabel":"硬笔书法","totalBalanceLabel":"5.25"},
+      {"id":"layout-student-5","displayName":"布局学员五","nameFontSize":48,"lowBalance":false,"classLabel":"创意美术","totalBalanceLabel":"11"},
+      {"id":"layout-student-6","displayName":"布局学员六","nameFontSize":48,"lowBalance":true,"classLabel":"硬笔书法","totalBalanceLabel":"4"},
+      {"id":"layout-student-7","displayName":"布局学员七","nameFontSize":48,"lowBalance":false,"classLabel":"创意美术","totalBalanceLabel":"21"},
+      {"id":"layout-student-8","displayName":"布局学员八","nameFontSize":48,"lowBalance":true,"classLabel":"硬笔书法","totalBalanceLabel":"1"}
+    ],
+    "expandedId":"",
+    "expandedState":"idle",
+    "expandedDetail":null,
+    "expandedError":"",
+    "expandedPhotoError":"",
+    "expandedPhotoRetrying":false,
+    "page":1,
+    "total":9,
+    "hasMore":true,
+    "loadingMore":false,
+    "paginationError":"更多学员加载失败，请重试"
+  }
+]

@@ -15,6 +15,8 @@ export type LeaveSubmitOutcome =
       status: 'error';
       message: string;
       nextDraft: LeaveDraft;
+      statusCode?: number;
+      code?: string;
     };
 
 export interface ParentLeaveWorkflowOptions {
@@ -70,7 +72,7 @@ export function validateLeaveDraft(
     return '课程时间无效';
   }
   const cutoffAt = startsAt.getTime() - page.cutoffHours * 60 * 60 * 1000;
-  if (now.getTime() >= cutoffAt) {
+  if (now.getTime() > cutoffAt) {
     return '该课程已超过请假截止时间';
   }
 
@@ -92,6 +94,7 @@ export class ParentLeaveWorkflow {
   private readonly reasonMaxLength: number;
   private currentStatus: LeaveSubmitStatus = 'idle';
   private inFlight: Promise<LeaveSubmitOutcome> | null = null;
+  private pendingRequest: { fingerprint: string; key: string } | null = null;
 
   constructor(
     private readonly parentService: ParentService,
@@ -132,7 +135,11 @@ export class ParentLeaveWorkflow {
       reason: draft.reason.trim(),
     };
     this.currentStatus = 'submitting';
-    const operation = this.execute(normalizedDraft, this.createIdempotencyKey());
+    const fingerprint = JSON.stringify(normalizedDraft);
+    if (!this.pendingRequest || this.pendingRequest.fingerprint !== fingerprint) {
+      this.pendingRequest = { fingerprint, key: this.createIdempotencyKey() };
+    }
+    const operation = this.execute(normalizedDraft, this.pendingRequest.key);
     this.inFlight = operation;
     void operation.finally(() => {
       if (this.inFlight === operation) {
@@ -150,10 +157,12 @@ export class ParentLeaveWorkflow {
     if (submitted.status !== 'success') {
       const message = submitted.status === 'error' ? submitted.message : '请假提交失败';
       this.currentStatus = 'error';
-      return { status: 'error', message, nextDraft: { ...draft } };
+      return { status: 'error', message, nextDraft: { ...draft },
+        ...(submitted.status === 'error' ? { statusCode: submitted.statusCode, code: submitted.code } : {}) };
     }
 
-    const refreshedPage = await this.parentService.loadLeavePage();
+    const refreshedPage = await this.parentService.loadLeavePage(draft.studentId);
+    this.pendingRequest = null;
     this.currentStatus = 'success';
     return {
       status: 'success',

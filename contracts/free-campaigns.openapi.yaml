@@ -1,0 +1,834 @@
+partnerCampaigns:
+  get:
+    operationId: listOwnedPublishedFreeCampaigns
+    summary: List current approved free activities in the partner campus
+    description: >-
+      Requires PARTNER_CAMPAIGN_DRAFT_READ and the current sole campus PARTNER.
+      Only current APPROVED FREE_REGISTRATION versions are returned, using
+      frozen titles and times rather than private draft edits or newer candidates.
+      ONGOING includes OPEN activities whose end is after server time, including
+      NOT_STARTED and FULL. ENDED includes expired or CLOSED approved activities.
+      Capture one server instant before count and rows, filter before pagination,
+      sort campaign createdAt then campaignId descending, and read counts and
+      rows in one RepeatableRead snapshot. Recheck current active role/campus
+      outside that snapshot before returning. No client campus/owner, student
+      identity, parent data, contact phone, description or audit actor is returned.
+      draftId is only an authenticated management entry; published version IDs
+      do not grant parent identity or registration permissions.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+      - name: phase
+        in: query
+        required: false
+        schema: { type: string, enum: [ONGOING, ENDED], default: ONGOING }
+    responses:
+      '200':
+        description: Minimal owned approved activity summaries.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/OwnedCampaignPageEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+configuration:
+  parameters:
+    - { $ref: '#/parameters/DraftId' }
+  get:
+    operationId: getFreeCampaignDraftConfiguration
+    summary: Read private free-registration settings without creating a campaign
+    description: >-
+      Requires PARTNER_CAMPAIGN_DRAFT_READ and the current sole PARTNER role in
+      one campus. Foreign and unknown drafts return 404. Existing basic draft
+      endpoints keep their response shapes. Recheck current active identity and
+      campus before returning. Times are explicit UTC ISO8601, display using the
+      server-provided IANA campusTimezone. Missing settings remain null.
+      Readable even after private basic metadata changes to another type;
+      historical campaign, publication and lifecycle remain independent.
+      publishedVersion is the existing minimal ReviewSummary for exactly the
+      captured publishedVersionId, or null when there is no approved pointer.
+      publishedShareImage is that frozen version's share image with the existing
+      15-minute signed capability, never the private draft image. It is null when
+      there is no approved publication or that version has no share image.
+      Read configuration, pointer and summary in one RepeatableRead snapshot,
+      then recheck current identity and draft campus before returning. Resolve
+      one pointer directly; never scan history pages or expose private actors.
+      Only configuration writes and new submissions require FREE_REGISTRATION.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    responses:
+      '200': { $ref: '#/responses/DraftConfiguration' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+  put:
+    operationId: saveFreeCampaignDraftConfiguration
+    summary: Save one private free-registration partition with the global draft version
+    description: >-
+      Requires PARTNER_CAMPAIGN_DRAFT_WRITE and a current sole campus PARTNER.
+      All four nullable settings must be supplied. Explicit offset-bearing
+      ISO8601 dates must be calendar-valid; a complete range requires end after
+      start. No implicit now, month duration or unlimited capacity. UNLIMITED
+      requires null maximum; LIMITED may remain incomplete in a private draft.
+      Metadata type must be FREE_REGISTRATION. Lock User, UserRole and draft;
+      compare the global expectedVersion. Unchanged normalized settings replay
+      at current or previous version without another audit. Otherwise stale or
+      exhausted version is FREE_CAMPAIGN_VERSION_CONFLICT (409). Old basic saves
+      retain this partition. Saving never submits or publishes.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/ConfigurationMutation' }
+    responses:
+      '200':
+        description: Current draft receipt without private settings.
+        content:
+          application/json:
+            schema: { $ref: './partner-campaign-drafts.openapi.yaml#/schemas/ReceiptEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: '#/responses/Conflict' }
+submission:
+  parameters:
+    - { $ref: '#/parameters/DraftId' }
+  post:
+    operationId: submitFreeCampaignDraft
+    summary: Freeze a complete free-registration candidate for SUPER_ADMIN review
+    description: >-
+      Requires PARTNER_CAMPAIGN_SUBMIT and the current sole campus PARTNER.
+      FREE_REGISTRATION only, nonblank title and description, explicit complete
+      times and capacity choice. End must be after server time obtained after
+      entity locks. Freeze feeFen=0, benefitMode=NONE, registrationLimit=
+      ONCE_PER_STUDENT and campus timezone. A draft may continue to be edited;
+      frozen content never changes. At most one SUBMITTED candidate per campaign.
+      Same key replays only after current authorization and ownership checks.
+      Changed payload/actor/campus gives IDEMPOTENCY_CONFLICT. Create campaign,
+      candidate, audit and idempotency receipt atomically; no public identity
+      or registration until approved. Expected version is the global draft version.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/VersionedAction' }
+    responses:
+      '200': { $ref: '#/responses/ReviewSummary' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: '#/responses/Conflict' }
+versions:
+  parameters:
+    - { $ref: '#/parameters/DraftId' }
+  get:
+    operationId: listOwnedFreeCampaignVersions
+    summary: List immutable candidate history in the partner campus
+    description: >-
+      Requires PARTNER_CAMPAIGN_DRAFT_READ and sole campus PARTNER. Sort sequence
+      descending. Count and page share RepeatableRead, then current identity and
+      campus are rechecked. Reasons appear only in authorized version history.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+    responses:
+      '200': { $ref: '#/responses/ReviewPage' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+reviews:
+  get:
+    operationId: listFreeCampaignReviewCandidates
+    summary: List free-registration candidates for the total administration client
+    description: Requires CAMPAIGN_REVIEW and the current sole SUPER_ADMIN role. No HR or FINANCE delegation.
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+      - name: status
+        in: query
+        schema: { type: string, enum: [SUBMITTED, APPROVED, REJECTED] }
+    responses:
+      '200': { $ref: '#/responses/ReviewPage' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+reviewDetail:
+  parameters:
+    - { $ref: '#/parameters/VersionId' }
+  get:
+    operationId: getFreeCampaignReviewCandidate
+    summary: Read the frozen candidate and campaign lifecycle
+    description: Requires CAMPAIGN_REVIEW and current sole SUPER_ADMIN. No parent information is returned.
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    responses:
+      '200': { $ref: '#/responses/ReviewDetail' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+approve:
+  parameters:
+    - { $ref: '#/parameters/VersionId' }
+  post:
+    operationId: approveFreeCampaignCandidate
+    summary: Approve the current frozen candidate and publish it atomically
+    description: >-
+      Requires CAMPAIGN_REVIEW and current sole SUPER_ADMIN, distinct from draft
+      creator. Lock reviewer identity, draft, campaign and candidate. Expected
+      version is candidate review version. Require SUBMITTED, OPEN lifecycle,
+      end after lock-time server clock and new capacity at least REGISTERED
+      count. Publish pointer, review, audit and idempotency receipt atomically.
+      Old approved links remain readable with REPLACED, cannot register a new
+      student, and do not silently forward. Existing registrations retain their
+      original version. Effective replays are permitted after expiry/closure
+      with current authorization; never publish twice.
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/VersionedAction' }
+    responses:
+      '200': { $ref: '#/responses/ReviewSummary' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: '#/responses/Conflict' }
+reject:
+  parameters:
+    - { $ref: '#/parameters/VersionId' }
+  post:
+    operationId: rejectFreeCampaignCandidate
+    summary: Reject a pending candidate with a reason without changing published content
+    description: >-
+      Requires CAMPAIGN_REVIEW and current sole SUPER_ADMIN, not the draft creator.
+      Expected version belongs to the candidate. Trim reason, reject blank,
+      invalid Unicode or over 1000 code points. Only SUBMITTED transitions to
+      REJECTED. Preserve candidate content and published pointer; append audit.
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/ReasonedAction' }
+    responses:
+      '200': { $ref: '#/responses/ReviewSummary' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: '#/responses/Conflict' }
+close:
+  parameters:
+    - { $ref: '#/parameters/CampaignId' }
+  post:
+    operationId: closeFreeCampaign
+    summary: Close one free campaign without cancelling registration history
+    description: >-
+      Requires CAMPAIGN_REVIEW and current sole SUPER_ADMIN. Expected version is
+      campaignVersion from candidate detail. Permanently OPEN to CLOSED with
+      nonblank reason and audit, sharing the campaign lock with approval and
+      registration. No reopening or deletion. Parent cancellation remains
+      available until the original registration version's end.
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/ReasonedAction' }
+    responses:
+      '200':
+        description: Current lifecycle receipt.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/LifecycleEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: '#/responses/Conflict' }
+parentCampaigns:
+  get:
+    operationId: listParentFreeCampaigns
+    summary: List approved free campaigns in the authenticated parent campus
+    description: >-
+      Requires PARENT_FREE_CAMPAIGN_READ and current sole campus PARENT.
+      Published versions only, including future/ended/closed read-only items.
+      Stable createdAt/id descending pagination; database count and page share
+      RepeatableRead. Registered counts contain facts only. No parent details,
+      registration lists, virtual counts or unapproved revisions.
+    tags: [Parent]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+    responses:
+      '200': { $ref: '#/responses/CampaignPage' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+parentCampaign:
+  parameters:
+    - { $ref: '#/parameters/CampaignId' }
+  get:
+    operationId: getParentFreeCampaign
+    summary: Read one approved free version and the parent's eligible bound students
+    description: >-
+      Requires PARENT_FREE_CAMPAIGN_READ and current sole campus PARENT. Optional
+      versionId selects an approved immutable historical version; otherwise use
+      publishedVersionId. Foreign/unapproved/unknown IDs return 404. Students
+      must be active and bound to this parent in this campus, rechecked before
+      return. Eligibility indicates only lifetime eligibility; registration is
+      populated solely for this parent's own record, never another guardian's
+      details. Availability precedence CLOSED, REPLACED, NOT_STARTED, ENDED,
+      FULL, AVAILABLE, using current server time and fact occupancy.
+    tags: [Parent]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - name: versionId
+        in: query
+        schema: { type: string, format: uuid }
+    responses:
+      '200': { $ref: '#/responses/CampaignDetail' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+register:
+  parameters:
+    - { $ref: '#/parameters/CampaignId' }
+  post:
+    operationId: registerParentFreeCampaign
+    summary: Record one bound student without an order, payment or lesson grant
+    description: >-
+      Requires PARENT_CAMPAIGN_REGISTRATION_CREATE and current sole campus PARENT;
+      staff cannot substitute even if an inherited permission is present.
+      Lock User, UserRole, Student, binding, campaign then registration; recheck
+      current active campus/binding before idempotency. Non-replays require the
+      current approved OPEN version, half-open time window checked after locks,
+      remaining places and a unique lifetime (campaignId,studentId), including
+      CANCELLED and other guardians. REGISTERED counts across all versions.
+      Insert registration, minimal audit and idempotency receipt atomically;
+      no team/order/payment/lesson/package/earning writes or payment adapter
+      calls. Same key replays without another place/audit, even after closure
+      or expiry when currently authorized. Replays are execution receipts:
+      read current result after replay. Another guardian gets only a duplicate
+      conflict. FREE_CAMPAIGN_NOT_AVAILABLE, FREE_CAMPAIGN_FULL or
+      FREE_CAMPAIGN_ALREADY_REGISTERED are 409.
+    tags: [Parent]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/RegistrationInput' }
+    responses:
+      '200': { $ref: '#/responses/RegistrationReceipt' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: '#/responses/Conflict' }
+parentRegistrations:
+  get:
+    operationId: listOwnFreeCampaignRegistrations
+    summary: List the parent's own registrations within current binding scope
+    description: >-
+      Requires PARENT_CAMPAIGN_REGISTRATION_READ_OWN and sole campus PARENT.
+      Filter creating parent and current active same-campus student/binding.
+      Order registeredAt/id descending, snapshot count/page, then current
+      identity and returned binding/student scope are rechecked. Historical
+      registration persists after revocation but is not exposed.
+    tags: [Parent]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+    responses:
+      '200': { $ref: '#/responses/RegistrationPage' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+parentRegistration:
+  parameters:
+    - { $ref: '#/parameters/RegistrationId' }
+  get:
+    operationId: getOwnFreeCampaignRegistration
+    summary: Read the current own result using immutable activity content
+    description: >-
+      Requires PARENT_CAMPAIGN_REGISTRATION_READ_OWN and current sole campus
+      PARENT. Owner mismatch/unknown ID is 404, current binding revocation is
+      403. Title/timezone/time range come from its original approved version.
+      canCancel is REGISTERED and server time before that original endsAt;
+      closure/replacement does not shorten it. Recheck current student scope.
+    tags: [Parent]
+    security: [{ bearerAuth: [] }]
+    responses:
+      '200': { $ref: '#/responses/RegistrationDetail' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+cancel:
+  parameters:
+    - { $ref: '#/parameters/RegistrationId' }
+  post:
+    operationId: cancelOwnFreeCampaignRegistration
+    summary: Cancel one own record before its original end while preserving lifetime eligibility
+    description: >-
+      Requires PARENT_CAMPAIGN_REGISTRATION_CANCEL_OWN and current sole campus
+      PARENT. Lock and recheck creator/current binding, student and campaign
+      before key replay. Non-replay requires current registration expectedVersion,
+      REGISTERED and server time after all waits strictly before original endsAt.
+      Set CANCELLED/cancelledAt/cancelledBy, retain record and append audit in
+      the same transaction as idempotency completion. Releases one place,
+      never a lifetime eligibility claim. Closure/replacement permits cancel;
+      elapsed original window does not. Completed-key replay remains possible
+      after expiry under current authorization. FREE_REGISTRATION_STATUS_CONFLICT
+      is 409. No payment or lesson reversal is invented.
+    tags: [Parent]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/VersionedAction' }
+    responses:
+      '200': { $ref: '#/responses/RegistrationReceipt' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: '#/responses/Conflict' }
+partnerRegistrations:
+  parameters:
+    - { $ref: '#/parameters/DraftId' }
+  get:
+    operationId: listPartnerFreeCampaignRegistrations
+    summary: Read minimal registration history for one owned-campus activity
+    description: >-
+      Requires PARTNER_CAMPAIGN_REGISTRATION_READ and current sole campus PARTNER.
+      Count/page share RepeatableRead; order registeredAt/id descending. Names
+      appear only for currently active same-campus students, otherwise null.
+      Final current identity/campus and named student scope are rechecked in a
+      bounded batch. No parentUserId, phone, openid, home address, student IDs
+      for transferred students or export. Draft without campaign returns empty,
+      never creates one. Foreign draft is 404. Optional status filters current
+      REGISTERED or CANCELLED records before count and pagination. Omitting
+      status returns both; empty, repeated or unknown status values are invalid.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+      - name: status
+        in: query
+        required: false
+        schema: { type: string, enum: [REGISTERED, CANCELLED] }
+    responses:
+      '200': { $ref: '#/responses/PartnerRegistrationPage' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+parameters:
+  DraftId:
+    name: draftId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+  CampaignId:
+    name: campaignId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+  VersionId:
+    name: versionId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+  RegistrationId:
+    name: registrationId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+responses:
+  Conflict:
+    description: >-
+      IDEMPOTENCY_CONFLICT, FREE_CAMPAIGN_VERSION_CONFLICT,
+      FREE_CAMPAIGN_NOT_AVAILABLE, FREE_CAMPAIGN_FULL,
+      FREE_CAMPAIGN_ALREADY_REGISTERED or FREE_REGISTRATION_STATUS_CONFLICT.
+    content:
+      application/json:
+        schema: { $ref: './openapi.yaml#/components/schemas/ErrorEnvelope' }
+  DraftConfiguration:
+    description: Private explicit configuration and publication references.
+    content:
+      application/json:
+        schema: { $ref: '#/schemas/DraftConfigurationEnvelope' }
+  ReviewSummary:
+    description: Candidate execution receipt or history summary.
+    content:
+      application/json:
+        schema: { $ref: '#/schemas/ReviewSummaryEnvelope' }
+  ReviewDetail:
+    description: Frozen candidate with lifecycle and reason.
+    content:
+      application/json:
+        schema: { $ref: '#/schemas/ReviewDetailEnvelope' }
+  ReviewPage:
+    description: Private candidate page.
+    content:
+      application/json:
+        schema: { $ref: '#/schemas/ReviewPageEnvelope' }
+  CampaignPage:
+    description: Approved campaign summaries.
+    content:
+      application/json:
+        schema: { $ref: '#/schemas/CampaignPageEnvelope' }
+  CampaignDetail:
+    description: Approved version with current parent eligibility.
+    content:
+      application/json:
+        schema: { $ref: '#/schemas/CampaignDetailEnvelope' }
+  RegistrationReceipt:
+    description: Minimal original execution receipt; read current result after replay.
+    content:
+      application/json:
+        schema: { $ref: '#/schemas/RegistrationReceiptEnvelope' }
+  RegistrationDetail:
+    description: Current own result with original activity title and cancellation window.
+    content:
+      application/json:
+        schema: { $ref: '#/schemas/RegistrationDetailEnvelope' }
+  RegistrationPage:
+    description: Current own result page.
+    content:
+      application/json:
+        schema: { $ref: '#/schemas/RegistrationPageEnvelope' }
+  PartnerRegistrationPage:
+    description: Minimal owned-campus result page.
+    content:
+      application/json:
+        schema: { $ref: '#/schemas/PartnerRegistrationPageEnvelope' }
+schemas:
+  OwnedCampaignSummary:
+    type: object
+    additionalProperties: false
+    required: [campaignId, versionId, draftId, sequence, title, startsAt, endsAt, timezone, availability, registeredCount, maxRegistrations, remainingRegistrations]
+    properties:
+      campaignId: { type: string, format: uuid }
+      versionId: { type: string, format: uuid }
+      draftId: { type: string, format: uuid }
+      sequence: { $ref: '#/schemas/VersionNumber' }
+      title: { type: string, minLength: 1, maxLength: 40 }
+      startsAt: { type: string, format: date-time }
+      endsAt: { type: string, format: date-time }
+      timezone: { type: string, maxLength: 100 }
+      availability: { type: string, enum: [NOT_STARTED, AVAILABLE, FULL, ENDED, CLOSED] }
+      registeredCount: { type: integer, minimum: 0, maximum: 2147483647 }
+      maxRegistrations: { type: [integer, 'null'], minimum: 1, maximum: 2147483647 }
+      remainingRegistrations: { type: [integer, 'null'], minimum: 0, maximum: 2147483647 }
+  OwnedCampaignPageEnvelope:
+    allOf:
+      - { $ref: './openapi.yaml#/components/schemas/PaginatedSuccessEnvelope' }
+      - type: object
+        properties:
+          data: { type: array, items: { $ref: '#/schemas/OwnedCampaignSummary' } }
+          meta: { $ref: './openapi.yaml#/components/schemas/PaginationMeta' }
+        required: [meta]
+  VersionNumber: { type: integer, minimum: 1, maximum: 2147483647 }
+  VersionedAction:
+    type: object
+    additionalProperties: false
+    required: [expectedVersion]
+    properties:
+      expectedVersion: { $ref: '#/schemas/VersionNumber' }
+  ReasonedAction:
+    type: object
+    additionalProperties: false
+    required: [expectedVersion, reason]
+    properties:
+      expectedVersion: { $ref: '#/schemas/VersionNumber' }
+      reason: { type: string, minLength: 1, maxLength: 1000 }
+  FreeSettings:
+    type: object
+    additionalProperties: false
+    required: [startsAt, endsAt, capacityMode, maxRegistrations]
+    properties:
+      startsAt: { type: [string, 'null'], format: date-time }
+      endsAt: { type: [string, 'null'], format: date-time }
+      capacityMode: { type: [string, 'null'], enum: [UNLIMITED, LIMITED, null] }
+      maxRegistrations: { type: [integer, 'null'], minimum: 1, maximum: 2147483647 }
+  ConfigurationMutation:
+    type: object
+    additionalProperties: false
+    required: [expectedVersion, freeRegistration]
+    properties:
+      expectedVersion: { $ref: '#/schemas/VersionNumber' }
+      freeRegistration: { $ref: '#/schemas/FreeSettings' }
+  DraftConfiguration:
+    type: object
+    additionalProperties: false
+    required: [draftId, version, campusTimezone, freeRegistration, campaignId, publishedVersionId, publishedVersion, publishedShareImage, campaignVersion, lifecycle]
+    properties:
+      draftId: { type: string, format: uuid }
+      version: { $ref: '#/schemas/VersionNumber' }
+      campusTimezone: { type: string }
+      freeRegistration: { $ref: '#/schemas/FreeSettings' }
+      campaignId: { type: [string, 'null'], format: uuid }
+      publishedVersionId: { type: [string, 'null'], format: uuid }
+      publishedVersion:
+        oneOf:
+          - { $ref: '#/schemas/ReviewSummary' }
+          - { type: 'null' }
+        description: Exact approved publication summary, independent of history pagination.
+      publishedShareImage:
+        oneOf:
+          - { $ref: './partner-campaign-images.openapi.yaml#/schemas/Image' }
+          - { type: 'null' }
+        description: Share image from exactly the captured approved version; never from the private draft.
+      campaignVersion: { type: [integer, 'null'], minimum: 1 }
+      lifecycle: { type: [string, 'null'], enum: [OPEN, CLOSED, null] }
+  FrozenConfiguration:
+    type: object
+    additionalProperties: false
+    required: [title, campaignType, shareDescription, contactPhone, activityContent, images, startsAt, endsAt, timezone, capacityMode, maxRegistrations, feeFen, benefitMode, registrationLimit]
+    properties:
+      title: { type: string, minLength: 1, maxLength: 40 }
+      campaignType: { type: string, const: FREE_REGISTRATION }
+      shareDescription: { type: string, minLength: 1, maxLength: 1000 }
+      contactPhone: { type: [string, 'null'], maxLength: 30 }
+      images: { $ref: './partner-campaign-images.openapi.yaml#/schemas/Images' }
+      activityContent:
+        $ref: './partner-campaign-drafts.openapi.yaml#/schemas/ActivityContent'
+      startsAt: { type: string, format: date-time }
+      endsAt: { type: string, format: date-time }
+      timezone: { type: string }
+      capacityMode: { type: string, enum: [UNLIMITED, LIMITED] }
+      maxRegistrations: { type: [integer, 'null'], minimum: 1, maximum: 2147483647 }
+      feeFen: { type: integer, const: 0 }
+      benefitMode: { type: string, const: NONE }
+      registrationLimit: { type: string, const: ONCE_PER_STUDENT }
+  ReviewSummary:
+    type: object
+    required: [versionId, campaignId, draftId, campusId, title, status, version, sequence, submittedAt, reviewedAt, reviewReason]
+    properties:
+      versionId: { type: string, format: uuid }
+      campaignId: { type: string, format: uuid }
+      draftId: { type: string, format: uuid }
+      campusId: { type: string, format: uuid }
+      title: { type: string, maxLength: 40 }
+      status: { type: string, enum: [SUBMITTED, APPROVED, REJECTED] }
+      version: { $ref: '#/schemas/VersionNumber' }
+      sequence: { $ref: '#/schemas/VersionNumber' }
+      submittedAt: { type: string, format: date-time }
+      reviewedAt: { type: [string, 'null'], format: date-time }
+      reviewReason: { type: [string, 'null'], maxLength: 1000 }
+  ReviewDetail:
+    allOf:
+      - { $ref: '#/schemas/ReviewSummary' }
+      - type: object
+        required: [configuration, sourceDraftVersion, campaignVersion, lifecycle, publishedVersionId]
+        properties:
+          configuration: { $ref: '#/schemas/FrozenConfiguration' }
+          sourceDraftVersion: { $ref: '#/schemas/VersionNumber' }
+          campaignVersion: { $ref: '#/schemas/VersionNumber' }
+          lifecycle: { type: string, enum: [OPEN, CLOSED] }
+          publishedVersionId: { type: [string, 'null'], format: uuid }
+    unevaluatedProperties: false
+  Availability:
+    type: string
+    enum: [CLOSED, REPLACED, NOT_STARTED, ENDED, FULL, AVAILABLE]
+  CampaignSummary:
+    type: object
+    additionalProperties: false
+    required: [campaignId, versionId, title, startsAt, endsAt, timezone, availability, registeredCount, maxRegistrations, remainingRegistrations]
+    properties:
+      campaignId: { type: string, format: uuid }
+      versionId: { type: string, format: uuid }
+      title: { type: string, maxLength: 40 }
+      startsAt: { type: string, format: date-time }
+      endsAt: { type: string, format: date-time }
+      timezone: { type: string }
+      availability: { $ref: '#/schemas/Availability' }
+      registeredCount: { type: integer, minimum: 0 }
+      maxRegistrations: { type: [integer, 'null'], minimum: 1 }
+      remainingRegistrations: { type: [integer, 'null'], minimum: 0 }
+  CampaignDetail:
+    type: object
+    additionalProperties: false
+    required: [campaignId, versionId, configuration, availability, registeredCount, remainingRegistrations, eligibleStudents]
+    properties:
+      campaignId: { type: string, format: uuid }
+      versionId: { type: string, format: uuid }
+      configuration: { $ref: '#/schemas/FrozenConfiguration' }
+      availability: { $ref: '#/schemas/Availability' }
+      registeredCount: { type: integer, minimum: 0 }
+      remainingRegistrations: { type: [integer, 'null'], minimum: 0 }
+      eligibleStudents:
+        type: array
+        items:
+          type: object
+          additionalProperties: false
+          required: [studentId, displayName, eligibility, registration]
+          properties:
+            studentId: { type: string, format: uuid }
+            displayName: { type: string, maxLength: 100 }
+            eligibility: { type: string, enum: [ELIGIBLE, ALREADY_REGISTERED] }
+            registration:
+              oneOf:
+                - { $ref: '#/schemas/RegistrationReceipt' }
+                - { type: 'null' }
+  RegistrationInput:
+    type: object
+    additionalProperties: false
+    required: [versionId, studentId]
+    properties:
+      versionId: { type: string, format: uuid }
+      studentId: { type: string, format: uuid }
+  RegistrationFields:
+    type: object
+    required: [registrationId, campaignId, versionId, studentId, status, version, registeredAt, cancelledAt]
+    properties:
+      registrationId: { type: string, format: uuid }
+      campaignId: { type: string, format: uuid }
+      versionId: { type: string, format: uuid }
+      studentId: { type: string, format: uuid }
+      status: { type: string, enum: [REGISTERED, CANCELLED] }
+      version: { $ref: '#/schemas/VersionNumber' }
+      registeredAt: { type: string, format: date-time }
+      cancelledAt: { type: [string, 'null'], format: date-time }
+  RegistrationReceipt:
+    allOf:
+      - { $ref: '#/schemas/RegistrationFields' }
+    unevaluatedProperties: false
+  RegistrationDetail:
+    allOf:
+      - { $ref: '#/schemas/RegistrationFields' }
+      - type: object
+        required: [title, timezone, startsAt, endsAt, canCancel]
+        properties:
+          title: { type: string, maxLength: 40 }
+          timezone: { type: string }
+          startsAt: { type: string, format: date-time }
+          endsAt: { type: string, format: date-time }
+          canCancel: { type: boolean }
+    unevaluatedProperties: false
+  PartnerRegistration:
+    type: object
+    additionalProperties: false
+    required: [registrationId, versionId, status, registeredAt, cancelledAt, studentName]
+    properties:
+      registrationId: { type: string, format: uuid }
+      versionId: { type: string, format: uuid }
+      status: { type: string, enum: [REGISTERED, CANCELLED] }
+      registeredAt: { type: string, format: date-time }
+      cancelledAt: { type: [string, 'null'], format: date-time }
+      studentName: { type: [string, 'null'], maxLength: 100 }
+  DraftConfigurationEnvelope:
+    allOf:
+      - { $ref: './openapi.yaml#/components/schemas/SuccessEnvelope' }
+      - type: object
+        properties:
+          data: { $ref: '#/schemas/DraftConfiguration' }
+  ReviewSummaryEnvelope:
+    allOf:
+      - { $ref: './openapi.yaml#/components/schemas/SuccessEnvelope' }
+      - type: object
+        properties:
+          data: { $ref: '#/schemas/ReviewSummary' }
+  ReviewDetailEnvelope:
+    allOf:
+      - { $ref: './openapi.yaml#/components/schemas/SuccessEnvelope' }
+      - type: object
+        properties:
+          data: { $ref: '#/schemas/ReviewDetail' }
+  ReviewPageEnvelope:
+    allOf:
+      - { $ref: './openapi.yaml#/components/schemas/PaginatedSuccessEnvelope' }
+      - type: object
+        properties:
+          data: { type: array, items: { $ref: '#/schemas/ReviewSummary' } }
+          meta: { $ref: './openapi.yaml#/components/schemas/PaginationMeta' }
+        required: [meta]
+  LifecycleEnvelope:
+    allOf:
+      - { $ref: './openapi.yaml#/components/schemas/SuccessEnvelope' }
+      - type: object
+        properties:
+          data:
+            type: object
+            additionalProperties: false
+            required: [campaignId, lifecycle, version]
+            properties:
+              campaignId: { type: string, format: uuid }
+              lifecycle: { type: string, const: CLOSED }
+              version: { $ref: '#/schemas/VersionNumber' }
+  CampaignPageEnvelope:
+    allOf:
+      - { $ref: './openapi.yaml#/components/schemas/PaginatedSuccessEnvelope' }
+      - type: object
+        properties:
+          data: { type: array, items: { $ref: '#/schemas/CampaignSummary' } }
+          meta: { $ref: './openapi.yaml#/components/schemas/PaginationMeta' }
+        required: [meta]
+  CampaignDetailEnvelope:
+    allOf:
+      - { $ref: './openapi.yaml#/components/schemas/SuccessEnvelope' }
+      - type: object
+        properties:
+          data: { $ref: '#/schemas/CampaignDetail' }
+  RegistrationReceiptEnvelope:
+    allOf:
+      - { $ref: './openapi.yaml#/components/schemas/SuccessEnvelope' }
+      - type: object
+        properties:
+          data: { $ref: '#/schemas/RegistrationReceipt' }
+  RegistrationDetailEnvelope:
+    allOf:
+      - { $ref: './openapi.yaml#/components/schemas/SuccessEnvelope' }
+      - type: object
+        properties:
+          data: { $ref: '#/schemas/RegistrationDetail' }
+  RegistrationPageEnvelope:
+    allOf:
+      - { $ref: './openapi.yaml#/components/schemas/PaginatedSuccessEnvelope' }
+      - type: object
+        properties:
+          data: { type: array, items: { $ref: '#/schemas/RegistrationDetail' } }
+          meta: { $ref: './openapi.yaml#/components/schemas/PaginationMeta' }
+        required: [meta]
+  PartnerRegistrationPageEnvelope:
+    allOf:
+      - { $ref: './openapi.yaml#/components/schemas/PaginatedSuccessEnvelope' }
+      - type: object
+        properties:
+          data: { type: array, items: { $ref: '#/schemas/PartnerRegistration' } }
+          meta: { $ref: './openapi.yaml#/components/schemas/PaginationMeta' }
+        required: [meta]

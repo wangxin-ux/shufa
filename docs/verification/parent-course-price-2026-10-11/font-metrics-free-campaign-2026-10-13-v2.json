@@ -1,0 +1,195 @@
+{
+  "generatedAt": "2026-10-13T14:36:45.670033+08:00",
+  "scope": "Unshaped hmtx advances and outline ink only; not native rendering, synthetic bold or system fallback.",
+  "font": {
+    "source": "frontend/pages/parent/assets/fonts/pdf-display-subset.woff",
+    "sizeBytes": 79848,
+    "sha256": "3d38cdbaeacbaa2c7bbe3311bcb84f823eece7db545f1885b79b4808694ae6ba",
+    "unitsPerEm": 1000,
+    "layoutTables": [
+      "GSUB"
+    ],
+    "glyphs": {
+      "0": {
+        "advance": 666,
+        "inkBounds": [
+          60,
+          2,
+          606,
+          718
+        ]
+      },
+      "1": {
+        "advance": 364,
+        "inkBounds": [
+          -15,
+          -19,
+          299,
+          738
+        ]
+      },
+      "2": {
+        "advance": 625,
+        "inkBounds": [
+          5,
+          -29,
+          600,
+          747
+        ]
+      },
+      "3": {
+        "advance": 659,
+        "inkBounds": [
+          5,
+          -18,
+          634,
+          738
+        ]
+      },
+      "4": {
+        "advance": 718,
+        "inkBounds": [
+          25,
+          -19,
+          703,
+          738
+        ]
+      },
+      "5": {
+        "advance": 690,
+        "inkBounds": [
+          5,
+          -12,
+          665,
+          733
+        ]
+      },
+      "6": {
+        "advance": 694,
+        "inkBounds": [
+          25,
+          -15,
+          669,
+          735
+        ]
+      },
+      "7": {
+        "advance": 506,
+        "inkBounds": [
+          -15,
+          9,
+          511,
+          710
+        ]
+      },
+      "8": {
+        "advance": 706,
+        "inkBounds": [
+          35,
+          -18,
+          661,
+          738
+        ]
+      },
+      "9": {
+        "advance": 580,
+        "inkBounds": [
+          5,
+          -12,
+          595,
+          733
+        ]
+      },
+      ".": {
+        "advance": 223,
+        "inkBounds": [
+          30,
+          -35,
+          193,
+          126
+        ]
+      },
+      "¥": {
+        "advance": 545,
+        "inkBounds": [
+          10,
+          -22,
+          535,
+          516
+        ]
+      }
+    }
+  },
+  "labels": [
+    {
+      "label": "0¥",
+      "advanceEm": 1.211,
+      "inkBoundsEm": [
+        0.06,
+        -0.022,
+        1.201,
+        0.718
+      ]
+    },
+    {
+      "label": "0.01¥",
+      "advanceEm": 2.464,
+      "inkBoundsEm": [
+        0.06,
+        -0.035,
+        2.454,
+        0.738
+      ]
+    },
+    {
+      "label": "4880¥",
+      "advanceEm": 3.341,
+      "inkBoundsEm": [
+        0.025,
+        -0.022,
+        3.331,
+        0.738
+      ]
+    },
+    {
+      "label": "3880.01¥",
+      "advanceEm": 4.535,
+      "inkBoundsEm": [
+        0.005,
+        -0.035,
+        4.525,
+        0.738
+      ]
+    },
+    {
+      "label": "14444444¥",
+      "advanceEm": 5.935,
+      "inkBoundsEm": [
+        -0.015,
+        -0.022,
+        5.925,
+        0.738
+      ]
+    },
+    {
+      "label": "14444444.44¥",
+      "advanceEm": 7.594,
+      "inkBoundsEm": [
+        -0.015,
+        -0.035,
+        7.584,
+        0.738
+      ]
+    },
+    {
+      "label": "21474836.47¥",
+      "advanceEm": 6.982,
+      "inkBoundsEm": [
+        0.005,
+        -0.035,
+        6.972,
+        0.747
+      ]
+    }
+  ]
+}

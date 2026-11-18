@@ -16,11 +16,14 @@ describe("mini program project structure", () => {
     "pages/parent/leave/index",
     "pages/parent/profile/index",
     "pages/parent/student-profile/index",
+    "pages/parent/profile-setup/index",
     "pages/parent/updates/index",
     "pages/parent/group-campaigns/index",
     "pages/parent/group-detail/index",
     "pages/parent/group-orders/index",
     "pages/parent/campuses/index",
+    "pages/parent/courses/index",
+    "pages/parent/campaign-registration/index",
   ];
 
   it("app.json keeps bootstrap in main and parent pages in one subpackage", () => {
@@ -106,7 +109,7 @@ describe("mini program project structure", () => {
     const serialized = JSON.stringify(config);
     expect(serialized).not.toMatch(/appsecret/i);
     expect(serialized).not.toMatch(/private[_-]?key/i);
-    expect(config.appid).toBe("wx2796dc17144731b5");
+    expect(config.appid).toBe("wx7322535713ec37e0");
   });
 
   const COMPONENTS = [
@@ -334,6 +337,6 @@ describe("mini program project structure", () => {
     expect(tokens).toContain("DengXian");
     expect(tokens).toContain("--parent-font-nav");
     expect(appWxss).toContain("font-family: var(--parent-font-body)");
-    expect(appTs).toContain("loadParentDisplayFont");
+    expect(appTs).toContain("ensureParentDisplayFont");
   });
 });

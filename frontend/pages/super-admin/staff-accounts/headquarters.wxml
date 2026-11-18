@@ -1,0 +1,46 @@
+<view wx:if="{{hqMessage || hqUncertain}}" class="hq-notice {{hqConflict ? 'hq-notice--conflict' : ''}}">
+  <text class="hq-notice__title">{{hqUncertain ? '原操作待确认' : (hqConflict ? '操作冲突' : '操作结果')}}</text>
+  <text class="hq-notice__message">{{hqMessage}}</text>
+  <view wx:if="{{hqUncertain}}" class="hq-recovery">
+    <button class="account-action account-action--ghost" disabled="{{lifecycleLocked || accountConfirming || submitting || submittingId || pageLoading || hqBusy || hqConfirming}}" bindtap="onReconcile">核对最新状态</button>
+    <button class="account-action" disabled="{{lifecycleLocked || accountConfirming || submitting || submittingId || pageLoading || hqBusy || hqConfirming || !hqReconciled}}" bindtap="onRetryOriginal">重试原操作</button>
+  </view>
+</view>
+<view wx:if="{{hqTarget}}" class="hq-panel">
+  <view class="hq-panel__head">
+    <view class="hq-panel__identity">
+      <text class="hq-panel__title">校区读取授权</text>
+      <text class="hq-panel__name">{{hqTarget.displayName}}</text>
+      <text class="hq-panel__meta">{{hqTarget.maskedPhone}} · {{hqTarget.status === 'ACTIVE' ? '已启用' : '已停用'}}</text>
+    </view>
+    <button class="hq-close" aria-label="关闭校区授权" disabled="{{lifecycleLocked || accountConfirming || submitting || submittingId || pageLoading || hqBusy || hqConfirming || hqUncertain}}" bindtap="onCloseGrants">×</button>
+  </view>
+  <text wx:if="{{hqTarget.status === 'DISABLED'}}" class="hq-warning">账号已停用，仅可撤销现有授权。</text>
+  <text wx:if="{{hqBusy}}" class="hq-panel__meta">正在核对账号和校区授权</text>
+  <view wx:if="{{hqReady}}" class="hq-editor">
+    <text class="form__label">选择校区</text>
+    <picker wx:if="{{hqRows.length}}" range="{{hqRows}}" range-key="name" value="{{hqSelectedIndex}}"
+      disabled="{{lifecycleLocked || accountConfirming || submitting || submittingId || pageLoading || hqBusy || hqConfirming || hqUncertain}}" bindchange="onGrantCampusChange">
+      <view class="select hq-campus-choice">{{hqSelected.name}}</view>
+    </picker>
+    <text wx:else class="hq-panel__meta">暂无可授权校区</text>
+    <view wx:if="{{hqSelected}}">
+      <view class="hq-scope-line">
+        <view><text class="hq-scope-line__label">允许读取该校区</text><text class="hq-panel__meta">{{hqSelected.isActive ? '当前已授权' : (hqSelected.version ? '当前已撤销' : '尚未授权')}} · 版本 {{hqSelected.version}}</text></view>
+        <switch checked="{{hqDesired}}" color="#238760" disabled="{{lifecycleLocked || accountConfirming || submitting || submittingId || pageLoading || hqBusy || hqConfirming || hqUncertain || hqTarget.status === 'DISABLED' &amp;&amp; !hqSelected.isActive}}" bindchange="onGrantValueChange" />
+      </view>
+      <button class="account-action {{hqDesired ? '' : 'account-action--danger'}}"
+        disabled="{{lifecycleLocked || accountConfirming || submitting || submittingId || pageLoading || hqBusy || hqConfirming || hqUncertain || hqDesired === hqSelected.isActive || hqDesired &amp;&amp; hqTarget.status === 'DISABLED'}}"
+        bindtap="onGrantConfirm">{{hqDesired ? '确认授权' : '确认撤销授权'}}</button>
+    </view>
+    <view class="hq-retained">
+      <text class="hq-retained__title">授权记录 · {{hqGrantTotal}}个校区</text>
+      <text wx:if="{{!hqRetained.length}}" class="hq-panel__meta">尚无授权记录</text>
+      <view wx:for="{{hqRetained}}" wx:key="campusId" class="hq-retained__row">
+        <text class="hq-retained__name">{{item.name}}</text>
+        <view class="hq-retained__status"><text class="{{item.isActive ? '' : 'hq-revoked'}}">{{item.isActive ? '已授权' : '已撤销'}}</text><text>版本 {{item.version}}</text></view>
+      </view>
+    </view>
+  </view>
+  <button wx:elif="{{!hqBusy &amp;&amp; !hqUncertain}}" class="account-action account-action--ghost" disabled="{{lifecycleLocked || accountConfirming || submitting || submittingId || pageLoading}}" bindtap="onReconcile">重新读取授权</button>
+</view>

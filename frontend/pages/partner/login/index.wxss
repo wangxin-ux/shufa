@@ -1,0 +1,12 @@
+@import "../styles/pdf-typography.wxss";
+
+.formal-login { min-height: 100vh; box-sizing: border-box; background: #fff; color: #24352f; font-family: var(--partner-font-body); padding-bottom: calc(env(safe-area-inset-bottom) + 48rpx); }
+.formal-login__header { display: flex; align-items: center; gap: 24rpx; padding-left: 28rpx; }
+.formal-login__back { display: flex; align-items: center; justify-content: center; flex: 0 0 var(--role-back-size); width: var(--role-back-size); height: var(--role-back-size); padding: 0; margin: 0; border-radius: 50%; background: var(--role-back-background); box-shadow: var(--role-back-shadow); color: #24352f; font-size: 52rpx; line-height: 1; }
+.formal-login button::after { border: 0; }
+.formal-login__title { min-width: 0; font-size: 32rpx; line-height: 1.4; overflow-wrap: anywhere; }
+.formal-login__body { padding: 120rpx 48rpx 0; }
+.formal-login__primary { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 96rpx; box-sizing: border-box; padding: 18rpx 24rpx; margin: 0; border-radius: 14rpx; background: #26734d; color: #fff; font-size: 30rpx; line-height: 1.4; }
+.formal-login__message, .formal-login__error { display: block; font-size: 26rpx; line-height: 1.6; overflow-wrap: anywhere; }
+.formal-login__error { margin-top: 28rpx; color: #a52e25; }
+.formal-login__hover { opacity: 0.72; }

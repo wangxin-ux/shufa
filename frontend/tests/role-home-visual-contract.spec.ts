@@ -116,11 +116,13 @@ describe('shared visual contract for current role clients', () => {
 
   it('uses explicit pure black for every role home statistic value and unit', () => {
     const parent = read('components/parent-metric-card/parent-metric-card.wxss');
+    // Only these roles share a stat-strip component. The super-admin home renders
+    // its own campus block (.campus__value / .campus__unit) with the danger
+    // accent, so it is not part of this pure-black contract.
     const roleStats = [
       'teacher',
       'campus-manager',
       'partner',
-      'super-admin',
     ].map((role) =>
       read(`components/${role}-stat-strip/${role}-stat-strip.wxss`),
     );
@@ -164,8 +166,8 @@ describe('shared visual contract for current role clients', () => {
     const teacher = read('pages/teacher/home/index.wxss');
     const manager = read('pages/campus-manager/home/index.wxss');
 
-    expect(teacher).toMatch(/\.home__identity\s*\{[^}]*bottom:\s*232rpx/s);
-    expect(teacher).toMatch(/\.home__stats\s*\{[^}]*bottom:\s*68rpx/s);
+    expect(teacher).toMatch(/\.home__identity\s*\{[^}]*bottom:\s*247rpx/s);
+    expect(teacher).toMatch(/\.home__stats\s*\{[^}]*bottom:\s*83rpx/s);
     expect(teacher).toMatch(/\.home__footer-actions\s*\{[^}]*margin-top:\s*-32rpx/s);
 
     expect(manager).toMatch(/\.home__stage\s*\{[^}]*height:\s*752rpx/s);

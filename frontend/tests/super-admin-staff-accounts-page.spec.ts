@@ -11,7 +11,8 @@ describe('super admin staff accounts page', () => {
     const markup = read('pages/super-admin/staff-accounts/index.wxml');
     expect(script).toContain("{ value: 'HR', label: '总部人力' }");
     expect(script).toContain("{ value: 'FINANCE', label: '总部财务' }");
-    expect(markup).toContain('wx:if="{{!createHeadquarters}}"');
+    expect(markup).toContain('wx:if="{{!hqMode &amp;&amp; !createHeadquarters}}"');
+    expect(markup).toContain('wx:elif="{{!hqMode}}"');
     expect(script).toContain('campusId: headquarters ? null : campus.id');
   });
   it('registers one account manager page in the existing super-admin subpackage', () => {
@@ -76,6 +77,19 @@ describe('super admin staff accounts page', () => {
     expect(styles).toMatch(/\.account-action[\s\S]*?justify-content:\s*center/);
     expect(styles).toMatch(/\.account-action[\s\S]*?min-height:\s*72rpx/);
     expect(styles).toContain('@media (max-width: 380px)');
+  });
+
+  it('shows the server total and stable navigation with paging and mutation locks', () => {
+    const markup = read('pages/super-admin/staff-accounts/index.wxml');
+    const styles = read('pages/super-admin/staff-accounts/index.wxss');
+    expect(markup).toContain('共{{total}}个账号');
+    expect(markup).toContain('bindtap="onPreviousPage"');
+    expect(markup).toContain('bindtap="onNextPage"');
+    expect(markup).toContain('pageLoading || submitting || submittingId || page <= 1');
+    expect(markup).toContain('pageLoading || submitting || submittingId || page >= totalPages');
+    expect(markup).toContain('wx:if="{{pageError}}"');
+    expect(styles).toMatch(/\.account-pagination__controls[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\) minmax\(0, 1fr\) minmax\(0, 1fr\)/);
+    expect(styles).toMatch(/\.account-pagination__page[\s\S]*?word-break:\s*break-all/);
   });
 
   it('accepts the 11-digit mainland mobile number allowed by the form', () => {

@@ -1,0 +1,41 @@
+@import "../runtime/operator-tokens.wxss";
+
+.earning-page { padding: 52rpx 18rpx 64rpx; color: var(--operator-ink); font-family: var(--operator-font-body), "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 26rpx; line-height: 1.6; letter-spacing: 0; }
+.earning-page view, .earning-page text, .earning-page button, .earning-page picker { min-width: 0; max-width: 100%; box-sizing: border-box; overflow-wrap: anywhere; word-break: break-word; letter-spacing: 0; }
+.earning-page button { font-family: inherit; white-space: normal; }
+.earning-page button::after { border: 0; }
+.earning-page button[disabled] { opacity: 0.5; }
+.earning-heading { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; }
+.earning-title { font-family: var(--operator-font-display); font-size: 54rpx; font-weight: 700; color: var(--operator-orange); }
+.earning-refresh { display: flex; align-items: center; justify-content: center; flex: none; width: 88rpx; height: 88rpx; margin: 0; padding: 0; background: transparent; color: var(--operator-ink); font-size: 44rpx; line-height: 1; border-radius: 8rpx; }
+.earning-summary { position: relative; min-height: 360rpx; margin-top: 24rpx; padding: 30rpx; border-radius: var(--operator-card-radius); background: var(--operator-orange); box-shadow: var(--operator-shadow); }
+.earning-summary__character { position: absolute; right: 0; bottom: 0; width: 380rpx; opacity: 0.2; pointer-events: none; }
+.earning-summary > view, .earning-summary > text { position: relative; z-index: 1; }
+.earning-summary .earning-meta { color: var(--operator-ink); }
+.earning-pair.earning-pair--total { display: flex; flex-direction: column; gap: 0; border-bottom: 0; }
+.earning-pair--total .earning-money { max-width: 100%; font-family: var(--operator-font-display); font-size: 82rpx; line-height: 1.2; color: #000000; text-align: left; white-space: nowrap; }
+.earning-pair--total .earning-money--compact { font-size: 44rpx; }
+.earning-section { margin-top: 44rpx; padding: 30rpx; border-radius: var(--operator-card-radius); background: var(--operator-panel); box-shadow: var(--operator-shadow); }
+.earning-section-title { display: block; font-family: var(--operator-font-display); font-size: 38rpx; line-height: 1.5; font-weight: 700; }
+.earning-pair { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.3fr); gap: 20rpx; padding: 22rpx 0; border-bottom: 1rpx solid #e7e7e7; align-items: start; }
+.earning-money { text-align: right; font-size: 28rpx; font-variant-numeric: tabular-nums; }
+.earning-money--negative { color: #276348; }
+.earning-money--positive { color: #963c27; }
+.earning-meta { display: block; margin-top: 10rpx; color: #666; font-size: 23rpx; line-height: 1.65; }
+.earning-count { color: #666; font-size: 23rpx; }
+.earning-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20rpx; margin-top: 16rpx; }
+.earning-picker { display: block; border-bottom: 2rpx solid #ccc; }
+.earning-picker-value { display: flex; align-items: center; justify-content: space-between; gap: 12rpx; min-height: var(--operator-touch-min); padding: 12rpx 0; }
+.earning-picker-value > text:last-child { flex: none; }
+.earning-row { padding: 28rpx 0; border-bottom: 1rpx solid #dedede; }
+.earning-row-heading { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.3fr); gap: 16rpx; align-items: start; }
+.earning-row-type { font-size: 28rpx; font-weight: 700; }
+.earning-status { display: block; margin-top: 12rpx; }
+.earning-state { display: flex; flex-direction: column; align-items: flex-start; gap: 18rpx; min-height: 200rpx; padding: 36rpx 0; }
+.earning-notice { display: flex; flex-wrap: wrap; align-items: center; gap: 12rpx; margin-top: 20rpx; color: var(--operator-red); }
+.earning-notice > text { flex: 1 1 280rpx; }
+.earning-command { display: flex; align-items: center; justify-content: center; min-height: var(--operator-touch-min); margin: 12rpx 0 0; padding: 14rpx 24rpx; border-radius: 8rpx; background: #f1f1f1; color: var(--operator-ink); font-size: 25rpx; line-height: 1.5; }
+.earning-notice .earning-command { flex: none; margin: 0; }
+.earning-more { width: 100%; margin-top: 24rpx; }
+.earning-end { text-align: center; padding-top: 16rpx; }
+.control--hover { opacity: 0.72; }

@@ -41,6 +41,7 @@ export function buildPartnerStudentDetailPageModel(
   );
   return {
     displayName: detail.displayName,
+    photo: detail.photo ?? null,
     birthDateLabel: formatPartnerBirthDate(detail.birthDate),
     classLabel: detail.classNames.length
       ? detail.classNames.join('、')

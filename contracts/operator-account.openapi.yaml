@@ -1,0 +1,232 @@
+account:
+  get:
+    operationId: getOperatorLessonAccount
+    summary: Read the independent operator campus lesson account
+    description: >-
+      Requires OPERATOR_ACCOUNT_READ and exactly one active OPERATOR role with
+      one nonempty campus. Unscoped total accounts, mixed roles and caller scope
+      parameters are rejected. The persisted identity is checked in a
+      RepeatableRead snapshot and again in a fresh transaction before return.
+      Current balances include active, currently valid packages whose student
+      still belongs to this campus. Balances, reservations and available units
+      are nonnegative safe integers; invalid current sources fail with 500.
+      Enrollment summary covers all campus history, including inactive,
+      expired, departed and paid-but-not-issued sources. Actual receipt and
+      executed refund amounts are separate; approved or pending refunds do not
+      count as paid. Corrections retain the effective historical source.
+      Activity totals include all six historical ledger categories with signed
+      MAIN/GIFT deltas, including expired packages and departed students.
+      Missing groups are reliable zero; invalid linked records or overflow make
+      only the affected historical values null. Totals are not inferred from
+      current balances. Detail filters and pagination never change these
+      campus-wide summaries. Individual rows only expose current campus
+      students and are checked for campus membership again before return.
+      Subject ID and name are frozen historical values, not current package
+      associations. All lesson units are hundredths of a lesson; amounts are
+      integer fen. This endpoint grants no financial or lesson write permission.
+      Internal estimated earnings and rankings are separate reads.
+    tags: [Operator]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: '#/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+      - name: entryType
+        in: query
+        schema: { $ref: './openapi.yaml#/components/schemas/LessonLedgerEntryType' }
+      - name: subjectId
+        in: query
+        description: Existing campus subject UUID or UNCLASSIFIED, combined with entryType using AND.
+        schema:
+          type: string
+          pattern: '^(?:UNCLASSIFIED|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$'
+    responses:
+      '200':
+        description: Campus summaries and one stable createdAt/id descending detail page.
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [data]
+              properties:
+                data: { $ref: '#/schemas/Account' }
+                requestId: { type: string }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+subjects:
+  get:
+    operationId: listOperatorAccountSubjects
+    summary: Read the independent operator campus subject directory
+    description: >-
+      Requires the same single-campus OPERATOR_ACCOUNT_READ scope and snapshot
+      plus fresh identity checks as the lesson account. Includes archived
+      subjects so historical ledger rows remain filterable. Query only searches
+      subject names; ordered by name then ID. No subject write permission or
+      personal, balance, pricing or earning fields are exposed.
+    tags: [Operator]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: '#/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+      - name: query
+        in: query
+        schema: { type: string, maxLength: 100 }
+    responses:
+      '200':
+        description: Paginated current and archived campus subject directory.
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [data]
+              properties:
+                data: { $ref: '#/schemas/Subjects' }
+                requestId: { type: string }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+parameters:
+  Page:
+    name: page
+    in: query
+    description: Page defaults to 1. Offset (page-1)*pageSize must not exceed 2147483647; larger offsets return 400 before any database read.
+    schema: { type: integer, minimum: 1, maximum: 2147483647, default: 1 }
+schemas:
+  Nonnegative:
+    type: integer
+    minimum: 0
+    maximum: 9007199254740991
+  Signed:
+    type: integer
+    minimum: -9007199254740991
+    maximum: 9007199254740991
+  HistoricalNonnegative:
+    anyOf: [{ $ref: '#/schemas/Nonnegative' }, { type: 'null' }]
+  HistoricalSigned:
+    anyOf: [{ $ref: '#/schemas/Signed' }, { type: 'null' }]
+  Meta:
+    type: object
+    additionalProperties: false
+    required: [page, pageSize, total, totalPages]
+    properties:
+      page: { type: integer, minimum: 1, maximum: 2147483647 }
+      pageSize: { type: integer, minimum: 1, maximum: 100 }
+      total: { $ref: '#/schemas/Nonnegative' }
+      totalPages: { $ref: '#/schemas/Nonnegative' }
+  EnrollmentSummary:
+    type: object
+    additionalProperties: false
+    required: [receivedAmountFen, refundedAmountFen, initialMainUnits, initialGiftUnits, pendingIssuanceCount]
+    properties:
+      receivedAmountFen: { $ref: '#/schemas/HistoricalNonnegative' }
+      refundedAmountFen: { $ref: '#/schemas/HistoricalNonnegative' }
+      initialMainUnits: { $ref: '#/schemas/HistoricalNonnegative' }
+      initialGiftUnits: { $ref: '#/schemas/HistoricalNonnegative' }
+      pendingIssuanceCount: { $ref: '#/schemas/Nonnegative' }
+  ActivityTotal:
+    type: object
+    additionalProperties: false
+    required: [entryType, mainDeltaUnits, giftDeltaUnits, totalDeltaUnits]
+    properties:
+      entryType: { $ref: './openapi.yaml#/components/schemas/LessonLedgerEntryType' }
+      mainDeltaUnits: { $ref: '#/schemas/HistoricalSigned' }
+      giftDeltaUnits: { $ref: '#/schemas/HistoricalSigned' }
+      totalDeltaUnits: { $ref: '#/schemas/HistoricalSigned' }
+  PaymentContext:
+    oneOf:
+      - type: 'null'
+      - type: object
+        additionalProperties: false
+        required: [receivedOn]
+        properties:
+          receivedOn: { type: string, format: date }
+      - type: object
+        additionalProperties: false
+        required: [paidAt]
+        properties:
+          paidAt: { type: string, format: date-time }
+  TeachingContext:
+    anyOf:
+      - type: 'null'
+      - type: object
+        additionalProperties: false
+        required: [courseName, teacherName, lessonStartsAt]
+        properties:
+          courseName: { type: string }
+          teacherName: { type: string }
+          lessonStartsAt: { type: string, format: date-time }
+  LedgerRow:
+    type: object
+    additionalProperties: false
+    required: [id, studentId, studentName, packageName, subject, entryType, bucket, deltaUnits, balanceBeforeUnits, balanceAfterUnits, reason, createdAt, paymentContext, teachingContext]
+    properties:
+      id: { type: string, format: uuid }
+      studentId: { type: string, format: uuid }
+      studentName: { type: string }
+      packageName: { type: string }
+      subject:
+        anyOf:
+          - type: 'null'
+          - type: object
+            additionalProperties: false
+            required: [id, name]
+            properties:
+              id: { type: string, format: uuid }
+              name: { type: string }
+      entryType: { $ref: './openapi.yaml#/components/schemas/LessonLedgerEntryType' }
+      bucket: { $ref: './openapi.yaml#/components/schemas/LessonUnitBucket' }
+      deltaUnits: { $ref: '#/schemas/Signed' }
+      balanceBeforeUnits: { $ref: '#/schemas/Nonnegative' }
+      balanceAfterUnits: { $ref: '#/schemas/Nonnegative' }
+      reason: { type: [string, 'null'] }
+      createdAt: { type: string, format: date-time }
+      paymentContext: { $ref: '#/schemas/PaymentContext' }
+      teachingContext: { $ref: '#/schemas/TeachingContext' }
+  Account:
+    type: object
+    additionalProperties: false
+    required: [mainBalanceUnits, giftBalanceUnits, totalBalanceUnits, mainReservedUnits, giftReservedUnits, reservedTotalUnits, mainAvailableUnits, giftAvailableUnits, availableTotalUnits, enrollmentSummary, lessonActivityTotals, items, meta, serverTime, timezone]
+    properties:
+      mainBalanceUnits: { $ref: '#/schemas/Nonnegative' }
+      giftBalanceUnits: { $ref: '#/schemas/Nonnegative' }
+      totalBalanceUnits: { $ref: '#/schemas/Nonnegative' }
+      mainReservedUnits: { $ref: '#/schemas/Nonnegative' }
+      giftReservedUnits: { $ref: '#/schemas/Nonnegative' }
+      reservedTotalUnits: { $ref: '#/schemas/Nonnegative' }
+      mainAvailableUnits: { $ref: '#/schemas/Nonnegative' }
+      giftAvailableUnits: { $ref: '#/schemas/Nonnegative' }
+      availableTotalUnits: { $ref: '#/schemas/Nonnegative' }
+      enrollmentSummary: { $ref: '#/schemas/EnrollmentSummary' }
+      lessonActivityTotals:
+        type: array
+        minItems: 6
+        maxItems: 6
+        items: { $ref: '#/schemas/ActivityTotal' }
+      items: { type: array, maxItems: 100, items: { $ref: '#/schemas/LedgerRow' } }
+      meta: { $ref: '#/schemas/Meta' }
+      serverTime: { type: string, format: date-time }
+      timezone: { type: string, minLength: 1 }
+  Subject:
+    type: object
+    additionalProperties: false
+    required: [id, name, isActive, version]
+    properties:
+      id: { type: string, format: uuid }
+      name: { type: string, maxLength: 80 }
+      isActive: { type: boolean }
+      version: { type: integer, minimum: 1 }
+  Subjects:
+    type: object
+    additionalProperties: false
+    required: [data, meta, serverTime, timezone]
+    properties:
+      data: { type: array, maxItems: 100, items: { $ref: '#/schemas/Subject' } }
+      meta: { $ref: '#/schemas/Meta' }
+      serverTime: { type: string, format: date-time }
+      timezone: { type: string, minLength: 1 }

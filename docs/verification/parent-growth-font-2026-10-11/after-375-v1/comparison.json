@@ -1,0 +1,108 @@
+{
+  "scope": "sRGB contacts; source crop is not a native viewport or full-page acceptance",
+  "referencePhysicalPage": 7,
+  "referenceCropPixels": [
+    92,
+    170,
+    552,
+    1166
+  ],
+  "inputs": [
+    {
+      "path": "tmp/pdfs/ui-source-audit-20261010-01a1258e/new/page-07.png",
+      "sha256": "e9e99e71da6fc0466ea002afface501a4fea3f03cd2f4eead6247c6c43246833"
+    },
+    {
+      "path": "\u7d20\u6750/UI\u66f4\u65b0\u5bb6\u957f+\u5408\u4f5c\u65b9(1).pdf",
+      "sha256": "4c7f7a49b70868a86af5d3e2ccbf910f42096d8a0e28f60c8fd04ef0409174b1"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/before-375-v3/runtime.json",
+      "sha256": "2a9607e3ec532a57ebf4f933065cea5cf99d8a282f419a9c647d12e2cab2f68c"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/after-375-v1/runtime.json",
+      "sha256": "8efe3a9637e6716aadbd2ac574489a119081c8013ad889e939916544abc942f3"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/before-375-v3/standard-top.png",
+      "sha256": "4bdc074f0c095306ef7c3f22d3cf672b329678039c70471e16a385b536321192"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/after-375-v1/standard-top.png",
+      "sha256": "a5a5970c92d6ca25ba7c548481a762700ef39ceba94b04203e15e72828966627"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/before-375-v3/long-top.png",
+      "sha256": "7034cf7bc81d6a2d2f55ad4e7718f023409afff9fff834d59bb599a54bc00731"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/after-375-v1/long-top.png",
+      "sha256": "a87d5b13480c891c6224bcea46c274d3c6b35a52bddb104c8305b0a4b58d471c"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/before-375-v3/reversed-top.png",
+      "sha256": "d2f58001f2e16e76efcd1933a72dec1e72c42e78a5118ca9c6ccd2f9b2201c50"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/after-375-v1/reversed-top.png",
+      "sha256": "a2f4fabf340407af9202be351b1047ed4ad32f2e27e156efb08a9a33233c40ad"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/before-375-v3/long-bottom.png",
+      "sha256": "1c6fe9a85a6f8fd59fdd4425b5c6fec30ee38445bb48defd52624e217344d4cf"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/after-375-v1/long-bottom.png",
+      "sha256": "3e4c886a99a4806b65f7bda43151396f836bf64877aec28a1612861cfea9d7cf"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/before-375-v3/reversed-bottom.png",
+      "sha256": "18fa21895d49172fc6356b15a473df939fafd280eb7af94c91fcc52116a94c2c"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/after-375-v1/reversed-bottom.png",
+      "sha256": "c1b8246635169e2141c3a533ad79af394dd41eebf2d1e4e7f4a407582d7f13d1"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/before-375-v3/standard-bottom.png",
+      "sha256": "4bdc074f0c095306ef7c3f22d3cf672b329678039c70471e16a385b536321192"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/after-375-v1/standard-bottom.png",
+      "sha256": "a5a5970c92d6ca25ba7c548481a762700ef39ceba94b04203e15e72828966627"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/before-375-v3/no-photo-top.png",
+      "sha256": "f94f123baf19f256a2d784344adef46bd28bdb12b99a0c8179c15fd21a456500"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/after-375-v1/no-photo-top.png",
+      "sha256": "c541b6ad51d6d171f999ffa16486ba08bd93b65a8a661867dc98a30597411f24"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/before-375-v3/empty-top.png",
+      "sha256": "6a5a9f5f07da2cba21927ed4764e831098189b0e451755e3a178cc29772261bc"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/after-375-v1/empty-top.png",
+      "sha256": "b8961c0caed1133c32480a874fb422b252e6a4d89268ef8c69b2ca100fd39187"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/before-375-v3/no-student-top.png",
+      "sha256": "7f693bcb8cbca10e95279e7e2fdcb4a67778c1402eeea3841958990776af2b6c"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/after-375-v1/no-student-top.png",
+      "sha256": "7f693bcb8cbca10e95279e7e2fdcb4a67778c1402eeea3841958990776af2b6c"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/before-375-v3/error-top.png",
+      "sha256": "8f690a02e2873f55fc0ff16aa518569eea9b03d0743056a361e2af0d0e3ff689"
+    },
+    {
+      "path": "docs/verification/parent-growth-font-2026-10-11/after-375-v1/error-top.png",
+      "sha256": "8f690a02e2873f55fc0ff16aa518569eea9b03d0743056a361e2af0d0e3ff689"
+    }
+  ]
+}

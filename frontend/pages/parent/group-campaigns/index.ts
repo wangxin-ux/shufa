@@ -25,5 +25,6 @@ Page({
     wx.navigateTo({ url: `/pages/parent/group-detail/index?id=${encodeURIComponent(String(event.currentTarget.dataset.id ?? ''))}` });
   },
   onOrders() { wx.navigateTo({ url: '/pages/parent/group-orders/index' }); },
+  onFreeCampaigns() { wx.navigateTo({ url: '/pages/parent/campaign-registration/index' }); },
   onRetry() { void this.load(); },
 });

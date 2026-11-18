@@ -1,0 +1,11 @@
+[
+  {
+    "viewState": "ready",
+    "isEmpty": true,
+    "studentName": "",
+    "studentAgeLabel": "",
+    "nameFontSize": 90,
+    "emptyMessage": "暂未绑定学员",
+    "refreshError": ""
+  }
+]

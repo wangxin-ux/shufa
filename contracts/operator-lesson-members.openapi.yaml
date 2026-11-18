@@ -1,0 +1,146 @@
+members:
+  parameters:
+    - $ref: '#/parameters/LessonId'
+  get:
+    operationId: getOperatorLessonMembers
+    summary: Read the complete roster of one campus lesson
+    description: >-
+      Requires OPERATOR_SCHEDULE_READ and exactly one OPERATOR role with one
+      nonempty campus. Unscoped total accounts and mixed roles are forbidden.
+      RepeatableRead snapshot. Current roster combines active same-campus
+      regular class members and this lesson's active temporary members, deduped
+      by student ID, regular source first. Completed/reversed lessons use saved
+      final attendance only, including students who later left or transferred.
+      This grants no teacher personal archive permission.
+    tags: [Operator]
+    security: [{ bearerAuth: [] }]
+    responses:
+      '200': { $ref: '#/responses/Roster' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+  post:
+    operationId: addOperatorLessonTemporaryMember
+    summary: Add an existing campus student to one future lesson
+    description: >-
+      Requires OPERATOR_SCHEDULE_UPDATE, single-campus scope, Idempotency-Key
+      and current lesson version. Only future SCHEDULED lessons and active
+      existing students of this campus are allowed. Uses the existing active
+      package validity and consumption policy at request time; available main
+      plus gift must cover lesson units after each bucket's refund reservation.
+      No extra subject filter, new package, free trial, debit or reservation.
+      Completion rechecks balances in the original consumption transaction.
+      An already regular or active temporary member is a no-op with unchanged
+      version. Each actual addition increments lesson version, writes audit and
+      creates a new membership episode. Removal history is never overwritten.
+      A temporary leave request is bound to its exact membership episode;
+      re-adding cannot authorize review or prefill from an old removed episode.
+      The existing one-request-per-parent/student/lesson rule is unchanged.
+      Lesson, class, membership and student locks protect dependent writes.
+      Idempotent replay returns the original successful response, including
+      after the lesson starts; a new write validates state and version again.
+    tags: [Operator]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/IdempotencyKey'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/Add' }
+    responses:
+      '200': { $ref: '#/responses/Roster' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+remove:
+  parameters:
+    - $ref: '#/parameters/LessonId'
+    - name: studentId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  post:
+    operationId: removeOperatorLessonTemporaryMember
+    summary: End the active temporary membership of one future lesson
+    description: >-
+      Uses the same single-campus OPERATOR_SCHEDULE_UPDATE, future SCHEDULED,
+      idempotency, version and lock rules as add. Regular class members cannot
+      be removed here (409). No active temporary episode is a no-op. An actual
+      removal increments the lesson version and records removedAt, operator and
+      audit, preserving the episode, saved drafts, leave requests and history.
+      A removed relation cannot authorize new leave review or teaching writes.
+      No ledger, package, final historical attendance or other lesson changes.
+    tags: [Operator]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - $ref: './openapi.yaml#/components/parameters/IdempotencyKey'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/schemas/Version' }
+    responses:
+      '200': { $ref: '#/responses/Roster' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+parameters:
+  LessonId:
+    name: lessonSessionId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+schemas:
+  Version:
+    type: object
+    additionalProperties: false
+    required: [version]
+    properties:
+      version: { type: integer, minimum: 1, maximum: 2147483647 }
+  Add:
+    type: object
+    additionalProperties: false
+    required: [version, studentId]
+    properties:
+      version: { type: integer, minimum: 1, maximum: 2147483647 }
+      studentId: { type: string, format: uuid }
+  Member:
+    type: object
+    additionalProperties: false
+    required: [studentId, displayName, source, canRemove]
+    properties:
+      studentId: { type: string, format: uuid }
+      displayName: { type: string }
+      source: { type: string, enum: [CLASS, TEMPORARY, HISTORICAL] }
+      canRemove: { type: boolean }
+  Roster:
+    type: object
+    additionalProperties: false
+    required: [lessonSessionId, lessonVersion, status, startsAt, canChange, members, serverTime]
+    properties:
+      lessonSessionId: { type: string, format: uuid }
+      lessonVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+      status: { $ref: './openapi.yaml#/components/schemas/LessonSessionStatus' }
+      startsAt: { type: string, format: date-time }
+      canChange: { type: boolean }
+      members:
+        type: array
+        items: { $ref: '#/schemas/Member' }
+      serverTime: { type: string, format: date-time }
+responses:
+  Roster:
+    description: Complete roster and current lesson version; timestamps include timezone offset.
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: false
+          required: [data]
+          properties:
+            data: { $ref: '#/schemas/Roster' }
+            requestId: { type: string }

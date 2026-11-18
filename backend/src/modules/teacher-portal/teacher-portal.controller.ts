@@ -18,8 +18,11 @@ import {
   DateRangeQueryDto,
   LessonSessionsQueryDto,
   StudentsQueryDto,
+  StudentDetailQueryDto,
 } from '../scheduling/dto/teacher-read-query.dto';
 import { TeacherReadService } from '../scheduling/teacher-read.service';
+import { TeacherRankingQueryDto } from './teacher-ranking.dto';
+import { TeacherRankingService } from './teacher-ranking.service';
 
 @Controller('teachers/me')
 @UseGuards(AccessTokenGuard, PermissionsGuard)
@@ -27,7 +30,20 @@ export class TeacherPortalController {
   constructor(
     private readonly teacherScopeService: TeacherScopeService,
     private readonly teacherReadService: TeacherReadService,
+    private readonly teacherRankingService: TeacherRankingService,
   ) {}
+
+  @Get('rankings')
+  @RequirePermissions('TEACHER_EARNING_READ_OWN')
+  async listRankings(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: TeacherRankingQueryDto,
+  ) {
+    return this.teacherRankingService.list(
+      await this.teacherScopeService.resolve(user),
+      query,
+    );
+  }
 
   @Get('dashboard')
   @RequirePermissions('TEACHER_PROFILE_READ')
@@ -87,10 +103,12 @@ export class TeacherPortalController {
   async getStudent(
     @CurrentUser() user: AuthenticatedUser,
     @Param('studentId', new ParseUUIDPipe({ version: '4' })) studentId: string,
+    @Query() query: StudentDetailQueryDto,
   ) {
     return this.teacherReadService.getStudent(
       await this.teacherScopeService.resolve(user),
       studentId,
+      query,
     );
   }
 

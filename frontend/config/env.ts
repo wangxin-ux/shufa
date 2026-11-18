@@ -5,7 +5,7 @@ import {
 } from './local-runtime';
 
 export type ParentDataDriver = 'mock' | 'api';
-export type ParentMockScenario = 'normal' | 'empty' | 'error';
+export type ParentMockScenario = 'normal' | 'empty' | 'error' | 'visual' | 'profile-setup';
 
 export interface ParentRuntimeEnv {
   dataDriver: ParentDataDriver;
@@ -34,7 +34,10 @@ export function createParentRuntimeEnv(
       overrides.dataDriver ??
       localOverrides.dataDriver ??
       DEFAULT_PARENT_RUNTIME_ENV.dataDriver,
-    mockScenario: overrides.mockScenario ?? DEFAULT_PARENT_RUNTIME_ENV.mockScenario,
+    mockScenario:
+      overrides.mockScenario ??
+      localOverrides.parentMockScenario ??
+      DEFAULT_PARENT_RUNTIME_ENV.mockScenario,
     apiBaseUrl:
       overrides.apiBaseUrl ??
       localOverrides.apiBaseUrl ??

@@ -1,0 +1,37 @@
+[
+  {
+    "viewState": "ready",
+    "isEmpty": false,
+    "errorMessage": "",
+    "records": [
+      {
+        "lessonSessionId": "visual-only-rating",
+        "courseName": "专业美术",
+        "teacherName": "林老师",
+        "lessonTimeLabel": "10月6日 09:00",
+        "attendanceLabel": "正常出勤",
+        "feedback": "观察认真，构图完整。",
+        "feedbackImages": [],
+        "statusLabel": "已完成",
+        "statusTone": "green",
+        "performanceRating": 9,
+        "performanceRatingLabel": "4.5 星",
+        "performanceStars": [100, 100, 100, 100, 50]
+      },
+      {
+        "lessonSessionId": "visual-only-no-rating",
+        "courseName": "创意书写",
+        "teacherName": "赵老师",
+        "lessonTimeLabel": "10月5日 09:00",
+        "attendanceLabel": "正常出勤",
+        "feedback": "课堂参与认真。",
+        "feedbackImages": [],
+        "statusLabel": "已完成",
+        "statusTone": "green",
+        "performanceRating": null,
+        "performanceRatingLabel": "未评分",
+        "performanceStars": [0, 0, 0, 0, 0]
+      }
+    ]
+  }
+]

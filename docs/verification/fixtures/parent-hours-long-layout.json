@@ -1,0 +1,33 @@
+[
+  {
+    "viewState": "ready",
+    "errorMessage": "",
+    "remainingTotal": 888,
+    "balanceValueSize": 106,
+    "grossTotal": 999,
+    "paidAmountLabel": "¥88888888.88",
+    "validUntilLabel": "2027-08-23",
+    "hasReservations": true,
+    "reservedPaidHours": 100,
+    "reservedGiftHours": 11,
+    "hourCards": [
+      { "key": "paid", "label": "购买课时", "remaining": 777, "grantedLabel": "999999", "hasKnownGrant": true, "valueSize": 44 },
+      { "key": "gift", "label": "赠送课时", "remaining": 111, "grantedLabel": "999", "hasKnownGrant": true, "valueSize": 88 }
+    ],
+    "entries": [
+      {
+        "id": "visual-long-hours",
+        "title": "专业美术与创意思维综合提升课程",
+        "subtitleLabel": "2026-10-06 09:00 欧阳老师 · 本课次已撤销，历史课堂反馈和家长评价仍然保留",
+        "delta": 999,
+        "deltaLabel": "+999节"
+      }
+    ],
+    "isEmpty": false,
+    "hasMore": false,
+    "showFilters": true,
+    "subjectOptions": ["全部科目", "专业美术与创意思维综合提升课程"],
+    "subjectIndex": 1,
+    "paginationError": ""
+  }
+]

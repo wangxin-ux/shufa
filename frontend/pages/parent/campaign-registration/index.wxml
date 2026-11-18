@@ -1,0 +1,82 @@
+<parent-page-shell markTitle="免费活动" markIcon="/pages/parent/assets/icon-mark-leave.png" bg="white" showBack="{{true}}">
+  <view class="registration-page">
+    <view class="page-heading">
+      <text class="page-title">免费活动</text>
+      <text wx:if="{{isMock}}" class="mock-label">模拟活动与报名</text>
+    </view>
+    <view class="tabs">
+      <button class="tab {{tab === 'CAMPAIGNS' ? 'tab--active' : ''}}" data-tab="CAMPAIGNS" bindtap="onTabChange" disabled="{{busy || uncertain || readbackRequired || confirming}}">活动</button>
+      <button class="tab {{tab === 'REGISTRATIONS' ? 'tab--active' : ''}}" data-tab="REGISTRATIONS" bindtap="onTabChange" disabled="{{busy || uncertain || readbackRequired || confirming}}">我的报名</button>
+    </view>
+    <view wx:if="{{viewState === 'forbidden'}}" class="state-panel">
+      <text>{{errorMessage}}</text>
+      <button class="primary-button" bindtap="onLogin">返回登录</button>
+    </view>
+    <view-state wx:elif="{{viewState !== 'ready'}}" state="{{viewState}}" emptyText="{{tab === 'CAMPAIGNS' ? '暂无已批准免费活动' : '暂无本人报名记录'}}" errorText="{{errorMessage}}" bind:retry="onRetry" />
+    <block wx:else>
+      <block wx:if="{{mode === 'list'}}">
+        <view wx:if="{{tab === 'CAMPAIGNS'}}" class="entries">
+          <button class="entry" wx:for="{{campaigns}}" wx:key="campaignId" data-id="{{item.campaignId}}" bindtap="onOpenCampaign">
+            <view class="entry-heading"><text class="entry-title">{{item.title}}</text><text class="status">{{item.availabilityLabel}}</text></view>
+            <text class="line">{{item.startsAtLabel}} 至 {{item.endsAtLabel}}</text>
+            <view class="entry-footer"><text>已报名 {{item.registeredCount}} · {{item.remainingRegistrations === null ? '不限名额' : '剩余 ' + item.remainingRegistrations + ' 名额'}}</text><text class="entry-arrow">›</text></view>
+          </button>
+        </view>
+        <view wx:else class="entries">
+          <button class="entry" wx:for="{{registrations}}" wx:key="registrationId" data-id="{{item.registrationId}}" bindtap="onOpenRegistration">
+            <view class="entry-heading"><text class="entry-title">{{item.title}}</text><text class="status">{{item.statusLabel}}</text></view>
+            <text class="line">报名时间 {{item.registeredAtLabel}}</text>
+            <view class="entry-footer"><text>原活动截止 {{item.endsAtLabel}}</text><text class="entry-arrow">›</text></view>
+          </button>
+        </view>
+        <button wx:if="{{hasMore}}" class="secondary-button" loading="{{loadingMore}}" disabled="{{reading}}" bindtap="onReachBottom">加载更多</button>
+      </block>
+      <view wx:elif="{{mode === 'campaign' && campaign}}" class="detail">
+        <view class="detail-heading"><text class="detail-title">{{campaign.configuration.title}}</text><text class="status">{{availabilityLabel}}</text></view>
+        <text class="description">{{campaign.configuration.shareDescription}}</text>
+        <view wx:if="{{campaign.configuration.images.cover}}">
+          <text class="section-label">活动封面</text>
+          <image class="campaign-image campaign-image--cover" src="{{campaign.configuration.images.cover.accessUrl}}" mode="aspectFit" />
+        </view>
+        <view wx:if="{{campaign.configuration.images.share}}">
+          <text class="section-label">转发图</text>
+          <image class="campaign-image campaign-image--share" src="{{campaign.configuration.images.share.accessUrl}}" mode="aspectFit" />
+        </view>
+        <view wx:if="{{campaign.configuration.activityContent}}">
+          <text class="section-label">活动正文</text>
+          <text class="description">{{campaign.configuration.activityContent}}</text>
+        </view>
+        <view class="facts">
+          <text>开始 {{startsAtLabel}}</text><text>结束 {{endsAtLabel}}</text>
+          <text>登记费用 ¥0 · 不发放课时</text>
+          <text>已报名 {{campaign.registeredCount}} · {{campaign.remainingRegistrations === null ? '不限名额' : '剩余 ' + campaign.remainingRegistrations + ' 名额'}}</text>
+          <text wx:if="{{campaign.configuration.contactPhone}}">机构电话 {{campaign.configuration.contactPhone}}</text>
+        </view>
+        <button wx:if="{{campaign.availability === 'REPLACED'}}" class="secondary-button" disabled="{{busy || reading || uncertain}}" bindtap="onLatest">查看最新版本</button>
+        <text class="section-label">选择已绑定孩子</text>
+        <radio-group bindchange="onStudentChange">
+          <label wx:for="{{campaign.eligibleStudents}}" wx:key="studentId" class="student">
+            <radio value="{{item.studentId}}" checked="{{selectedStudentId === item.studentId}}" disabled="{{busy || reading || uncertain || item.eligibility !== 'ELIGIBLE'}}" color="#e37417" />
+            <view class="student-info"><text>{{item.displayName}}</text><text wx:if="{{item.eligibility !== 'ELIGIBLE'}}" class="line">本活动报名资格已使用</text></view>
+            <button wx:if="{{item.registration}}" class="result-button" data-id="{{item.registration.registrationId}}" catchtap="onOpenRegistration" disabled="{{busy || uncertain}}">查看结果</button>
+          </label>
+        </radio-group>
+        <text wx:if="{{!campaign.eligibleStudents.length}}" class="line">暂无同校区有效绑定孩子</text>
+        <button class="primary-button" loading="{{busy}}" disabled="{{busy || reading || (!uncertain && !canRegister)}}" bindtap="onRegister">{{uncertain ? '重试原报名' : '确认报名'}}</button>
+      </view>
+      <view wx:elif="{{mode === 'registration' && registration}}" class="detail">
+        <view class="detail-heading"><text class="detail-title">{{registration.title}}</text><text class="status">{{registration.statusLabel}}</text></view>
+        <view class="facts">
+          <text>报名时间 {{registration.registeredAtLabel}}</text>
+          <text>原活动开始 {{registration.startsAtLabel}}</text><text>原活动截止 {{registration.endsAtLabel}}</text>
+          <text wx:if="{{registration.cancelledAt}}">已保留撤销记录</text>
+        </view>
+        <button wx:if="{{registration.canCancel && !uncertain}}" class="cancel-button" loading="{{busy}}" disabled="{{busy || reading || confirming || conflict}}" bindtap="onCancel">撤销报名</button>
+        <button wx:if="{{uncertain}}" class="primary-button" disabled="{{busy}}" loading="{{busy}}" bindtap="onRetryWrite">重试原撤销</button>
+      </view>
+    </block>
+    <text wx:if="{{actionMessage}}" class="notice" aria-live="polite">{{actionMessage}}</text>
+    <text wx:if="{{errorMessage && viewState === 'ready'}}" class="notice">{{errorMessage}}</text>
+    <button wx:if="{{conflict || readbackRequired || (errorMessage && viewState === 'ready')}}" class="secondary-button" disabled="{{busy || reading || uncertain}}" bindtap="onReload">重新读取</button>
+  </view>
+</parent-page-shell>

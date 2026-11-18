@@ -1,10 +1,11 @@
 <teacher-page-shell
   markTitle="我的"
-  markIcon="/pages/teacher/assets/icon-students.png"
+  markIcon="/pages/teacher/assets/profile-mark-pdf.png" markIconSize="38"
   tone="white"
   showBack="{{true}}"
   plainMark="{{true}}"
 >
+  <view slot="tools"><button wx:if="{{viewState === 'ready'}}" class="profile-tools-button" aria-label="更多功能" bindtap="onOpenTools">⋯</button></view>
   <view class="profile">
     <view wx:if="{{viewState === 'loading'}}" class="page-state" aria-live="polite">
       <text class="page-state__title">正在加载教师资料</text>
@@ -24,15 +25,16 @@
     <block wx:else>
       <view class="profile__hero">
         <view class="profile__identity-card" aria-label="教师身份信息">
-          <text class="profile__name">{{displayName}}</text>
-          <view class="profile__meta">
-            <view class="profile__subject-row">
-              <text class="profile__subject-label">授课</text>
-              <view class="profile__subject-list">
-                <text class="profile__subject" wx:for="{{subjectLines}}" wx:key="*this">{{item}}</text>
+          <view class="profile__identity-text">
+            <text class="profile__name {{displayName.length > 4 ? 'profile__name--compact' : ''}}">{{displayName}}</text>
+            <view class="profile__meta {{subjectLabel.length > 2 ? 'profile__meta--compact' : ''}}">
+              <view class="profile__subject-row" aria-label="授课科目">
+                <view class="profile__subject-list">
+                  <text class="profile__subject" wx:for="{{subjectLines}}" wx:key="*this">{{item}}</text>
+                </view>
               </view>
+              <text class="profile__student-count {{studentCountCompact ? 'profile__student-count--compact' : ''}}">{{studentCount}}人</text>
             </view>
-            <text class="profile__student-count {{studentCountCompact ? 'profile__student-count--compact' : ''}}">负责 {{studentCount}} 名学员</text>
           </view>
         </view>
         <image
@@ -61,10 +63,15 @@
             bind:action="onAction"
           />
         </view>
-        <view class="profile-session">
-          <session-logout id="sessionLogout" />
-        </view>
       </view>
     </block>
+  </view>
+  <view wx:if="{{toolsOpen}}" class="profile-tools-layer">
+    <view class="profile-tools-backdrop" bindtap="onCloseTools"></view>
+    <view class="profile-tools-sheet" role="dialog" aria-label="更多功能">
+      <view class="profile-tools-heading"><text>更多功能</text><button bindtap="onCloseTools" aria-label="关闭更多功能">×</button></view>
+        <teacher-action-row wx:for="{{moreActions}}" wx:key="key" actionKey="{{item.key}}" label="{{item.label}}" commandLabel="查看" bullet="{{true}}" bind:action="onAction" />
+      <session-logout id="sessionLogout" />
+    </view>
   </view>
 </teacher-page-shell>

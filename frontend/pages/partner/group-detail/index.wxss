@@ -1,4 +1,5 @@
 @import "../../../styles/partner-workspace.wxss";
+@import "../styles/pdf-typography.wxss";
 
 .detail-page {
   padding-top: 8rpx;
@@ -374,4 +375,24 @@ button[disabled] {
     width: 440rpx;
     height: 660rpx;
   }
+}
+.detail-refresh-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+  color: #963b20;
+  font-size: 24rpx;
+}
+
+.detail-refresh-error text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.detail-refresh-error .partner-command {
+  flex-shrink: 0;
+  margin: 0;
 }

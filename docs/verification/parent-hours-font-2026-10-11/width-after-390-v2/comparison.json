@@ -1,0 +1,84 @@
+{
+  "scope": "sRGB visual contacts; reference crop is not a native viewport or full-page acceptance",
+  "referencePhysicalPage": 4,
+  "referenceCropPixels": [
+    98,
+    180,
+    586,
+    1238
+  ],
+  "inputs": [
+    {
+      "path": "tmp/pdfs/ui-source-audit-20261010-01a1258e/new/page-04.png",
+      "sha256": "a29d4d78a32984f44cd86d126b8d1d46b76c63b6926febc8d4a7714436114189"
+    },
+    {
+      "path": "\u7d20\u6750/UI\u66f4\u65b0\u5bb6\u957f+\u5408\u4f5c\u65b9(1).pdf",
+      "sha256": "4c7f7a49b70868a86af5d3e2ccbf910f42096d8a0e28f60c8fd04ef0409174b1"
+    },
+    {
+      "path": "docs/verification/parent-hours-font-2026-10-11/grant-after-390-v1/runtime.json",
+      "sha256": "ad9cf7d24f9dbb771a18652847f29578a326490be9a30c5f2852acd3db8bb27a"
+    },
+    {
+      "path": "docs/verification/parent-hours-font-2026-10-11/width-after-390-v2/runtime.json",
+      "sha256": "4e989c9cf6b62eb7621827b702524cabba57056cae5c2da3ade3864c21c43ec1"
+    },
+    {
+      "path": "docs/verification/parent-hours-font-2026-10-11/grant-after-390-v1/standard-top.png",
+      "sha256": "79e5aea087bf82efc2f185eb93e3d88637cc5cdadc7110e24f1fc319fb1dc53e"
+    },
+    {
+      "path": "docs/verification/parent-hours-font-2026-10-11/width-after-390-v2/standard-top.png",
+      "sha256": "c672229b97d6834a63c172c55bb405d739afc71ca2674721f58354533fc16f41"
+    },
+    {
+      "path": "docs/verification/parent-hours-font-2026-10-11/grant-after-390-v1/wide-two-top.png",
+      "sha256": "5d2d677f5e46b5cdb3837c72d951f8222860d0fd6aba1f86168f07a9483941b2"
+    },
+    {
+      "path": "docs/verification/parent-hours-font-2026-10-11/width-after-390-v2/wide-two-top.png",
+      "sha256": "3fa30d7c7b75c7849fedcc950a0fcb97d0e0123a60c3a93436870ba4fe30d5d0"
+    },
+    {
+      "path": "docs/verification/parent-hours-font-2026-10-11/grant-after-390-v1/wide-many-top.png",
+      "sha256": "f4a40d9ad8e83a7dbe6380625bb8d20108efd3bba68a678cd40765697f47ffb5"
+    },
+    {
+      "path": "docs/verification/parent-hours-font-2026-10-11/width-after-390-v2/wide-many-top.png",
+      "sha256": "9625735d303e66fa2c88b206741123ced9d80863d4bc733786ee72acd5d99e03"
+    },
+    {
+      "path": "docs/verification/parent-hours-font-2026-10-11/grant-after-390-v1/decimal-top.png",
+      "sha256": "70ed597dd0b6c2d56a52a0de2f5e22bb64265819f8285cdf3375c22bdf1dc6d7"
+    },
+    {
+      "path": "docs/verification/parent-hours-font-2026-10-11/width-after-390-v2/decimal-top.png",
+      "sha256": "f097667fdf65dc703b08f7c2abce5b0ba4aca565ad23c6a94a893c93725a665a"
+    },
+    {
+      "path": "docs/verification/parent-hours-font-2026-10-11/grant-after-390-v1/zero-top.png",
+      "sha256": "45d3f4ee173cb182c066a2acce40d8e1cd7bf3341a4169201199f1ecf91c1cf9"
+    },
+    {
+      "path": "docs/verification/parent-hours-font-2026-10-11/width-after-390-v2/zero-top.png",
+      "sha256": "2405e50832435a4d1d4ada08f858ef78283b7b57d2da0b4c93c091baffc7dc16"
+    },
+    {
+      "path": "docs/verification/parent-hours-font-2026-10-11/grant-after-390-v1/unknown-top.png",
+      "sha256": "eb6bd9134ab486bc24af2591b43cc3cf3ee10c28bc2533ede9d9abb565baaca9"
+    },
+    {
+      "path": "docs/verification/parent-hours-font-2026-10-11/width-after-390-v2/unknown-top.png",
+      "sha256": "868fbb27e525d48e92cdc9b96518dbf1b8e9f69036ba98996770132d699b7609"
+    },
+    {
+      "path": "docs/verification/parent-hours-font-2026-10-11/grant-after-390-v1/single-top.png",
+      "sha256": "acefd19fcdc963aa172828f662b3dbb5144c715f39a3a14c6e0363552bbcde69"
+    },
+    {
+      "path": "docs/verification/parent-hours-font-2026-10-11/width-after-390-v2/single-top.png",
+      "sha256": "0b5e6e3771141941562e59da594771326561cc12ac502880ffabaa63db5ac54e"
+    }
+  ]
+}

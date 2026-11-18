@@ -1,0 +1,191 @@
+<template name="application-basics">
+  <view class="application__basics {{applicationId && !formalArchive ? 'application__basics--saved' : ''}}">
+    <view wx:if="{{archiveEmpty}}" class="application__state" aria-live="polite">
+      <text>暂无入驻申请档案</text>
+    </view>
+    <view wx:else class="application__form">
+      <text class="application__section-title">机构基础信息</text>
+      <view class="application__field">
+        <text class="application__label">机构名称</text>
+        <input id="institution-name" class="application__input" data-field="institutionName" value="{{form.institutionName}}" maxlength="200" placeholder="机构名称" disabled="{{readonly || saving || bankSaving || materialsWorking || submitting || submitUncertain}}" bindinput="onFieldInput" confirm-type="next" />
+      </view>
+      <view class="application__field">
+        <text class="application__label">联系电话</text>
+        <input id="institution-contact-phone" class="application__input" data-field="contactPhone" type="text" value="{{form.contactPhone}}" maxlength="30" placeholder="联系电话" disabled="{{readonly || saving || bankSaving || materialsWorking || submitting || submitUncertain}}" bindinput="onFieldInput" confirm-type="next" cursor-spacing="32" />
+      </view>
+      <view class="application__field">
+        <text class="application__label">校区位置</text>
+        <view class="application__region-row">
+          <picker id="institution-region" class="application__region" mode="region" value="{{region}}" disabled="{{readonly || saving || bankSaving || materialsWorking || submitting || submitUncertain}}" bindchange="onRegionChange">
+            <view class="application__region-value">
+              <text class="{{regionLabel ? '' : 'application__placeholder'}}">{{regionLabel || '省 / 市 / 区'}}</text>
+              <text aria-hidden="true">▾</text>
+            </view>
+          </picker>
+          <button wx:if="{{regionLabel && !readonly}}" class="application__clear" aria-label="清空省市区" bindtap="onClearRegion" disabled="{{saving || bankSaving || materialsWorking || submitting || submitUncertain}}">×</button>
+        </view>
+      </view>
+      <view class="application__field">
+        <text class="application__label">详细地址</text>
+        <textarea id="institution-address" class="application__address" data-field="detailedAddress" value="{{form.detailedAddress}}" maxlength="300" placeholder="详细地址" disabled="{{readonly || saving || bankSaving || materialsWorking || submitting || submitUncertain}}" bindinput="onFieldInput" auto-height="{{true}}" cursor-spacing="32" show-confirm-bar="{{true}}" />
+      </view>
+    </view>
+    <view class="application__feedback" aria-live="polite">
+      <text wx:if="{{message}}" class="application__message">{{message}}</text>
+      <text wx:elif="{{dirty}}" class="application__unsaved">有未保存的修改</text>
+    </view>
+    <button wx:if="{{needsVersionRefresh && !readonly}}" class="application__reload" bindtap="onConflictReload" disabled="{{saving || bankSaving || materialsWorking}}" hover-class="application__hover">读取最新版本</button>
+    <button wx:if="{{!readonly}}" id="application-save" class="application__primary" bindtap="onSave" disabled="{{saving || bankSaving || materialsWorking || needsVersionRefresh || submitting || submitUncertain}}" loading="{{saving}}" hover-class="application__hover">{{saving ? '保存中' : '保存草稿'}}</button>
+  </view>
+</template>
+
+<template name="application-material-row">
+  <view class="application__material-row {{row.kind === 'STORE_FRONT' || row.kind === 'ENVIRONMENT' ? 'application__material-row--wide' : ''}}">
+    <view class="application__material-heading {{row.files.length ? 'application__material-heading--filled' : ''}}">
+      <text class="application__label">{{row.title}}</text>
+      <button wx:if="{{!readonly && !materialsReadonly}}" class="application__material-add {{row.files.length ? 'application__material-add--compact' : ''}}" aria-label="{{row.files.length && row.kind !== 'ENVIRONMENT' ? '更换' : '选择'}}{{row.title}}" data-kind="{{row.kind}}" bindtap="onMaterialChoose" disabled="{{!materialsVersion || saving || bankSaving || materialsWorking || materialsPending || materialsNeedsRefresh || row.full || submitting || submitUncertain}}" hover-class="application__hover">{{row.files.length && row.kind !== 'ENVIRONMENT' ? '更换' : '+'}}</button>
+    </view>
+    <view class="application__material-files">
+      <view wx:for="{{row.files}}" wx:for-item="file" wx:key="storedFileId" class="application__material-file">
+        <button class="application__material-preview" aria-label="预览{{row.title}}" data-id="{{file.storedFileId}}" bindtap="onMaterialPreview" disabled="{{saving || bankSaving || materialsWorking || submitting || submitUncertain}}" hover-class="application__hover">
+          <image wx:if="{{file.localPath}}" class="application__material-image" src="{{file.localPath}}" mode="aspectFit" />
+          <text wx:else class="application__material-file-label">{{row.title}}</text>
+          <text class="application__material-caption">{{file.label}}</text>
+          <text wx:if="{{!file.saved}}" class="application__material-caption">未保存</text>
+        </button>
+        <button wx:if="{{!readonly && !materialsReadonly}}" class="application__material-remove" aria-label="移除{{row.title}}" data-id="{{file.storedFileId}}" bindtap="onMaterialRemove" disabled="{{saving || bankSaving || materialsWorking || materialsPending || materialsNeedsRefresh || submitting || submitUncertain}}" hover-class="application__hover">×</button>
+      </view>
+    </view>
+    <text wx:if="{{(readonly || materialsReadonly) && !row.files.length}}" class="application__material-empty">暂无材料</text>
+  </view>
+</template>
+
+<partner-approved-role-badge id="partner-identity-badge" blocked="{{viewState === 'forbidden'}}" />
+<view class="application">
+  <view class="application__header" style="padding-top: {{headerTopPx}}px; padding-right: {{headerRightPx}}px;">
+    <button class="application__back" aria-label="返回上一页" bindtap="onBack" disabled="{{saving || loggingIn || bankSaving || materialsWorking || submitting}}" hover-class="application__hover">‹</button>
+    <image class="application__icon" src="/pages/partner/assets/icon-application.png" mode="aspectFit" aria-hidden="true" />
+    <text class="application__role">{{formalArchive ? '入驻档案' : '入驻申请'}}</text>
+  </view>
+  <view class="application__body">
+    <text class="application__title">申请入驻</text>
+    <view wx:if="{{viewState === 'loading'}}" class="application__state" aria-live="polite">
+      <text>正在读取草稿</text>
+    </view>
+    <view wx:elif="{{viewState === 'login'}}" class="application__state">
+      <button id="applicant-login" class="application__primary" bindtap="onApplicantLogin" loading="{{loggingIn}}" disabled="{{loggingIn}}" hover-class="application__hover">微信登录申请</button>
+      <text wx:if="{{errorMessage}}" class="application__message" aria-live="polite">{{errorMessage}}</text>
+    </view>
+    <view wx:elif="{{viewState === 'error' || viewState === 'forbidden'}}" class="application__state">
+      <text class="application__message" aria-live="polite">{{errorMessage}}</text>
+      <button class="application__primary" bindtap="onRetry" hover-class="application__hover">重试</button>
+    </view>
+    <block wx:else>
+      <view class="application__identity">
+        <text class="application__identity-name">{{identityLabel}}</text>
+        <text class="application__status">{{statusLabel}}</text>
+      </view>
+      <view wx:if="{{!formalArchive}}" class="application__history">
+        <text class="application__section-title">审核记录</text>
+        <text wx:if="{{historyLoading}}" class="application__message">正在读取审核记录</text>
+        <view wx:for="{{reviewHistory}}" wx:key="submissionId" class="application__history-row">
+          <text>送审版本 {{item.submissionVersion}}</text>
+          <text>送审时间（北京时间）{{item.submittedLabel}}</text>
+          <text wx:if="{{item.review}}">审核时间（北京时间）{{item.reviewedLabel}}</text>
+          <text wx:if="{{item.review}}">{{item.review.decision === 'REJECTED' ? '驳回原因：' : '审核通过'}}{{item.review.reason}}</text>
+          <text wx:else>等待审核</text>
+        </view>
+        <text wx:if="{{historyMessage}}" class="application__message" aria-live="polite">{{historyMessage}}</text>
+        <button wx:if="{{historyMessage}}" class="application__secondary" disabled="{{historyLoading || reopening}}" bindtap="onHistoryRetry">重读审核记录</button>
+        <button wx:if="{{historyMore}}" class="application__secondary" disabled="{{historyLoading || reopening}}" bindtap="onHistoryMore">较早记录</button>
+        <button wx:if="{{canReopen || reopenUncertain}}" id="application-reopen" class="application__primary" disabled="{{historyLoading || reopening || saving || bankSaving || materialsWorking || submitting}}" loading="{{reopening}}" bindtap="onReopen">{{reopening ? '正在开始补交' : reopenUncertain ? '重试补交' : '修改并补交'}}</button>
+      </view>
+      <view class="application__stage {{archiveEmpty ? 'application__stage--empty' : ''}}">
+      <image wx:if="{{!archiveEmpty}}" class="application__character" src="/pages/partner/assets/lesson-account-top-character.png" mode="aspectFit" aria-hidden="true" />
+      <view class="application__panel {{archiveEmpty ? 'application__panel--empty' : ''}}">
+      <view wx:if="{{!archiveEmpty}}" class="application__character-clip" aria-hidden="true">
+        <image class="application__character application__character--muted" src="/pages/partner/assets/lesson-account-top-character.png" mode="aspectFit" />
+      </view>
+      <view class="application__panel-content">
+      <template wx:if="{{formalArchive || !applicationId}}" is="application-basics" data="{{applicationId, formalArchive, archiveEmpty, form, region, regionLabel, readonly, saving, bankSaving, materialsWorking, submitting, submitUncertain, message, dirty, needsVersionRefresh}}" />
+      <view wx:if="{{!formalArchive}}" class="application__materials application__materials--documents">
+        <button id="materials-toggle" class="application__bank-toggle" bindtap="onMaterialsToggle" disabled="{{saving || bankSaving || materialsWorking || materialsLoading || submitting || submitUncertain}}" aria-expanded="{{materialsOpen}}" hover-class="application__hover">
+          <text>入驻材料</text><text aria-hidden="true">{{materialsOpen ? '▴' : '▾'}}</text>
+        </button>
+        <block wx:if="{{materialsOpen}}">
+          <text wx:if="{{materialsLoading}}" class="application__bank-status" aria-live="polite">正在读取材料</text>
+          <block wx:elif="{{materialsLoaded}}">
+            <text wx:if="{{!materialsVersion}}" class="application__bank-status">请先保存机构信息</text>
+            <view class="application__material-grid">
+              <block wx:for="{{materialsRows}}" wx:for-item="row" wx:key="kind">
+                <template wx:if="{{row.kind !== 'STORE_FRONT' && row.kind !== 'ENVIRONMENT'}}" is="application-material-row" data="{{row, readonly, materialsReadonly, materialsVersion, saving, bankSaving, materialsWorking, materialsPending, materialsNeedsRefresh, submitting, submitUncertain}}" />
+              </block>
+            </view>
+          </block>
+        </block>
+      </view>
+      <view wx:if="{{!formalArchive}}" class="application__bank">
+        <button id="bank-toggle" class="application__bank-toggle" bindtap="onBankToggle" disabled="{{saving || bankSaving || bankLoading || materialsWorking || submitting || submitUncertain}}" aria-expanded="{{bankOpen}}" hover-class="application__hover">
+          <text>对公账户</text><text aria-hidden="true">{{bankOpen ? '▴' : '▾'}}</text>
+        </button>
+        <block wx:if="{{bankOpen}}">
+          <text wx:if="{{bankLoading}}" class="application__bank-status" aria-live="polite">正在读取银行信息</text>
+          <block wx:elif="{{bankLoaded}}">
+            <view class="application__bank-fields">
+            <view class="application__field">
+              <text class="application__label">开户行</text>
+              <input id="bank-name" class="application__input" data-field="bankName" type="text" value="{{bankForm.bankName}}" maxlength="200" placeholder="开户行" disabled="{{readonly || bankReadonly || saving || bankSaving || materialsWorking || submitting || submitUncertain}}" bindinput="onBankFieldInput" confirm-type="next" cursor-spacing="32" />
+            </view>
+            <view class="application__field">
+              <text class="application__label">账户名称</text>
+              <input id="bank-account-holder" class="application__input" data-field="accountHolder" type="text" value="{{bankForm.accountHolder}}" maxlength="200" placeholder="账户名称" disabled="{{readonly || bankReadonly || saving || bankSaving || materialsWorking || submitting || submitUncertain}}" bindinput="onBankFieldInput" confirm-type="next" cursor-spacing="32" />
+            </view>
+            <view class="application__field">
+              <text class="application__label">银行账号</text>
+              <input id="bank-account-number" class="application__input" data-field="accountNumber" type="text" value="{{bankForm.accountNumber}}" maxlength="80" placeholder="银行账号" disabled="{{readonly || bankReadonly || saving || bankSaving || materialsWorking || submitting || submitUncertain}}" bindinput="onBankFieldInput" confirm-type="done" cursor-spacing="32" />
+            </view>
+            </view>
+          </block>
+          <view class="application__feedback" aria-live="polite">
+            <text wx:if="{{bankMessage}}" class="application__message">{{bankMessage}}</text>
+            <text wx:elif="{{bankDirty}}" class="application__unsaved">银行信息有未保存的修改</text>
+          </view>
+          <button wx:if="{{bankNeedsRefresh}}" class="application__reload" bindtap="onBankConflictReload" disabled="{{saving || bankSaving || bankLoading || materialsWorking}}" hover-class="application__hover">读取银行最新版本</button>
+          <button wx:elif="{{bankMessage && !bankLoading}}" class="application__reload" bindtap="onBankRetry" disabled="{{saving || bankSaving || materialsWorking}}" hover-class="application__hover">重新读取银行信息</button>
+          <button wx:if="{{bankLoaded && !readonly && !bankReadonly}}" id="bank-save" class="application__primary" bindtap="onBankSave" disabled="{{saving || bankSaving || bankLoading || bankNeedsRefresh || materialsWorking || submitting || submitUncertain}}" loading="{{bankSaving}}" hover-class="application__hover">{{bankSaving ? '保存中' : '保存银行信息'}}</button>
+        </block>
+      </view>
+      <view wx:if="{{!formalArchive && materialsOpen}}" class="application__materials application__materials--environment">
+        <text class="application__section-title">校区环境</text>
+          <block wx:if="{{!materialsLoading && materialsLoaded}}">
+            <view class="application__material-grid">
+              <block wx:for="{{materialsRows}}" wx:for-item="row" wx:key="kind">
+                <template wx:if="{{row.kind === 'STORE_FRONT' || row.kind === 'ENVIRONMENT'}}" is="application-material-row" data="{{row, readonly, materialsReadonly, materialsVersion, saving, bankSaving, materialsWorking, materialsPending, materialsNeedsRefresh, submitting, submitUncertain}}" />
+              </block>
+            </view>
+            <block wx:if="{{!readonly && !materialsReadonly}}">
+              <button wx:if="{{materialsPending && !materialsNeedsRefresh}}" class="application__reload" bindtap="onMaterialRetryUpload" disabled="{{saving || bankSaving || materialsWorking || submitting || submitUncertain}}">恢复本次上传</button>
+              <view wx:for="{{materialsUploads}}" wx:key="uploadId" class="application__material-outstanding">
+                <text>{{item.label}} · {{item.state === 'COMPLETED' ? '已上传' : '上传未完成'}}</text>
+                <button wx:if="{{!materialsPending}}" class="application__material-recover" data-id="{{item.uploadId}}" bindtap="onMaterialRecover" disabled="{{saving || bankSaving || materialsWorking || materialsNeedsRefresh || submitting || submitUncertain}}" hover-class="application__hover">重新选择原图片</button>
+              </view>
+            </block>
+          </block>
+          <view class="application__feedback" aria-live="polite">
+            <text wx:if="{{materialsMessage}}" class="application__message">{{materialsMessage}}</text>
+            <text wx:elif="{{materialsDirty}}" class="application__unsaved">材料有未保存的修改</text>
+          </view>
+          <button wx:if="{{materialsMessage || materialsNeedsRefresh}}" class="application__reload" bindtap="onMaterialsRetry" disabled="{{saving || bankSaving || materialsWorking || materialsLoading}}">{{materialsNeedsRefresh ? '读取材料最新版本' : '重新读取材料'}}</button>
+          <button wx:if="{{materialsLoaded && materialsVersion && !readonly && !materialsReadonly}}" id="materials-save" class="application__primary" bindtap="onMaterialsSave" disabled="{{saving || bankSaving || materialsWorking || materialsLoading || materialsNeedsRefresh || materialsPending || submitting || submitUncertain}}" loading="{{materialsWorking}}" hover-class="application__hover">保存材料草稿</button>
+      </view>
+      <template wx:if="{{!formalArchive && applicationId}}" is="application-basics" data="{{applicationId, formalArchive, archiveEmpty, form, region, regionLabel, readonly, saving, bankSaving, materialsWorking, submitting, submitUncertain, message, dirty, needsVersionRefresh}}" />
+      </view>
+      </view>
+      </view>
+      <button wx:if="{{!formalArchive && !readonly}}" id="application-submit" class="application__primary" bindtap="onSubmit" loading="{{submitting}}" disabled="{{saving || loggingIn || bankSaving || bankLoading || materialsWorking || materialsLoading || submitting || needsVersionRefresh || bankNeedsRefresh || materialsNeedsRefresh}}" hover-class="application__hover">{{submitting ? '送审中' : submitUncertain ? '重试送审' : '提交审核'}}</button>
+      <button wx:if="{{submitUncertain && !readonly}}" class="application__reload" bindtap="onSubmissionReload" disabled="{{submitting}}">读取最新状态</button>
+      <button wx:if="{{approvalReady}}" class="application__primary" bindtap="onFormalLogin" hover-class="application__hover">正式微信登录</button>
+      <button wx:if="{{!formalArchive}}" class="application__logout" bindtap="onApplicantLogout" disabled="{{saving || loggingIn || bankSaving || materialsWorking || submitting}}" hover-class="application__hover">退出申请登录</button>
+    </block>
+  </view>
+</view>

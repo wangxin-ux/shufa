@@ -51,3 +51,16 @@ export class CampusManagerCreateStudentDto {
   @IsUUID('4')
   classGroupId?: string | null;
 }
+
+export class CampusManagerStudentGrowthQueryDto {
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page = 1;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  pageSize = 20;
+}

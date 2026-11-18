@@ -1,237 +1,37 @@
 .schedule-page {
-  padding-top: 28rpx;
+  /* PSD 首卡顶边落在波浪下方 36px 处，去掉右上工具条后由内距补回同一位置。 */
+  padding-top: 56rpx;
   padding-bottom: 60rpx;
 }
 
-.schedule-overview {
-  display: block;
-}
-
-.schedule-filter {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-  margin-top: 28rpx;
-}
-
-.schedule-filter picker {
-  flex: 1;
-}
-
-.schedule-filter__date,
-.schedule-filter__clear,
-.status-filter__item,
-.page-state__retry,
-.load-more {
-  min-height: var(--teacher-touch-min);
-  box-sizing: border-box;
-}
-
-.schedule-filter__date {
-  display: flex;
-  align-items: center;
-  padding: 0 24rpx;
-  border: 0;
-  border-radius: 16rpx;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 6rpx 14rpx rgba(66, 48, 15, 0.1);
-  font-size: 27rpx;
-}
-
-.schedule-filter__date-icon {
-  width: 42rpx;
-  height: 42rpx;
-  margin-right: 16rpx;
-}
-
-.schedule-filter__clear {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--teacher-touch-min);
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: var(--teacher-surface);
-  box-shadow: 0 6rpx 14rpx rgba(66, 48, 15, 0.1);
-  font-size: 42rpx;
-  color: var(--teacher-orange);
-}
-
-.schedule-filter__clear::after,
-.status-filter__item::after,
-.lesson-row::after,
+.lesson-row__toggle::after,
+.schedule-refresh__retry::after,
 .page-state__retry::after,
 .load-more::after {
   border: 0;
 }
 
-.status-filter {
-  width: 100%;
-  margin-top: 22rpx;
-  white-space: nowrap;
-}
-
-.status-filter__inner {
-  display: inline-flex;
-  gap: 12rpx;
-  padding-right: 24rpx;
-}
-
-.status-filter__item {
+.schedule-refresh {
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-width: 116rpx;
-  margin: 0;
-  padding: 0 22rpx;
-  border: 0;
-  border-radius: 16rpx;
-  background: rgba(255, 255, 255, 0.68);
-  font-size: 25rpx;
-  color: var(--teacher-muted);
+  justify-content: space-between;
+  gap: 18rpx;
+  margin-top: 24rpx;
+  font-size: 26rpx;
+  color: var(--teacher-ink);
 }
 
-.status-filter__item--active {
-  background: var(--teacher-ink);
-  font-weight: 700;
+.schedule-refresh__retry {
+  flex: none;
+  min-height: var(--teacher-touch-min);
+  margin: 0;
+  padding: 10rpx 24rpx;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 16rpx;
+  background: var(--teacher-orange);
+  font-size: 26rpx;
   color: #ffffff;
-}
-
-.lesson-list {
-  display: flex;
-  flex-direction: column;
-  gap: 18rpx;
-  margin-top: 32rpx;
-}
-
-.lesson-row {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  width: 100%;
-  min-height: 250rpx;
-  margin: 0;
-  padding: 26rpx 28rpx;
-  box-sizing: border-box;
-  border: 0;
-  border-left: 8rpx solid var(--teacher-orange);
-  border-radius: 16rpx;
-  background: var(--teacher-surface);
-  box-shadow: var(--teacher-shadow);
-  line-height: 1.25;
-  text-align: left;
-}
-
-.lesson-row--hover {
-  background: rgba(255, 215, 94, 0.18);
-}
-
-.lesson-row--disabled {
-  opacity: 0.62;
-}
-
-.lesson-row__topline {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18rpx;
-}
-
-.lesson-row__date,
-.lesson-row__course,
-.lesson-row__class,
-.lesson-row__campus {
-  max-width: 100%;
-  overflow-wrap: anywhere;
-}
-
-.lesson-row__date {
-  flex: 1;
-  min-width: 0;
-  font-size: 24rpx;
-  color: var(--teacher-muted);
-}
-
-.status-chip {
-  flex: none;
-  padding: 8rpx 16rpx;
-  border-radius: 14rpx;
-  font-size: 21rpx;
-  font-weight: 700;
-}
-
-.status-chip--success {
-  background: rgba(35, 135, 96, 0.12);
-  color: var(--teacher-success);
-}
-
-.status-chip--warning {
-  background: rgba(254, 132, 25, 0.14);
-  color: #a04400;
-}
-
-.status-chip--muted {
-  background: rgba(36, 59, 54, 0.09);
-  color: var(--teacher-muted);
-}
-
-.status-chip--danger {
-  background: rgba(201, 63, 72, 0.12);
-  color: var(--teacher-danger);
-}
-
-.lesson-row__course {
-  margin-top: 15rpx;
-  font-family: var(--teacher-font-display);
-  font-size: 36rpx;
-  font-weight: 700;
-  color: var(--teacher-ink);
-}
-
-.lesson-row__class {
-  margin-top: 8rpx;
-  font-size: 25rpx;
-  color: var(--teacher-ink);
-}
-
-.lesson-row__time {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18rpx;
-  margin-top: 20rpx;
-  min-height: 64rpx;
-  padding: 0 18rpx;
-  box-sizing: border-box;
-  border: 2rpx solid rgba(254, 132, 25, 0.2);
-  border-radius: 14rpx;
-  background: rgba(255, 215, 94, 0.22);
-  font-size: 23rpx;
-  color: var(--teacher-muted);
-}
-
-.lesson-row__time-icon {
-  flex: none;
-  width: 34rpx;
-  height: 34rpx;
-  margin-right: 10rpx;
-}
-
-.lesson-row__time-value {
-  flex: 1;
-  min-width: 0;
-  overflow-wrap: anywhere;
-  font-size: 27rpx;
-  font-weight: 700;
-  color: var(--teacher-ink);
-}
-
-.lesson-row__campus {
-  margin-top: 10rpx;
-  font-size: 22rpx;
-  color: var(--teacher-muted);
 }
 
 .page-state {
@@ -240,7 +40,7 @@
   align-items: flex-start;
   justify-content: center;
   min-height: 380rpx;
-  margin-top: 28rpx;
+  margin-top: 24rpx;
   padding: 32rpx;
   box-sizing: border-box;
   border-radius: var(--teacher-card-radius);
@@ -250,7 +50,7 @@
 .page-state__title {
   font-family: var(--teacher-font-display);
   font-size: 42rpx;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .page-state__message {
@@ -259,13 +59,14 @@
   color: var(--teacher-muted);
 }
 
-.page-state__retry,
-.load-more {
+.page-state__retry {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: var(--teacher-touch-min);
   margin: 26rpx 0 0;
   padding: 0 34rpx;
+  box-sizing: border-box;
   border: 0;
   border-radius: 16rpx;
   background: var(--teacher-orange);
@@ -273,9 +74,151 @@
   color: #ffffff;
 }
 
+.lesson-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+  margin-top: 24rpx;
+}
+
+.lesson-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  border: 0;
+  background: transparent;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.lesson-row__toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 32rpx 30rpx 24rpx;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 38rpx;
+  background: var(--teacher-orange);
+  box-shadow: 0 4rpx 14rpx rgba(0, 32, 54, 0.30);
+  line-height: 1.25;
+  text-align: left;
+}
+
+.lesson-row--today .lesson-row__toggle {
+  background: #2dc02d;
+}
+
+.lesson-row--hover {
+  filter: brightness(1.08);
+}
+
+.lesson-row__main {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  /* PSD 折叠卡实测 112px，配合 32/24rpx 内距取 109rpx。 */
+  min-height: 109rpx;
+}
+
+.lesson-row__time {
+  flex: none;
+  display: flex;
+  align-items: center;
+}
+
+.lesson-row__time-value {
+  font-family: var(--teacher-font-display);
+  font-size: 95rpx;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: 2rpx;
+  color: #ffffff;
+  /* 显示字体比 PSD 手写体宽约 12%，横向压缩 0.9 还原时间与校名之间的留白。 */
+  transform: none;
+  transform-origin: 0 50%;
+}
+
+.lesson-row__ident {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 430rpx;
+  margin-left: auto;
+  text-align: right;
+}
+
+.lesson-row__campus,
+.lesson-row__class {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-family: var(--teacher-font-display);
+  font-size: 37rpx;
+  font-weight: 400;
+  line-height: 48rpx;
+  color: #ffffff;
+}
+
+.lesson-row__class {
+  font-size: 37rpx;
+  line-height: 48rpx;
+}
+
+.lesson-detail {
+  position: relative;
+  margin-top: 24rpx;
+  padding: 18rpx 30rpx 18rpx 34rpx;
+  box-sizing: border-box;
+  border-radius: 38rpx;
+  background: var(--teacher-orange);
+  box-shadow: 0 4rpx 14rpx rgba(0, 32, 54, 0.30);
+}
+
+.lesson-detail__counts {
+  display: flex;
+  flex-direction: column;
+  font-size: 35rpx;
+  font-weight: 700;
+  line-height: 50rpx;
+  color: #ffffff;
+}
+
+.lesson-detail__counts text {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.lesson-detail__warning {
+  align-self: flex-start;
+  padding: 0 10rpx;
+  border-radius: 10rpx;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
 .load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   align-self: center;
   min-width: 220rpx;
+  min-height: var(--teacher-touch-min);
+  margin: 36rpx 0 0;
+  padding: 0 34rpx;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 32rpx;
+  color: #ffffff;
 }
 
 .control--hover {

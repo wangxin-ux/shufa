@@ -3,7 +3,10 @@ import * as path from 'path';
 import {
   buildTeacherProfilePageModel,
   resolveTeacherProfileAction,
+  teacherAvatarInitial,
   TEACHER_PROFILE_ACTIONS,
+  TEACHER_PRIMARY_PROFILE_ACTIONS,
+  TEACHER_MORE_PROFILE_ACTIONS,
 } from '../services/teacher-profile.presenter';
 
 describe('teacher profile presenter', () => {
@@ -18,12 +21,22 @@ describe('teacher profile presenter', () => {
 
     expect(model).toEqual({
       displayName: '林老师名字很长但仍需完整显示',
+      avatarInitial: '林',
       subjectLabel: '综合材料创作与跨学科艺术课程',
       subjectLines: ['综合材料创作与跨学科艺术课程'],
       campusName: '城东青少年成长中心旗舰校区',
       studentCount: '135',
       studentCountCompact: true,
     });
+  });
+
+  it('derives the avatar badge from the first visible character only', () => {
+    expect(teacherAvatarInitial('  周敏')).toBe('周');
+    expect(teacherAvatarInitial('周')).toBe('周');
+    expect(teacherAvatarInitial('')).toBe('师');
+    expect(teacherAvatarInitial('   ')).toBe('师');
+    // 代理对字符不能被截成半个汉字（Array.from 按码点切分）
+    expect(teacherAvatarInitial('𠮷老师')).toBe('𠮷');
   });
 
   it('splits multiple course names into deliberate rows', () => {
@@ -109,8 +122,7 @@ describe('teacher profile presenter', () => {
     );
   });
 
-  it('keeps the white source page while demoting the mark beside the back control', () => {
-    const root = path.resolve(__dirname, '..');
+  it('keeps the white source page while demoting the mark beside the back control', () => {    const root = path.resolve(__dirname, '..');
     const pageMarkup = fs.readFileSync(
       path.join(root, 'pages/teacher/profile/index.wxml'),
       'utf8',
@@ -144,13 +156,18 @@ describe('teacher profile presenter', () => {
     );
     const subjectRule = styles.match(/\.profile__subject\s*\{([^}]*)\}/s)?.[1] ?? '';
 
-    expect(markup).toContain('class="profile__subject-label">授课</text>');
+    expect(markup).toContain('aria-label="授课科目"');
     expect(markup).toContain('wx:for="{{subjectLines}}"');
-    expect(markup).toContain('负责 {{studentCount}} 名学员');
+    expect(markup).toContain('{{studentCount}}人');
     expect(styles).toMatch(
-      /\.profile__meta\s*\{[^}]*flex-direction:\s*column/s,
+      /\.profile__meta\s*\{[^}]*flex-wrap:\s*wrap/s,
     );
     expect(subjectRule).toContain('white-space: normal');
     expect(subjectRule).not.toContain('text-overflow: ellipsis');
   });
+});
+
+it('keeps the approved PDF primary order and every existing route in More', () => {
+  expect(TEACHER_PRIMARY_PROFILE_ACTIONS.map(item => item.key)).toEqual(["schedule", "students", "earnings"]);
+  expect([...TEACHER_PRIMARY_PROFILE_ACTIONS, ...TEACHER_MORE_PROFILE_ACTIONS].map(item => item.key).sort()).toEqual(TEACHER_PROFILE_ACTIONS.map(item => item.key).sort());
 });

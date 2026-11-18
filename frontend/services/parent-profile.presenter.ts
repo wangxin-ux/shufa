@@ -4,7 +4,20 @@ export type ParentProfileAction =
   | 'student'
   | 'messages'
   | 'hours'
-  | 'groups';
+  | 'groups'
+  | 'campuses'
+  | 'offers'
+  | 'shop';
+
+export const PARENT_PROFILE_ACTIONS: ReadonlyArray<{
+  key: ParentProfileAction; label: string; commandLabel: string;
+}> = [
+  { key: 'student', label: '学员资料', commandLabel: '查看' },
+  { key: 'campuses', label: '门店导航', commandLabel: '查看' },
+  { key: 'hours', label: '课时记录', commandLabel: '查看' },
+  { key: 'offers', label: '优惠活动', commandLabel: '查看' },
+  { key: 'shop', label: '购物商城', commandLabel: '查看' },
+];
 
 export interface ParentProfilePageModel {
   isEmpty: boolean;
@@ -76,7 +89,16 @@ export function resolveParentProfileAction(
   action: ParentProfileAction,
 ): ParentProfileActionResult {
   if (action === 'student') {
-    return { kind: 'navigate', url: '/pages/parent/student-profile/index' };
+    return { kind: 'navigate', url: '/pages/parent/updates/index' };
+  }
+  if (action === 'campuses') {
+    return { kind: 'navigate', url: '/pages/parent/courses/index?section=map' };
+  }
+  if (action === 'offers') {
+    return { kind: 'navigate', url: '/pages/parent/courses/index' };
+  }
+  if (action === 'shop') {
+    return { kind: 'toast', title: '待上架' };
   }
   if (action === 'hours') {
     return { kind: 'navigate', url: '/pages/parent/hours/index' };

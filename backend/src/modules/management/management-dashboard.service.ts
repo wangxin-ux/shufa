@@ -169,7 +169,10 @@ export class ManagementDashboardService {
             },
             select: {
               id: true,
-              attendanceRecords: { select: { status: true } },
+              attendanceRecords: {
+                where: { includedInFinalRoster: true },
+                select: { status: true },
+              },
             },
           },
         },

@@ -1,6 +1,7 @@
 import {
   resolveRoleBootstrap,
   RoleBootstrapResult,
+  SessionView,
   sessionService,
 } from '../../services/session.service';
 
@@ -18,6 +19,10 @@ function isValidPhone(phone: string): boolean {
 }
 
 Page({
+  inactive: false,
+  appNavigating: false,
+  appSequence: 0,
+  pendingSession: Promise.resolve<SessionView | null>(null),
   data: {
     viewState: 'loading',
     errorMessage: '',
@@ -33,15 +38,24 @@ Page({
     void this.loadSession();
   },
 
-  async loadSession() {
-    this.setData({ viewState: 'loading', errorMessage: '' });
+  loadSession() {
+    return this.useSession(() => sessionService.load(), 'loading', '会话加载失败，请重试');
+  },
+
+  async useSession(action: () => Promise<SessionView | null>, viewState: string, fallback: string) {
+    if (this.inactive || this.appNavigating) return;
+    const sequence = ++this.appSequence;
+    this.setData({ viewState, errorMessage: '' });
+    const pending = this.pendingSession = action();
+    const sameSession = sessionService.sessionGuard();
+    const current = () => !this.inactive && sequence === this.appSequence && sameSession();
     try {
-      this.applyBootstrapResult(resolveRoleBootstrap(await sessionService.load()));
+      const session = await pending;
+      if (current()) this.applyBootstrapResult(resolveRoleBootstrap(session));
     } catch (error) {
-      this.setData({
-        viewState: 'error',
-        errorMessage:
-          error instanceof Error ? error.message : '会话加载失败，请重试',
+      if (current()) this.setData({
+        viewState: viewState === 'loading' ? 'error' : 'login',
+        errorMessage: error instanceof Error ? error.message : fallback,
       });
     }
   },
@@ -56,31 +70,24 @@ Page({
     });
   },
 
-  onPhoneInput(event: WechatMiniprogram.Input) {
-    const phone = String(event.detail.value ?? '')
-      .replace(/\D/g, '')
-      .slice(0, 11);
+  updatePhoneForm(phone: string, verificationCode: string) {
     this.setData({
       phone,
+      verificationCode,
       canRequestCode: isValidPhone(phone),
-      canSubmit:
-        isValidPhone(phone) &&
-        /^\d{6}$/.test(String(this.data.verificationCode ?? '')),
+      canSubmit: isValidPhone(phone) && /^\d{6}$/.test(verificationCode),
       errorMessage: '',
     });
   },
 
+  onPhoneInput(event: WechatMiniprogram.Input) {
+    this.updatePhoneForm(String(event.detail.value ?? '').replace(/\D/g, '').slice(0, 11),
+      String(this.data.verificationCode ?? ''));
+  },
+
   onVerificationCodeInput(event: WechatMiniprogram.Input) {
-    const verificationCode = String(event.detail.value ?? '')
-      .replace(/\D/g, '')
-      .slice(0, 6);
-    this.setData({
-      verificationCode,
-      canSubmit:
-        isValidPhone(String(this.data.phone ?? '')) &&
-        /^\d{6}$/.test(verificationCode),
-      errorMessage: '',
-    });
+    this.updatePhoneForm(String(this.data.phone ?? ''),
+      String(event.detail.value ?? '').replace(/\D/g, '').slice(0, 6));
   },
 
   async onRequestPhoneCodeTap() {
@@ -124,27 +131,16 @@ Page({
       this.setData({ errorMessage: '请输入正确的手机号和6位验证码' });
       return;
     }
-    this.setData({ viewState: 'submitting', errorMessage: '' });
-    try {
-      this.applyBootstrapResult(
-        resolveRoleBootstrap(
-          await sessionService.loginWithTestPhoneCode(phone, verificationCode),
-        ),
-      );
-    } catch (error) {
-      this.setData({
-        viewState: 'login',
-        errorMessage:
-          error instanceof Error
-            ? error.message
-            : '手机号验证码登录失败，请重试',
-      });
-    }
+    return this.useSession(
+      () => sessionService.loginWithTestPhoneCode(phone, verificationCode),
+      'submitting', '手机号验证码登录失败，请重试',
+    );
   },
 
   async onWechatPhoneTap(event: {
     detail: { code?: string; errMsg?: string };
   }) {
+    if (this.inactive || this.appNavigating || this.data.viewState !== 'login') return;
     const phoneCode = event.detail.code?.trim() ?? '';
     if (!phoneCode) {
       this.setData({
@@ -153,27 +149,48 @@ Page({
       });
       return;
     }
-    this.setData({ viewState: 'submitting', errorMessage: '' });
-    try {
-      this.applyBootstrapResult(
-        resolveRoleBootstrap(
-          await sessionService.bindWechatStaffPhone(phoneCode),
-        ),
-      );
-    } catch (error) {
-      this.setData({
-        viewState: 'login',
-        errorMessage:
-          error instanceof Error ? error.message : '微信手机号登录失败，请重试',
-      });
-    }
+    return this.useSession(
+      () => sessionService.bindWechatStaffPhone(phoneCode),
+      'submitting', '微信手机号登录失败，请重试',
+    );
   },
 
   onRetry() {
     void this.loadSession();
   },
 
+  onWechatLoginTap() {
+    if (this.data.isTestAccountLogin || this.data.viewState !== 'login') return;
+    this.openLoginRoute('/pages/partner/login/index');
+  },
+  async onShow() {
+    const resume = this.inactive && ['loading', 'submitting'].includes(this.data.viewState);
+    this.inactive = false;
+    this.appNavigating = false;
+    if (!resume) return;
+    const sequence = ++this.appSequence;
+    const sameSession = sessionService.sessionGuard();
+    try { await this.pendingSession; } catch {}
+    if (!this.inactive && sequence === this.appSequence && sameSession()) void this.loadSession();
+  },
+  onHide() { this.inactive = true; this.appSequence += 1; },
+  onOpenApplication() {
+    this.openLoginRoute('/pages/partner/application/index');
+  },
+  openLoginRoute(url: string) {
+    if (this.inactive || this.appNavigating ||
+        !['login', 'forbidden', 'error'].includes(this.data.viewState)) return;
+    this.appNavigating = true;
+    const sequence = ++this.appSequence;
+    const fail = () => {
+      if (this.inactive || sequence !== this.appSequence) return;
+      this.appNavigating = false;
+      this.setData({ errorMessage: '页面打开失败，请重试' });
+    };
+    try { wx.navigateTo({ url, fail }); } catch { fail(); }
+  },
   onUnload() {
+    this.onHide();
     stopCodeCountdown();
   },
 });

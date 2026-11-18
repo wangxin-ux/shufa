@@ -1,0 +1,466 @@
+list:
+  get:
+    operationId: listPartnerApplicationsForReview
+    summary: List submitted applications for the independent headquarters review permission
+    description: >-
+      Requires exactly one headquarters SUPER_ADMIN role and PARTNER_APPLICATION_REVIEW,
+      rechecked against the current active account. Excludes the reviewer's own
+      application. Lists the latest immutable submission of each application;
+      no phone, bank plaintext, private file URL, key or storage metadata.
+      Name search matches submitted institution history. Accounts disabled during
+      a read are rejected before delivery. Default page 1, pageSize 20, maximum 100.
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: '#/parameters/Page' }
+      - { $ref: '#/parameters/PageSize' }
+      - name: status
+        in: query
+        schema: { $ref: './partner-application.openapi.yaml#/schemas/ApplicationStatus' }
+      - name: query
+        in: query
+        schema: { type: string, maxLength: 200 }
+    responses:
+      '200':
+        description: Minimal paginated application metadata.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/ListEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+detail:
+  parameters:
+    - { $ref: '#/parameters/ApplicationId' }
+    - { $ref: '#/parameters/SubmissionId' }
+  get:
+    operationId: getFrozenPartnerApplicationForReview
+    summary: Read a specified immutable submission and private material metadata
+    description: >-
+      Same exact role, permission and non-self-review checks as the list.
+      Uses the specified snapshot, including historical rejected submissions,
+      never the current draft's bank/material pointers. Active applicant required.
+      Access audit must succeed and fresh authorization is checked before delivery.
+      Bank information is fetched separately on demand.
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    responses:
+      '200':
+        description: Frozen basics and material metadata, current state and snapshot review.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/DetailEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+      '503': { $ref: '#/responses/PrivateUnavailable' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+bank:
+  parameters:
+    - { $ref: '#/parameters/ApplicationId' }
+    - { $ref: '#/parameters/SubmissionId' }
+  get:
+    operationId: getFrozenPartnerApplicationBankForReview
+    summary: Read the specified snapshot's bank plaintext on demand
+    description: >-
+      Exact independent reviewer authorization and non-self-review required.
+      Authenticate the immutable ciphertext's owner/application/version association.
+      Successful access audit and fresh account/role/snapshot checks precede delivery;
+      audit failure or unavailable keys rejects delivery. Cache-Control no-store
+      and X-Content-Type-Options nosniff. No plaintext in audit or idempotency.
+      Default private keys are unavailable; synthetic local tests only until
+      the formal material governance and deployment are authorized.
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    responses:
+      '200':
+        description: Authorized frozen bank information.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/BankEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+      '503': { $ref: '#/responses/PrivateUnavailable' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+image:
+  parameters:
+    - { $ref: '#/parameters/ApplicationId' }
+    - { $ref: '#/parameters/SubmissionId' }
+    - name: storedFileId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  get:
+    operationId: readFrozenPartnerApplicationMaterialForReview
+    summary: Read authorized private image bytes from the specified snapshot
+    description: >-
+      No public or signed URL. Authorization headers required on each request.
+      Authenticate owner, application, material kind and snapshot association before
+      and after decryption. Access audit must commit and authorization be rechecked
+      before byte delivery. Safe kind-generated filename, no-store and nosniff.
+      Same exact reviewer permission/nonself and test-only key boundary as bank read.
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    responses:
+      '200':
+        description: Authorized private JPEG or PNG.
+        content:
+          image/png:
+            schema: { type: string, format: binary }
+          image/jpeg:
+            schema: { type: string, format: binary }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+      '503': { $ref: '#/responses/PrivateUnavailable' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+reject:
+  parameters:
+    - { $ref: '#/parameters/ApplicationId' }
+    - { $ref: '#/parameters/SubmissionId' }
+  post:
+    operationId: rejectFrozenPartnerApplication
+    summary: Append a rejection decision for the latest pending submission
+    description: >-
+      Exact reviewer permission and nonself required; applicant must be active with
+      zero formal roles. expectedVersion matches both latest submission and current
+      SUBMITTED application. Reason is trimmed and nonblank. Lock applicant/reviewer
+      Users in UUID order, then reviewer roles and application, matching approval
+      and staff status/unbind writes. Account/role locks hold authorization through
+      commit and replay; fresh authorization precedes a replay receipt.
+      Append-only review, state version increment, audit and
+      idempotent receipt are atomic. Do not mutate/delete the submission or its files.
+      Identical key/input/actor replay returns original receipt; changed request/actor
+      or a second terminal action with another key returns 409.
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [expectedVersion, reason]
+            properties:
+              expectedVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+              reason: { type: string, minLength: 1, maxLength: 1000 }
+    responses:
+      '200':
+        description: Minimal immutable rejection receipt, UTC reviewedAt.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/RejectionEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+approve:
+  parameters:
+    - { $ref: '#/parameters/ApplicationId' }
+    - { $ref: '#/parameters/SubmissionId' }
+  post:
+    operationId: approveFrozenPartnerApplication
+    summary: Activate the original applicant as a single-campus partner atomically
+    description: >-
+      Requires the active single headquarters SUPER_ADMIN with independent review
+      permission and nonself review. Lock applicant/reviewer Users in UUID order,
+      reviewer roles, then application and original WeChat identity; original User
+      always precedes application. These account/role locks hold authorization
+      through commit and replay; latest SUBMITTED snapshot and expectedVersion must match.
+      Active original applicant, no formal roles, and unchanged original WeChat
+      identity required. In one transaction create a new nonpublic campus from frozen
+      basics, activate the original User with one PARTNER role and increment accountVersion,
+      append review and immutable submission/User/campus association, change state,
+      audit and complete idempotency. Any failure rolls back all steps.
+      Identical actor/key/input replays the same minimal receipt; mismatches or
+      another terminal action return 409. Never merge by institution name or phone.
+      No personal phone copied, coordinates, map publication, earnings or payment setup.
+      Phone-less approved accounts are searchable and can be enabled/disabled;
+      unbind is rejected until a recovery path is approved. Restricted applicant
+      tokens remain restricted and read-only; formal login requires a new WeChat code.
+      Fresh authorization and identity checks precede commit. UTC reviewedAt.
+    tags: [Management]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [expectedVersion]
+            properties:
+              expectedVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+    responses:
+      '200':
+        description: Original applicant activation receipt.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/ApprovalEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+history:
+  get:
+    operationId: getOwnPartnerApplicationSubmissionHistory
+    summary: Read the restricted applicant's own paginated submission and review history
+    description: >-
+      Ownership only from active restricted session; formal tokens rejected.
+      Latest submission first. Times are UTC RFC3339; no bank/file plaintext,
+      reviewer personal identity or phone. No application returns a null applicationId
+      and empty history. Does not create a draft. Independent of the basic GET.
+      editSourceSubmissionId indicates the rejected snapshot from which the
+      current editable version was derived. Refresh checks session expiry/revocation.
+    tags: [Auth]
+    security: [{ partnerApplicantAuth: [] }]
+    parameters:
+      - { $ref: '#/parameters/Page' }
+      - { $ref: '#/parameters/PageSize' }
+    responses:
+      '200':
+        description: Owned submission/review history.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/HistoryEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+reopen:
+  post:
+    operationId: reopenRejectedPartnerApplication
+    summary: Derive a new editable version from the applicant's latest rejected snapshot
+    description: >-
+      Active restricted session and zero formal roles required. submissionId must
+      identify the latest REJECTED submission with its append-only review matching
+      current expectedVersion. Revalidate owned immutable bank and actual material
+      ciphertext before copying basic values and record references into DRAFT.
+      Shared version increments; editSourceSubmissionId preserves provenance.
+      User then session lock; state, audit and minimal receipt commit atomically.
+      Identical request/key/owner replays; changed input/owner, stale version or another
+      terminal action returns 409. Old snapshots, reviews, ciphertext and files remain.
+    tags: [Auth]
+    security: [{ partnerApplicantAuth: [] }]
+    parameters:
+      - { $ref: './openapi.yaml#/components/parameters/IdempotencyKey' }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [expectedVersion, submissionId]
+            properties:
+              expectedVersion: { type: integer, minimum: 1, maximum: 2147483647 }
+              submissionId: { type: string, format: uuid }
+    responses:
+      '200':
+        description: Minimal new draft receipt.
+        content:
+          application/json:
+            schema: { $ref: '#/schemas/ReopenEnvelope' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+      '503': { $ref: '#/responses/PrivateUnavailable' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+parameters:
+  ApplicationId:
+    name: applicationId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+  SubmissionId:
+    name: submissionId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+  Page:
+    name: page
+    in: query
+    schema: { type: integer, minimum: 1, maximum: 1000000, default: 1 }
+  PageSize:
+    name: pageSize
+    in: query
+    schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+responses:
+  PrivateUnavailable:
+    description: INTERNAL_SERVER_ERROR; private material storage unavailable; sensitive diagnostics withheld.
+    content:
+      application/json:
+        schema: { $ref: './openapi.yaml#/components/schemas/ErrorEnvelope' }
+schemas:
+  ApprovalReceipt:
+    type: object
+    additionalProperties: false
+    required: [applicationId, submissionId, reviewId, userId, campusId, status, version, reviewedAt]
+    properties:
+      applicationId: { type: string, format: uuid }
+      submissionId: { type: string, format: uuid }
+      reviewId: { type: string, format: uuid }
+      userId: { type: string, format: uuid }
+      campusId: { type: string, format: uuid }
+      status: { type: string, const: APPROVED }
+      version: { type: integer, minimum: 1 }
+      reviewedAt: { type: string, format: date-time }
+  ApprovalEnvelope:
+    type: object
+    additionalProperties: false
+    required: [data, requestId]
+    properties:
+      requestId: { type: string }
+      data: { $ref: '#/schemas/ApprovalReceipt' }
+  Meta:
+    type: object
+    additionalProperties: false
+    required: [page, pageSize, total, totalPages]
+    properties:
+      page: { type: integer, minimum: 1 }
+      pageSize: { type: integer, minimum: 1, maximum: 100 }
+      total: { type: integer, minimum: 0 }
+      totalPages: { type: integer, minimum: 0 }
+  Review:
+    type: [object, 'null']
+    additionalProperties: false
+    required: [reviewId, decision, reason, reviewedAt]
+    properties:
+      reviewId: { type: string, format: uuid }
+      decision: { type: string, enum: [REJECTED, APPROVED] }
+      reason: { type: string, maxLength: 1000 }
+      reviewedAt: { type: string, format: date-time }
+  Summary:
+    type: object
+    additionalProperties: false
+    required: [applicationId, submissionId, institutionName, version, status, submissionVersion, submittedAt]
+    properties:
+      applicationId: { type: string, format: uuid }
+      submissionId: { type: string, format: uuid }
+      institutionName: { type: string, maxLength: 200 }
+      version: { type: integer, minimum: 1 }
+      status: { $ref: './partner-application.openapi.yaml#/schemas/ApplicationStatus' }
+      submissionVersion: { type: integer, minimum: 1 }
+      submittedAt: { type: string, format: date-time }
+  Detail:
+    type: object
+    additionalProperties: false
+    required: [applicationId, submissionId, version, status, submissionVersion, submittedAt, latest, basicInformation, materials, review]
+    properties:
+      applicationId: { type: string, format: uuid }
+      submissionId: { type: string, format: uuid }
+      version: { type: integer, minimum: 1 }
+      status: { $ref: './partner-application.openapi.yaml#/schemas/ApplicationStatus' }
+      submissionVersion: { type: integer, minimum: 1 }
+      submittedAt: { type: string, format: date-time }
+      latest: { type: boolean }
+      basicInformation: { $ref: './partner-application.openapi.yaml#/schemas/BasicInformation' }
+      materials:
+        type: array
+        maxItems: 14
+        items: { $ref: './partner-application.openapi.yaml#/schemas/MaterialFile' }
+      review: { $ref: '#/schemas/Review' }
+  HistoryItem:
+    type: object
+    additionalProperties: false
+    required: [submissionId, submissionVersion, submittedAt, institutionName, review]
+    properties:
+      submissionId: { type: string, format: uuid }
+      submissionVersion: { type: integer, minimum: 1 }
+      submittedAt: { type: string, format: date-time }
+      institutionName: { type: string, maxLength: 200 }
+      review: { $ref: '#/schemas/Review' }
+  ListEnvelope:
+    type: object
+    additionalProperties: false
+    required: [data, meta, requestId]
+    properties:
+      requestId: { type: string }
+      data: { type: array, maxItems: 100, items: { $ref: '#/schemas/Summary' } }
+      meta: { $ref: '#/schemas/Meta' }
+  DetailEnvelope:
+    type: object
+    additionalProperties: false
+    required: [data, requestId]
+    properties:
+      requestId: { type: string }
+      data: { $ref: '#/schemas/Detail' }
+  BankEnvelope:
+    type: object
+    additionalProperties: false
+    required: [data, requestId]
+    properties:
+      requestId: { type: string }
+      data:
+        type: object
+        additionalProperties: false
+        required: [applicationId, submissionId, bankInformation]
+        properties:
+          applicationId: { type: string, format: uuid }
+          submissionId: { type: string, format: uuid }
+          bankInformation: { $ref: './partner-application.openapi.yaml#/schemas/BankInformation' }
+  RejectionEnvelope:
+    type: object
+    additionalProperties: false
+    required: [data, requestId]
+    properties:
+      requestId: { type: string }
+      data:
+        type: object
+        additionalProperties: false
+        required: [applicationId, submissionId, reviewId, status, version, reviewedAt]
+        properties:
+          applicationId: { type: string, format: uuid }
+          submissionId: { type: string, format: uuid }
+          reviewId: { type: string, format: uuid }
+          status: { type: string, const: REJECTED }
+          version: { type: integer, minimum: 1 }
+          reviewedAt: { type: string, format: date-time }
+  ReopenEnvelope:
+    type: object
+    additionalProperties: false
+    required: [data, requestId]
+    properties:
+      requestId: { type: string }
+      data:
+        type: object
+        additionalProperties: false
+        required: [applicationId, sourceSubmissionId, status, version]
+        properties:
+          applicationId: { type: string, format: uuid }
+          sourceSubmissionId: { type: string, format: uuid }
+          status: { type: string, const: DRAFT }
+          version: { type: integer, minimum: 1 }
+  HistoryEnvelope:
+    type: object
+    additionalProperties: false
+    required: [data, requestId]
+    properties:
+      requestId: { type: string }
+      data:
+        type: object
+        additionalProperties: false
+        required: [applicationId, status, version, editSourceSubmissionId, data, meta]
+        properties:
+          applicationId: { type: [string, 'null'], format: uuid }
+          status: { type: [string, 'null'], enum: [DRAFT, SUBMITTED, REJECTED, APPROVED, null] }
+          version: { type: integer, minimum: 0 }
+          editSourceSubmissionId: { type: [string, 'null'], format: uuid }
+          data: { type: array, maxItems: 100, items: { $ref: '#/schemas/HistoryItem' } }
+          meta: { $ref: '#/schemas/Meta' }

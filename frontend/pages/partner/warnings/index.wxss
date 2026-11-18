@@ -1,4 +1,34 @@
 @import "../../../styles/partner-workspace.wxss";
+@import "../styles/pdf-typography.wxss";
+
+.warnings-refresh-error,
+.warnings-pagination-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12rpx;
+  min-height: 0;
+  padding: 16rpx;
+  border-radius: 8rpx;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.warnings-refresh-error {
+  margin-top: 20rpx;
+}
+
+.warnings-refresh-error .partner-state__message,
+.warnings-pagination-error .partner-state__message {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.warnings-refresh-error .partner-command,
+.warnings-pagination-error .partner-command {
+  flex: none;
+  margin: 0;
+}
 
 .warning-card {
   border-left-color: var(--partner-red);

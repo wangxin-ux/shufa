@@ -38,6 +38,11 @@ export class ParentGroupCampaignsQueryDto extends GroupPageQueryDto {
   studentId?: string;
 }
 
+export class PartnerGroupCampaignsQueryDto extends GroupPageQueryDto {
+  @IsIn(['ONGOING', 'ENDED'])
+  phase: 'ONGOING' | 'ENDED' = 'ONGOING';
+}
+
 export class GroupOrdersQueryDto extends GroupPageQueryDto {
   @IsOptional()
   @IsIn([
@@ -102,6 +107,66 @@ export class ManagementCourseProductsQueryDto extends GroupPageQueryDto {
   @IsOptional()
   @IsIn(['DRAFT', 'ACTIVE', 'RETIRED'])
   status?: 'DRAFT' | 'ACTIVE' | 'RETIRED';
+}
+
+export class CourseProductMutationDto {
+  @IsUUID('4')
+  campusId!: string;
+
+  @Transform(trim)
+  @IsString()
+  @Matches(/\S/)
+  @MaxLength(200)
+  name!: string;
+
+  @Transform(trim)
+  @IsString()
+  @Matches(/\S/)
+  @MaxLength(200)
+  courseName!: string;
+
+  @Transform(trim)
+  @IsString()
+  @Matches(/\S/)
+  @MaxLength(50)
+  classType!: string;
+
+  @Transform(trim)
+  @IsString()
+  @Matches(/\S/)
+  @MaxLength(1000)
+  summary!: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(2147483647)
+  priceFen!: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(2147483647)
+  mainUnits!: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(2147483647)
+  giftUnits!: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(3650)
+  validityDays!: number;
+}
+
+export class VersionedCourseProductMutationDto extends CourseProductMutationDto {
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  expectedVersion!: number;
 }
 
 export class ManagementGroupOrdersQueryDto extends GroupOrdersQueryDto {

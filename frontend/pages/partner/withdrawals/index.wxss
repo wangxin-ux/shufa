@@ -1,0 +1,21 @@
+@import "../styles/pdf-typography.wxss";
+@import "../../../styles/partner-workspace.wxss";
+.withdrawal-page { color: #242424; letter-spacing: 0; }
+.withdrawal-title { display: block; font-family: var(--partner-font-display); font-size: 34rpx; line-height: 1.5; }
+.withdrawal-notice { display: block; padding: 20rpx 0; color: #8a361d; font-size: 26rpx; }
+.withdrawal-balances { display: grid; grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); gap: 16rpx; padding: 24rpx 0; border-bottom: 2rpx solid #ddd; }
+.withdrawal-balances text { display: block; font-size: 26rpx; overflow-wrap: anywhere; }
+.withdrawal-balances .withdrawal-amount { font-size: 34rpx; color: #86331a; }
+.withdrawal-meta { display: block; color: #666; font-size: 24rpx; line-height: 1.7; overflow-wrap: anywhere; }
+.withdrawal-section { padding: 24rpx 0; border-bottom: 2rpx solid #ddd; }
+.withdrawal-section > text { display: block; overflow-wrap: anywhere; }
+.withdrawal-input { min-height: 88rpx; margin: 20rpx 0; padding: 0 16rpx; border: 2rpx solid #aaa; font-size: 30rpx; border-radius: 6rpx; }
+.withdrawal-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20rpx; margin-top: 24rpx; font-size: 28rpx; }
+.withdrawal-heading > text { min-width: 0; overflow-wrap: anywhere; }
+.withdrawal-record { padding: 0 0 24rpx; border-bottom: 2rpx solid #ddd; }
+.withdrawal-record__amount { font-size: 32rpx; }
+.withdrawal-message, .withdrawal-error { display: block; margin: 16rpx 0; font-size: 26rpx; line-height: 1.6; overflow-wrap: anywhere; }
+.withdrawal-error { color: #a22b2b; }
+.withdrawal-actions { display: flex; flex-wrap: wrap; gap: 12rpx; margin-top: 16rpx; }
+.withdrawal-actions .partner-command { flex: 1; min-width: 200rpx; margin: 0; }
+.withdrawal-state { padding: 32rpx 0; font-size: 28rpx; line-height: 1.7; }

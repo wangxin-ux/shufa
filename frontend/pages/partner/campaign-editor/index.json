@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "partner-approved-role-badge": "/pages/partner/components/approved-role-badge/index",
+    "campaign-registration-form": "/pages/partner/components/campaign-registration-form/index",
+    "campaign-image-crop": "/pages/partner/components/campaign-image-crop/index"
+  },
+  "enablePullDownRefresh": true
+}

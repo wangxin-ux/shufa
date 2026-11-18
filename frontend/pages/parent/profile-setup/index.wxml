@@ -1,0 +1,77 @@
+<parent-page-shell markTitle="完善资料" markIcon="/pages/parent/assets/icon-mark-profile.png" bg="yellow" showBack="{{false}}">
+  <view class="profile-setup">
+    <view-state
+      wx:if="{{viewState !== 'ready'}}"
+      state="{{viewState}}"
+      errorText="{{errorMessage}}"
+      bind:retry="onRetry"
+    />
+    <view-state wx:elif="{{!student}}" state="empty" emptyText="{{emptyMessage}}" />
+    <view wx:else class="profile-setup__form">
+      <text class="profile-setup__title">孩子资料</text>
+      <view class="profile-setup__field">
+        <label class="profile-setup__label" for="child-name">孩子姓名</label>
+        <input
+          id="child-name"
+          class="profile-setup__input"
+          value="{{name}}"
+          maxlength="100"
+          placeholder="请输入孩子姓名"
+          disabled="{{submitting || photoBusy || loadingSetup}}"
+          bindinput="onNameInput"
+        />
+      </view>
+      <view class="profile-setup__field">
+        <text class="profile-setup__label">出生日期</text>
+        <picker
+          mode="date"
+          value="{{birthDate}}"
+          end="{{dateEnd}}"
+          disabled="{{submitting || photoBusy || loadingSetup}}"
+          bindchange="onBirthDateChange"
+        >
+          <view class="profile-setup__date">
+            <text class="profile-setup__date-value {{birthDate ? '' : 'profile-setup__placeholder'}}">{{birthDate || '请选择出生日期'}}</text>
+            <view class="profile-setup__arrow" aria-hidden="true"></view>
+          </view>
+        </picker>
+      </view>
+      <view class="profile-setup__field">
+        <text class="profile-setup__label">孩子照片</text>
+        <view class="profile-setup__photo-row">
+          <image
+            wx:if="{{photoUrl}}"
+            class="profile-setup__photo"
+            src="{{photoUrl}}"
+            mode="aspectFill"
+            bindtap="onPreviewPhoto"
+          />
+          <view wx:else class="profile-setup__photo profile-setup__photo--empty" aria-hidden="true">+</view>
+          <view class="profile-setup__photo-actions">
+            <button
+              class="profile-setup__choose"
+              loading="{{photoBusy}}"
+              disabled="{{photoBusy || submitting || loadingSetup}}"
+              bindtap="onChoosePhoto"
+            >{{photoBusy ? '上传中' : (photoUrl ? '更换照片' : '选择照片')}}</button>
+            <text class="profile-setup__limit">JPEG / PNG，3 MB 以内</text>
+          </view>
+        </view>
+      </view>
+      <text wx:if="{{message}}" class="profile-setup__message" role="alert">{{message}}</text>
+      <button
+        wx:if="{{message}}"
+        class="profile-setup__refresh"
+        disabled="{{photoBusy || submitting || loadingSetup}}"
+        bindtap="onRetry"
+      >{{loadingSetup ? '刷新中' : '刷新资料'}}</button>
+      <parent-primary-button
+        class="profile-setup__submit"
+        text="{{submitting ? '保存中' : '保存资料'}}"
+        disabled="{{photoBusy || submitting || loadingSetup}}"
+        bind:tap="onSubmit"
+      />
+    </view>
+    <button class="profile-setup__logout" disabled="{{submitting || photoBusy}}" bindtap="onLogout">退出登录</button>
+  </view>
+</parent-page-shell>

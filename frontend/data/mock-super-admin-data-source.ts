@@ -52,6 +52,7 @@ import {
   GroupPage,
   ManagementCourseProductQuery,
   ManagementCourseProductView,
+  CourseProductMutationInput,
   ManagementGroupCampaignQuery,
 } from "../types/group-buying";
 import { SuperAdminDataSource } from "./super-admin-data-source";
@@ -59,6 +60,8 @@ import { SuperAdminDataSource } from "./super-admin-data-source";
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
 export class MockSuperAdminDataSource implements SuperAdminDataSource {
+  private courseProducts: ManagementCourseProductView[] | null = null;
+  private readonly productMutationResults = new Map<string, { fingerprint: string; result: ManagementCourseProductView }>();
   private readonly campus: SuperAdminCampusDetail = {
     id: "10000000-0000-4000-8000-000000000001",
     code: "EAST",
@@ -386,7 +389,7 @@ export class MockSuperAdminDataSource implements SuperAdminDataSource {
     if ((input.roleCode as string) === "TEACHER") {
       throw new Error("教师请从教师名册录入");
     }
-    if (!["CAMPUS_MANAGER", "PARTNER", "HR", "FINANCE"].includes(input.roleCode)) {
+    if (!["CAMPUS_MANAGER", "PARTNER", "OPERATOR", "HR", "FINANCE"].includes(input.roleCode)) {
       throw new Error("不支持创建该角色账号");
     }
     const headquarters = input.roleCode === "HR" || input.roleCode === "FINANCE";
@@ -969,7 +972,7 @@ export class MockSuperAdminDataSource implements SuperAdminDataSource {
     query: ManagementCourseProductQuery,
   ): Promise<GroupPage<ManagementCourseProductView>> {
     this.assertAvailable();
-    const data = this.options.scenario === "empty"
+    if (!this.courseProducts) this.courseProducts = this.options.scenario === "empty"
       ? []
       : this.groupCampaigns
           .map((campaign) => ({
@@ -977,6 +980,8 @@ export class MockSuperAdminDataSource implements SuperAdminDataSource {
             campusId: campaign.campusId,
             campusName: campaign.campusName,
             name: campaign.courseName,
+            courseName: campaign.courseName,
+            classType: '常规班',
             summary: campaign.description,
             coverFileId: null,
             priceFen: campaign.priceFen,
@@ -987,13 +992,68 @@ export class MockSuperAdminDataSource implements SuperAdminDataSource {
             version: 1,
             createdAt: campaign.createdAt,
             updatedAt: campaign.updatedAt,
-          }))
-          .filter(
+          }));
+    const data = this.courseProducts.filter(
             (product) =>
               (!query.campusId || product.campusId === query.campusId) &&
               (!query.status || product.status === query.status),
           );
     return this.groupPage(data, query);
+  }
+
+  async createCourseProduct(input: CourseProductMutationInput, key: string): Promise<ManagementCourseProductView> {
+    this.assertAvailable();
+    await this.listCourseProducts({ page: 1, pageSize: 100 });
+    const replay = this.productReplay('create', input, key);
+    if (replay) return replay;
+    const now = new Date().toISOString();
+    const product: ManagementCourseProductView = {
+      ...input, id: `mock-product-${Date.now()}-${this.courseProducts!.length}`,
+      campusName: this.campus.name, coverFileId: null, status: 'DRAFT',
+      version: 1, createdAt: now, updatedAt: now,
+    };
+    this.courseProducts!.unshift(product);
+    this.productMutationResults.set(`create:${key}`, { fingerprint: JSON.stringify(input), result: clone(product) });
+    return clone(product);
+  }
+
+  async updateCourseProduct(id: string, input: CourseProductMutationInput, version: number, key: string): Promise<ManagementCourseProductView> {
+    this.assertAvailable();
+    await this.listCourseProducts({ page: 1, pageSize: 100 });
+    const route = `update:${id}`;
+    const request = { ...input, expectedVersion: version };
+    const replay = this.productReplay(route, request, key);
+    if (replay) return replay;
+    const product = this.courseProducts!.find((item) => item.id === id);
+    if (!product || product.status !== 'DRAFT' || product.version !== version) throw new Error('课程产品状态或版本已更新');
+    Object.assign(product, input, { version: version + 1, updatedAt: new Date().toISOString() });
+    this.productMutationResults.set(`${route}:${key}`, { fingerprint: JSON.stringify(request), result: clone(product) });
+    return clone(product);
+  }
+
+  async transitionCourseProduct(id: string, action: 'activate' | 'retire', version: number, key: string): Promise<ManagementCourseProductView> {
+    this.assertAvailable();
+    await this.listCourseProducts({ page: 1, pageSize: 100 });
+    const route = `${action}:${id}`;
+    const request = { expectedVersion: version };
+    const replay = this.productReplay(route, request, key);
+    if (replay) return replay;
+    const product = this.courseProducts!.find((item) => item.id === id);
+    if (!product || product.version !== version || product.status === 'RETIRED' ||
+      (action === 'activate' && product.status !== 'DRAFT')) throw new Error('课程产品状态或版本已更新');
+    product.status = action === 'activate' ? 'ACTIVE' : 'RETIRED';
+    product.version += 1;
+    product.updatedAt = new Date().toISOString();
+    this.productMutationResults.set(`${route}:${key}`, { fingerprint: JSON.stringify(request), result: clone(product) });
+    return clone(product);
+  }
+
+  private productReplay(route: string, input: object, key: string): ManagementCourseProductView | undefined {
+    if (!key.trim()) throw new Error('幂等标识不能为空');
+    const replay = this.productMutationResults.get(`${route}:${key}`);
+    if (!replay) return undefined;
+    if (replay.fingerprint !== JSON.stringify(input)) throw new Error('幂等标识对应的请求已改变');
+    return clone(replay.result);
   }
 
   async createGroupCampaign(

@@ -14,25 +14,28 @@ import {
   PartnerPeriodQuery,
   PartnerSearchQuery,
   PartnerStudent,
+  PartnerStudentQuery,
   PartnerStudentDetail,
+  PartnerStudentGrowth,
   PartnerTeacher,
   PartnerWarning,
 } from '../types/partner';
 import {
   GroupPage,
-  GroupPromotionCampaignQuery,
-  GroupPromotionCampaignView,
+  PartnerCampaignQuery,
+  PartnerCampaignView,
 } from '../types/group-buying';
 
 export interface PartnerDataSource {
   getDashboard(): Promise<PartnerDashboard>;
   getProfile(): Promise<PartnerProfile>;
   listGroupPromotionCampaigns(
-    query: GroupPromotionCampaignQuery,
-  ): Promise<GroupPage<GroupPromotionCampaignView>>;
-  getGroupPromotionCampaign(id: string): Promise<GroupPromotionCampaignView>;
-  listStudents(query: PartnerSearchQuery): Promise<PartnerPage<PartnerStudent>>;
+    query: PartnerCampaignQuery,
+  ): Promise<GroupPage<PartnerCampaignView>>;
+  getGroupPromotionCampaign(id: string): Promise<PartnerCampaignView>;
+  listStudents(query: PartnerStudentQuery): Promise<PartnerPage<PartnerStudent>>;
   getStudent(studentId: string): Promise<PartnerStudentDetail>;
+  getStudentGrowth(studentId: string, query: PartnerPageQuery): Promise<PartnerStudentGrowth>;
   getOperationsSummary(
     query: PartnerPeriodQuery,
   ): Promise<PartnerOperationsSummary>;

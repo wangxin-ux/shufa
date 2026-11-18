@@ -1,7 +1,10 @@
-import { loadParentDisplayFont } from './utils/parent-font';
+import { ensureParentDisplayFont } from './utils/parent-font';
 
 App({
   onLaunch() {
-    void loadParentDisplayFont();
+    void ensureParentDisplayFont();
+  },
+  onShow() {
+    void ensureParentDisplayFont();
   },
 });

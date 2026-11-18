@@ -40,7 +40,7 @@ const ROLE_LABELS: Record<RoleCode, string> = {
   PARENT: '家长',
   PARTNER: '合作方校区',
   TEACHER: '授课老师',
-  OPERATOR: '招商招生运营',
+  OPERATOR: '运营',
   CAMPUS_MANAGER: '分校区管理员',
   SUPER_ADMIN: '超级管理员',
   HR: '总部人力',

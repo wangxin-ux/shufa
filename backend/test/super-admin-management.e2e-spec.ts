@@ -197,7 +197,7 @@ describe('super admin management workspace', () => {
       select: { id: true, campusId: true },
     });
     const now = new Date();
-    const packageIds = Array.from({ length: 4 }, () => randomUUID());
+    const packageIds: string[] = Array.from({ length: 4 }, () => randomUUID());
     await prisma.coursePackage.createMany({
       data: [
         {

@@ -5,6 +5,7 @@ Component({
   properties: {
     markTitle: { type: String, value: '' },
     markIcon: { type: String, value: '' },
+    markIconSize: { type: Number, value: 0 },
     showBack: { type: Boolean, value: false },
     fixedHeader: { type: Boolean, value: false },
     plainMark: { type: Boolean, value: false },

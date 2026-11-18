@@ -35,6 +35,18 @@ describe('local runtime configuration', () => {
     });
   });
 
+  it('accepts an explicit parent visual fixture without changing the API driver', () => {
+    const local = readLocalRuntimeOverrides(() => ({
+      dataDriver: 'api', parentMockScenario: 'visual', accessToken: 'local-token',
+    }));
+    expect(local).toMatchObject({ dataDriver: 'api', parentMockScenario: 'visual' });
+    expect(createParentRuntimeEnv({}, local)).toMatchObject({
+      dataDriver: 'api', mockScenario: 'visual', accessToken: 'local-token',
+    });
+    expect(createParentRuntimeEnv({ mockScenario: 'empty' }, local).mockScenario).toBe('empty');
+    expect(readLocalRuntimeOverrides(() => ({ parentMockScenario: 'unknown' }))).toEqual({});
+  });
+
   it('ignores malformed storage and lets explicit overrides win', () => {
     expect(
       readLocalRuntimeOverrides(() => ({

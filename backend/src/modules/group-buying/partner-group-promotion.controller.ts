@@ -14,7 +14,7 @@ import {
   RequirePermissions,
 } from '../../common/auth/permissions.guard';
 import { AccessTokenGuard } from '../auth/access-token.guard';
-import { GroupPageQueryDto } from './dto/group-buying.dto';
+import { PartnerGroupCampaignsQueryDto } from './dto/group-buying.dto';
 import { GroupBuyingQueryService } from './group-buying-query.service';
 
 @Controller('partners/me/group-campaigns')
@@ -29,10 +29,13 @@ export class PartnerGroupPromotionController {
   @RequirePermissions('PARTNER_GROUP_CAMPAIGN_READ')
   listCampaigns(
     @CurrentUser() user: AuthenticatedUser,
-    @Query() query: GroupPageQueryDto,
+    @Query() query: PartnerGroupCampaignsQueryDto,
   ) {
     const scope = this.partnerScopeService.require(user);
-    return this.queryService.listPromotionCampaigns(scope.campusId, query);
+    return this.queryService.listPartnerPromotionCampaigns(
+      scope.campusId,
+      query,
+    );
   }
 
   @Get(':campaignId')
@@ -43,6 +46,9 @@ export class PartnerGroupPromotionController {
     campaignId: string,
   ) {
     const scope = this.partnerScopeService.require(user);
-    return this.queryService.getPromotionCampaign(scope.campusId, campaignId);
+    return this.queryService.getPartnerPromotionCampaign(
+      scope.campusId,
+      campaignId,
+    );
   }
 }

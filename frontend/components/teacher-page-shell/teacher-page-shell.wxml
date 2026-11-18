@@ -18,8 +18,9 @@
         >
           <text class="shell__back-icon">‹</text>
         </button>
-        <teacher-page-mark title="{{markTitle}}" icon="{{markIcon}}" plain="{{plainMark}}" />
+        <teacher-page-mark title="{{markTitle}}" icon="{{markIcon}}" iconSize="{{markIconSize}}" plain="{{plainMark}}" />
       </view>
+      <view class="shell__tools"><slot name="tools" /></view>
     </view>
   </view>
   <view class="shell__body"><slot /></view>

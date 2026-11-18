@@ -1,5 +1,7 @@
 {
   "usingComponents": {
+    "partner-ranking-preview": "/pages/partner/components/partner-ranking-preview/index",
+    "partner-approved-role-badge": "/pages/partner/components/approved-role-badge/index",
     "partner-page-shell": "/components/partner-page-shell/partner-page-shell"
   },
   "enablePullDownRefresh": true

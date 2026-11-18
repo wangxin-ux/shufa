@@ -1,0 +1,78 @@
+<operator-page-shell
+  markTitle="我的"
+  markIcon="/pages/operator/assets/profile-mark-pdf.png" markIconSize="38"
+  showBack="{{true}}"
+  surfacePage="{{true}}"
+  plainMark="{{true}}"
+>
+  <view slot="tools"><button wx:if="{{viewState === 'ready'}}" class="profile-tools-button" aria-label="更多功能" bindtap="onOpenTools">⋯</button></view>
+  <view class="profile">
+    <view wx:if="{{viewState === 'loading'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">正在加载运营资料</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-state__retry" bindtap="onLogin" hover-class="button--hover">重新登录</button>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">运营资料加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="page-state__retry" bindtap="onRetry" hover-class="button--hover">重试</button>
+    </view>
+
+    <block wx:else>
+      <view wx:if="{{refreshError}}" class="profile-refresh" aria-live="polite">
+        <text>{{refreshError}}</text>
+        <button class="profile-refresh__retry" bindtap="onRetry">重试</button>
+      </view>
+      <view class="profile-hero">
+        <view class="profile-card">
+          <text class="profile-card__name {{campusName.length > 6 ? 'profile-card__name--long' : campusName.length > 4 ? 'profile-card__name--compact' : ''}}">{{campusName}}</text>
+          <view class="profile-card__meta">
+            <text class="profile-card__campus">{{displayName}}</text>
+            <text class="profile-card__role">{{identityLabel}}</text>
+          </view>
+          <text class="profile-card__count">{{studentCount}}人</text>
+        </view>
+        <image
+          class="profile-hero__character"
+          src="/pages/operator/assets/profile-top-character.png"
+          mode="widthFix"
+          aria-hidden="true"
+        />
+      </view>
+
+      <view class="profile-actions-stage">
+        <image
+          class="profile-actions-stage__character"
+          src="/pages/operator/assets/profile-lower-character.png"
+          mode="widthFix"
+          aria-hidden="true"
+        />
+        <view class="profile-actions">
+          <button
+            wx:for="{{actions}}"
+            wx:key="key"
+            class="profile-action"
+            data-key="{{item.key}}"
+            bindtap="onActionTap"
+            hover-class="button--hover"
+          >
+            <view class="profile-action__bullet" aria-hidden="true"></view>
+            <text class="profile-action__label">{{item.label}}</text>
+            <text class="profile-action__command">查看</text>
+          </button>
+        </view>
+      </view>
+    </block>
+  </view>
+  <view wx:if="{{toolsOpen}}" class="profile-tools-layer">
+    <view class="profile-tools-backdrop" bindtap="onCloseTools"></view>
+    <view class="profile-tools-sheet" role="dialog" aria-label="更多功能">
+      <view class="profile-tools-heading"><text>更多功能</text><button bindtap="onCloseTools" aria-label="关闭更多功能">×</button></view>
+        <button wx:for="{{moreActions}}" wx:key="key" class="profile-extra-action" data-key="{{item.key}}" bindtap="onActionTap">{{item.label}}<text>›</text></button>
+      <session-logout id="sessionLogout" />
+    </view>
+  </view>
+</operator-page-shell>

@@ -1,14 +1,17 @@
-import { PartnerSearchQuery, PartnerStudent } from '../types/partner';
+import { PartnerBalanceBand, PartnerStudentQuery, PartnerStudent, PartnerStudentDetail } from '../types/partner';
 import { presentLessonBalance } from './lesson-availability';
 import {
   formatPartnerBirthDate,
   formatPartnerLessonUnits,
+  formatPartnerAttendanceRate,
 } from '../utils/partner-format';
 
 export interface PartnerStudentItemModel {
   reservationLabel?: string;
   id: string;
   displayName: string;
+  nameFontSize: number;
+  lowBalance: boolean;
   birthDateLabel: string;
   classLabel: string;
   mainBalanceLabel: string;
@@ -24,10 +27,18 @@ export function buildPartnerStudentQuery(
   value: string,
   page: number,
   pageSize: number,
-): PartnerSearchQuery {
+  balanceBand?: PartnerBalanceBand,
+): PartnerStudentQuery {
   const query = normalizePartnerStudentSearch(value);
-  return { page, pageSize, ...(query ? { query } : {}) };
+  return { page, pageSize, ...(query ? { query } : {}), ...(balanceBand ? { balanceBand } : {}) };
 }
+
+export const PARTNER_STUDENT_BALANCE_OPTIONS: Array<{ value: PartnerBalanceBand; label: string }> = [
+  { value: 'ALL', label: '全部课时' },
+  { value: 'ZERO', label: '零课时' },
+  { value: 'LTE_FIVE', label: '≤5节' },
+  { value: 'GT_FIVE', label: '>5节' },
+];
 
 export function buildPartnerStudentItems(
   students: readonly PartnerStudent[],
@@ -35,13 +46,31 @@ export function buildPartnerStudentItems(
   return students.map((student) => ({
     id: student.id,
     displayName: student.displayName,
+    nameFontSize: student.displayName.length <= 4 ? 78 : student.displayName.length <= 6 ? 56 : 36,
+    lowBalance: partnerStudentAvailableUnits(student) <= 500,
     birthDateLabel: formatPartnerBirthDate(student.birthDate),
     classLabel:
       student.classNames.length > 0
         ? student.classNames.join('、')
         : '暂未分班',
     ...presentLessonBalance(student),
+    totalBalanceLabel: formatPartnerLessonUnits(partnerStudentAvailableUnits(student)),
   }));
+}
+
+function partnerStudentAvailableUnits(student: PartnerStudent) {
+  return student.availableTotalUnits ?? Math.max(0, student.totalBalanceUnits
+    - (student.reservedTotalUnits ?? ((student.mainReservedUnits ?? 0) + (student.giftReservedUnits ?? 0))));
+}
+
+export function buildPartnerStudentExpansion(detail: PartnerStudentDetail) {
+  return {
+    photo: detail.photo,
+    remainingLabel: formatPartnerLessonUnits(partnerStudentAvailableUnits(detail)),
+    reservationLabel: presentLessonBalance(detail).reservationLabel ?? '',
+    attendanceRateLabel: formatPartnerAttendanceRate(detail.attendance.attendanceRateBasisPoints),
+    teacherLabel: [...new Set(detail.classes.map((item) => item.teacherName))].join('、') || '暂未分班',
+  };
 }
 
 export function mergePartnerStudentItems(

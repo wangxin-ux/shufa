@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { toParentLessonReviewView } from '../parent-portal/parent-growth.models';
 import { Prisma } from '@prisma/client';
 import type { TeacherScope } from '../../common/auth/teacher-scope.service';
 import { DomainError } from '../../common/errors/domain-error';
@@ -11,6 +12,7 @@ import {
 } from '../lesson-ledger/lesson-ledger.service';
 import { EarningRecordingService } from '../earning/earning-recording.service';
 import { StoredFileService } from '../file/stored-file.service';
+import { toTeacherFeedbackRatings } from '../feedback/feedback.models';
 import { PartnerEarningRecordingService } from '../partner-earning/partner-earning-recording.service';
 import type {
   AttendanceDraftDto,
@@ -28,8 +30,7 @@ import type {
   ActiveRosterMember,
   LockedLessonSession,
 } from './lesson-mutation.helper';
-
-const REVERSAL_WINDOW_MS = 24 * 60 * 60 * 1_000;
+import { REVERSAL_WINDOW_MS } from './lesson-reversal-window';
 
 export interface CompleteLessonResult {
   lessonSessionId: string;
@@ -143,12 +144,21 @@ export class AttendanceService {
       const roster = await loadActiveRoster(transaction, lesson);
       validateAttendanceSnapshot(roster, dto.attendance);
       const completedAt = new Date();
+      await transaction.attendanceRecord.updateMany({
+        where: {
+          campusId: scope.campusId,
+          lessonSessionId,
+          studentId: { notIn: dto.attendance.map(({ studentId }) => studentId) },
+        },
+        data: { includedInFinalRoster: false },
+      });
       await this.upsertAttendance(
         transaction,
         scope,
         lessonSessionId,
         dto.attendance,
         completedAt,
+        true,
       );
 
       const consumed = [] as CompleteLessonResult['consumed'];
@@ -310,6 +320,21 @@ export class AttendanceService {
           409,
         );
       }
+      const availableEarning = await transaction.teacherEarningEntry.findFirst({
+        where: {
+          entryType: 'ACCRUAL',
+          status: 'AVAILABLE',
+          earningBasis: { lessonSessionId },
+        },
+        select: { id: true },
+      });
+      if (availableEarning) {
+        throw new DomainError(
+          ErrorCode.EARNING_ALREADY_REVIEWED,
+          'A lesson with an available teacher earning cannot be reversed',
+          409,
+        );
+      }
 
       const originals = await transaction.lessonLedgerEntry.findMany({
         where: {
@@ -429,6 +454,7 @@ export class AttendanceService {
         {
           teachingRecordId: teachingRecord.id,
           reversedAt,
+          actorUserId: scope.userId,
         },
       );
       const updated = await transaction.lessonSession.updateMany({
@@ -483,6 +509,7 @@ export class AttendanceService {
       status: AttendanceStatus;
     }>,
     recordedAt = new Date(),
+    includedInFinalRoster = false,
   ): Promise<void> {
     for (const item of attendance) {
       await transaction.attendanceRecord.upsert({
@@ -494,6 +521,7 @@ export class AttendanceService {
         },
         update: {
           status: item.status,
+          includedInFinalRoster,
           recordedByUserId: scope.userId,
           recordedAt,
         },
@@ -502,6 +530,7 @@ export class AttendanceService {
           lessonSessionId,
           studentId: item.studentId,
           status: item.status,
+          includedInFinalRoster,
           recordedByUserId: scope.userId,
           recordedAt,
         },
@@ -515,12 +544,19 @@ export class AttendanceService {
     lesson: LockedLessonSession,
     roster: readonly ActiveRosterMember[],
   ) {
-    const [identity, attendance, feedback] = await Promise.all([
+    const [identity, attendance, feedback, reviews, photos] = await Promise.all([
       transaction.lessonSession.findUniqueOrThrow({
         where: { id: lesson.id },
         select: {
           status: true,
           completedAt: true,
+          earningBases: {
+            where: {
+              entries: { some: { entryType: 'ACCRUAL', status: 'AVAILABLE' } },
+            },
+            select: { id: true },
+            take: 1,
+          },
           campus: { select: { name: true } },
           classGroup: { select: { name: true, courseName: true } },
         },
@@ -537,6 +573,10 @@ export class AttendanceService {
         select: {
           studentId: true,
           content: true,
+          performanceRating: true,
+          teacherRatings: true,
+          version: true,
+          teacher: { select: { user: { select: { displayName: true } } } },
           images: {
             orderBy: { sortOrder: 'asc' },
             select: {
@@ -546,6 +586,19 @@ export class AttendanceService {
             },
           },
         },
+      }),
+      transaction.parentLessonReview.findMany({
+        where: { lessonSessionId: lesson.id, campusId: scope.campusId },
+      }),
+      transaction.student.findMany({
+        where: {
+          id: { in: roster.map(({ studentId }) => studentId) },
+          campusId: scope.campusId, isActive: true,
+          classMemberships: { some: {
+            campusId: scope.campusId, classGroupId: lesson.classGroupId, leftAt: null,
+          } },
+        },
+        select: { id: true, profilePhotoFile: { select: { id: true, mimeType: true, sizeBytes: true } } },
       }),
     ]);
     const attendanceByStudent = new Map(
@@ -557,6 +610,7 @@ export class AttendanceService {
     const canReverse =
       identity.status === 'COMPLETED' &&
       identity.completedAt !== null &&
+      identity.earningBases.length === 0 &&
       Date.now() - identity.completedAt.getTime() <= REVERSAL_WINDOW_MS;
 
     return {
@@ -578,6 +632,8 @@ export class AttendanceService {
       students: roster.map(({ studentId, displayName }) => {
         const attendanceStatus = attendanceByStudent.get(studentId) ?? null;
         const feedbackItem = feedbackByStudent.get(studentId);
+        const review = reviews.find((item) => item.studentId === studentId);
+        const photo = photos.find((item) => item.id === studentId)?.profilePhotoFile;
         return {
           id: studentId,
           displayName,
@@ -585,6 +641,15 @@ export class AttendanceService {
           expectedConsumeUnits:
             attendanceStatus === 'PRESENT' ? lesson.lessonUnits : 0,
           feedback: feedbackItem?.content ?? null,
+          photo: photo ? this.storedFileService.toStudentPhotoView(photo) : null,
+          parentReview: review ? toParentLessonReviewView(review, identity.status) : null,
+          performanceRating: feedbackItem?.performanceRating ?? null,
+          teacherRatings: toTeacherFeedbackRatings(
+            feedbackItem?.teacherRatings ?? null,
+          ),
+          feedbackVersion: feedbackItem?.version ?? 0,
+          feedbackAuthorName: feedbackItem?.teacher.user.displayName ?? null,
+          canEditFeedback: false,
           feedbackImages:
             feedbackItem?.images.map(({ storedFile }) =>
               this.storedFileService.toFeedbackImageView(storedFile),
@@ -606,7 +671,7 @@ export class AttendanceService {
     }>,
   ): Promise<CompleteLessonResult['consumed']> {
     const attendance = await transaction.attendanceRecord.findMany({
-      where: { lessonSessionId },
+      where: { lessonSessionId, includedInFinalRoster: true },
       orderBy: { studentId: 'asc' },
       select: { studentId: true },
     });

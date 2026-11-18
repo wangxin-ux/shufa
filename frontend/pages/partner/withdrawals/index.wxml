@@ -1,0 +1,47 @@
+<partner-approved-role-badge blocked="{{viewState === 'forbidden'}}" />
+<partner-page-shell markTitle="提现" markIcon="/pages/partner/assets/lesson-account-mark-glyph.png" showBack="{{true}}" surfacePage="{{true}}">
+  <view class="partner-workspace withdrawal-page">
+    <text class="withdrawal-title">提现申请与记录</text>
+    <view wx:if="{{viewState === 'loading'}}" class="withdrawal-state"><text>正在读取提现账户</text></view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="withdrawal-state"><text>{{errorMessage}}</text><button class="partner-command" bindtap="onLogin">重新登录</button></view>
+    <view wx:elif="{{viewState === 'error'}}" class="withdrawal-state"><text>{{errorMessage}}</text><button class="partner-command" bindtap="onRetry">重试</button></view>
+    <block wx:else>
+      <text class="withdrawal-notice">{{summary.enabled ? '本地模拟 · 未发生真实转账' : '提现暂未开放'}}</text>
+      <block wx:if="{{summary.enabled}}">
+        <view class="withdrawal-balances">
+          <view><text class="withdrawal-meta">可申请</text><text class="withdrawal-amount">{{availableLabel}}元</text></view>
+          <view><text class="withdrawal-meta">占用中</text><text>{{reservedLabel}}元</text></view>
+          <view><text class="withdrawal-meta">模拟已付</text><text>{{paidLabel}}元</text></view>
+        </view>
+        <text wx:if="{{summary.unresolvedFen}}" class="withdrawal-error">待处理差额 {{unresolvedLabel}}元</text>
+        <view wx:if="{{summary.profile}}" class="withdrawal-section">
+          <text>{{summary.profile.beneficiaryName}}</text><text class="withdrawal-meta">{{summary.profile.accountLabel}}</text>
+          <text class="withdrawal-meta">付款方 {{summary.profile.payerName}}</text>
+          <text class="withdrawal-meta">最低{{minimumLabel}}元 · 每日{{summary.profile.dailyRequestLimit}}次 · 北京时间</text>
+          <input class="withdrawal-input" type="digit" maxlength="11" value="{{amount}}" placeholder="申请金额（元）" bindinput="onAmountInput" disabled="{{busy || unknown || !summary.canApply}}" aria-label="申请金额，单位元" />
+          <button id="withdrawal-submit" class="partner-command" bindtap="onSubmit" loading="{{busy}}" disabled="{{busy || unknown || refreshing || !summary.canApply}}">提交模拟申请</button>
+        </view>
+        <text wx:if="{{blockLabel}}" class="withdrawal-meta">{{blockLabel}}</text>
+      </block>
+      <text wx:if="{{actionMessage}}" class="withdrawal-message">{{actionMessage}}</text>
+      <button wx:if="{{unknown}}" id="withdrawal-retry" class="partner-command" bindtap="onRetryAction" disabled="{{busy}}" loading="{{busy}}">重试原请求</button>
+      <view class="withdrawal-heading"><text>申请记录</text><text class="withdrawal-meta">共{{total}}笔</text></view>
+      <text wx:if="{{recordsEmpty}}" class="withdrawal-meta">暂无申请记录</text>
+      <view wx:for="{{rows}}" wx:key="id" class="withdrawal-record">
+        <view class="withdrawal-heading"><text class="withdrawal-record__amount">{{item.amountLabel}}元</text><text>{{item.statusLabel}}</text></view>
+        <text class="withdrawal-meta">{{item.requestedLabel}} · 北京时间</text>
+        <text class="withdrawal-meta">{{item.profile.beneficiaryName}} · {{item.profile.accountLabel}}</text>
+        <text wx:if="{{item.reason}}" class="withdrawal-message">{{item.reason}}</text>
+        <text wx:if="{{item.unresolvedFen}}" class="withdrawal-error">待处理差额 {{item.unresolvedLabel}}元</text>
+        <text wx:if="{{item.payoutReference}}" class="withdrawal-meta">模拟付款参考 {{item.payoutReference}}</text>
+        <view class="withdrawal-actions">
+          <button wx:if="{{item.status === 'SUBMITTED'}}" class="partner-command" data-id="{{item.id}}" bindtap="onCancel" disabled="{{busy || unknown || refreshing}}">撤回申请</button>
+          <button wx:if="{{item.proofFileId}}" class="partner-command" data-id="{{item.id}}" bindtap="onProof">查看模拟凭证</button>
+        </view>
+      </view>
+      <text wx:if="{{errorMessage}}" class="withdrawal-error">{{errorMessage}}</text>
+      <button class="partner-command" bindtap="onRetry" disabled="{{refreshing || busy}}">{{refreshing ? '读取中' : '重新读取'}}</button>
+      <button wx:if="{{hasMore}}" class="partner-command" bindtap="onLoadMore" disabled="{{refreshing || busy}}">加载更多</button>
+    </block>
+  </view>
+</partner-page-shell>

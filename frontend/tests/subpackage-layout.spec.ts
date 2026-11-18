@@ -15,11 +15,14 @@ const ROLE_PACKAGES: ReadonlyArray<{
       "leave/index",
       "profile/index",
       "student-profile/index",
+      "profile-setup/index",
       "updates/index",
       "group-campaigns/index",
       "group-detail/index",
       "group-orders/index",
       "campuses/index",
+      "courses/index",
+      "campaign-registration/index",
     ],
   },
   {
@@ -56,6 +59,15 @@ const ROLE_PACKAGES: ReadonlyArray<{
     ],
   },
   {
+    root: "pages/operator",
+    pages: [
+      "home/index", "profile/index", "leave-requests/index",
+      "students/index", "student-detail/index", "teachers/index",
+      "student-form/index", "schedule/index", "schedule-editor/index",
+      "warnings/index", "campus-settings/index", "teacher-archives/index", "rankings/index", "lesson-account/index", "earnings/index", "headquarters/index",
+    ],
+  },
+  {
     root: "pages/super-admin",
     pages: [
       "home/index",
@@ -81,7 +93,12 @@ const ROLE_PACKAGES: ReadonlyArray<{
       "group-campaigns/index",
       "group-orders/index",
       "staff-accounts/index",
+      "partner-applications/index",
       "finance-review/index",
+      "course-products/index",
+      "campaign-reviews/index",
+      "campaign-review-detail/index",
+      "partner-withdrawals/index",
     ],
   },
   {
@@ -95,9 +112,15 @@ const ROLE_PACKAGES: ReadonlyArray<{
       "teachers/index",
       "profile/index",
       "earnings/index",
+      "lesson-account/index",
       "operations/index",
       "group-campaigns/index",
       "group-detail/index",
+      "application/index",
+      "login/index",
+      "campaign-editor/index",
+      "rankings/index",
+      "withdrawals/index",
     ],
   },
   {
@@ -134,7 +157,6 @@ const SHARED_ROLE_ASSETS = [
   "assets/teacher/home-mascot.png",
   "assets/teacher/home-stat-glass.png",
   "assets/campus-manager/home-stat-glass.png",
-  "assets/super-admin/home-stat-glass.png",
   "assets/partner/home-stat-glass.png",
 ];
 
@@ -183,6 +205,7 @@ const MIGRATED_ASSETS: Record<string, readonly string[]> = {
     "home-character.png",
     "home-mark.png",
     "home-mark-glyph.png",
+    "home-stat-glass.png",
     "icon-brand.png",
     "icon-campuses.png",
     "icon-dashboard.png",
@@ -265,7 +288,7 @@ describe("role subpackage layout", () => {
         pages.map((page) => `${root}/${page}`),
       ),
     ];
-    expect(registered).toHaveLength(87);
+    expect(registered).toHaveLength(117);
     for (const page of registered) {
       for (const extension of ["ts", "json", "wxml", "wxss"]) {
         expect(fs.existsSync(path.join(ROOT, `${page}.${extension}`))).toBe(
@@ -311,16 +334,61 @@ describe("role subpackage layout", () => {
     }
   });
 
+  it("excludes asset documentation from packaging while keeping runtime formats", () => {
+    const config = JSON.parse(
+      fs.readFileSync(path.join(ROOT, "project.config.json"), "utf8"),
+    ) as {
+      packOptions: {
+        ignore: Array<{ type: string; value: string }>;
+        include: Array<{ type: string; value: string }>;
+      };
+    };
+    expect(config.packOptions.include).toEqual([]);
+    const suffixes = config.packOptions.ignore
+      .filter(({ type }) => type === "suffix")
+      .map(({ value }) => value);
+    expect(suffixes).toContain(".md");
+    for (const extension of [
+      ".ts", ".json", ".wxml", ".wxss", ".png", ".jpg", ".woff", ".woff2",
+    ]) {
+      expect(suffixes.some((suffix) => `runtime${extension}`.endsWith(suffix))).toBe(false);
+    }
+    expect(
+      fs.existsSync(path.join(ROOT, "../README.md")),
+    ).toBe(true);
+  });
+
   it("keeps estimated main and role packages within upload budgets", () => {
-    const ignoredTopLevel = new Set(["node_modules", "tests", "scripts"]);
+    const { packOptions } = JSON.parse(
+      fs.readFileSync(path.join(ROOT, "project.config.json"), "utf8"),
+    ) as {
+      packOptions: {
+        ignore: Array<{ type: string; value: string }>;
+        include: Array<{ type: string; value: string }>;
+      };
+    };
+    // Reject unsupported rules rather than silently underestimating the package.
+    expect(packOptions.include).toEqual([]);
+    expect(
+      packOptions.ignore.every(({ type }) => type === "folder" || type === "suffix"),
+    ).toBe(true);
+    const isIgnored = (file: string): boolean => {
+      const relative = path.relative(ROOT, file).split(path.sep).join("/");
+      return packOptions.ignore.some(({ type, value }) =>
+        type === "folder"
+          ? relative === value || relative.startsWith(`${value}/`)
+          : type === "suffix" && relative.endsWith(value),
+      );
+    };
     const packageRoots = ROLE_PACKAGES.map(({ root }) => path.join(ROOT, root));
-    const sourceFiles = fs
+    const candidateFiles = fs
       .readdirSync(ROOT, { withFileTypes: true })
-      .filter((entry) => !ignoredTopLevel.has(entry.name))
+      .filter((entry) => !isIgnored(path.join(ROOT, entry.name)))
       .flatMap((entry) => {
         const fullPath = path.join(ROOT, entry.name);
         return entry.isDirectory() ? walkFiles(fullPath) : [fullPath];
       });
+    const sourceFiles = candidateFiles.filter((file) => !isIgnored(file));
     const packageSizes = packageRoots.map((packageRoot) =>
       sourceFiles
         .filter((file) => file.startsWith(`${packageRoot}${path.sep}`))
@@ -335,6 +403,24 @@ describe("role subpackage layout", () => {
       )
       .reduce((total, file) => total + fs.statSync(file).size, 0);
 
+    process.stdout.write(
+      `SUBPACKAGE_SIZE_EVIDENCE ${JSON.stringify({
+        mainBytes: mainSize,
+        mainRemainingBytes: 1.5 * 1024 * 1024 - mainSize,
+        roles: ROLE_PACKAGES.map(({ root }, index) => ({
+          root,
+          bytes: packageSizes[index],
+        })),
+        totalBytes: mainSize + packageSizes.reduce((sum, size) => sum + size, 0),
+        excludedDocumentation: candidateFiles
+          .filter((file) => file.endsWith(".md") && isIgnored(file))
+          .map((file) => ({
+            path: path.relative(ROOT, file).split(path.sep).join("/"),
+            bytes: fs.statSync(file).size,
+          })),
+        scope: "source estimate; formal upload still pending",
+      })}\n`,
+    );
     expect(mainSize).toBeLessThanOrEqual(1.5 * 1024 * 1024);
     for (const packageSize of packageSizes) {
       expect(packageSize).toBeLessThanOrEqual(2 * 1024 * 1024);

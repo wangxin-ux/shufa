@@ -156,8 +156,11 @@ enum StoredFilePurpose {
   PAYMENT_PROOF
   COURSE_PRODUCT_COVER
   STUDENT_FEEDBACK_IMAGE
+  STUDENT_PROFILE_PHOTO
   CUSTOMER_SERVICE_QR
   GROUP_CAMPAIGN_POSTER
+  PARTNER_CAMPAIGN_IMAGE
+  PARTNER_APPLICATION_MATERIAL
 }
 
 enum HrTeacherRecordKind {
@@ -231,6 +234,13 @@ enum PaymentTransactionStatus {
 }
 
 model Campus {
+  operatorReadGrants          OperatorCampusReadGrant[]
+  partnerSettlementProfile    PartnerSettlementProfile?
+  partnerSettlementSources    PartnerSettlementSource[]
+  partnerWithdrawals          PartnerWithdrawal[]
+  subjects                    CampusSubject[]
+  partnerApplicationApproval  PartnerApplicationApproval?
+  parentLessonReviews         ParentLessonReview[]
   financeReceipts             FinanceReceipt[]
   id                          String                 @id @default(uuid()) @db.Uuid
   code                        String                 @unique @db.VarChar(50)
@@ -253,6 +263,8 @@ model Campus {
   classGroups                 ClassGroup[]
   classMembers                ClassMember[]
   lessonSessions              LessonSession[]
+  lessonSeries                LessonSeries[]
+  temporaryLessonMembers      LessonTemporaryMember[]
   coursePackages              CoursePackage[]
   attendanceRecords           AttendanceRecord[]
   lessonLedger                LessonLedgerEntry[]
@@ -272,10 +284,24 @@ model Campus {
   courseProducts              CourseProduct[]
   enrollmentOrders            EnrollmentOrder[]
   groupCampaigns              GroupCampaign[]
+  partnerCampaignDrafts       PartnerCampaignDraft[]
+  freeCampaigns              Campaign[]
+  freeCampaignVersions       CampaignVersion[]
+  freeCampaignRegistrations  CampaignRegistration[]
+  rankingStudentFacts        PartnerRankingStudentFact[]
+  rankingRows                PartnerRankingRow[]
   customerServiceQrFile       StoredFile?            @relation("CampusCustomerServiceQr", fields: [customerServiceQrFileId], references: [id], onDelete: Restrict)
 }
 
 model User {
+  operatorReadGrants          OperatorCampusReadGrant[]
+  partnerTeacherEvaluations  PartnerTeacherEvaluation[]
+  partnerSettlementProfiles  PartnerSettlementProfile[] @relation("PartnerSettlementConfigurer")
+  partnerSettlementSources   PartnerSettlementSource[] @relation("PartnerSettlementConfirmer")
+  partnerWithdrawalRequests  PartnerWithdrawal[] @relation("PartnerWithdrawalRequester")
+  partnerWithdrawalReviews   PartnerWithdrawal[] @relation("PartnerWithdrawalReviewer")
+  partnerWithdrawalPayments  PartnerWithdrawal[] @relation("PartnerWithdrawalPayer")
+  parentLessonReviews           ParentLessonReview[]
   createdHrTeacherRecords       HrTeacherRecord[]               @relation("HrTeacherRecordCreator")
   financeCorrectionRequests     FinanceReceiptCorrection[]      @relation("FinanceCorrectionRequester")
   financeCorrectionReviews      FinanceReceiptCorrection[]      @relation("FinanceCorrectionReviewer")
@@ -298,11 +324,19 @@ model User {
   roles                         UserRole[]
   teacherProfile                TeacherProfile?
   recordedAttendance            AttendanceRecord[]              @relation("AttendanceRecorder")
+  addedTemporaryLessonMembers   LessonTemporaryMember[]         @relation("TemporaryLessonMemberAdder")
+  removedTemporaryLessonMembers LessonTemporaryMember[]         @relation("TemporaryLessonMemberRemover")
+  createdLessonSeries           LessonSeries[]
   lessonLedger                  LessonLedgerEntry[]             @relation("LessonLedgerActor")
   teachingRecords               TeachingRecord[]                @relation("TeachingRecordActor")
   idempotencyRecords            IdempotencyRecord[]             @relation("IdempotencyActor")
   auditLogs                     AuditLog[]                      @relation("AuditActor")
   authIdentities                AuthIdentity[]
+  partnerApplicant              PartnerApplicant?
+  partnerApplicationBankRecords PartnerApplicationBankRecord[]
+  partnerApplicationUploads     PartnerApplicationUpload[]
+  partnerApplicationReviews     PartnerApplicationReview[]
+  partnerApplicationApproval    PartnerApplicationApproval?
   staffBindTokens               StaffBindToken[]
   parentStudentBindings         ParentStudentBinding[]          @relation("ParentStudentBindingUser")
   parentLeaveRequests           ParentLeaveRequest[]            @relation("ParentLeaveRequestUser")
@@ -322,6 +356,12 @@ model User {
   submittedPaymentProofs        EnrollmentPaymentProof[]        @relation("EnrollmentPaymentProofSubmitter")
   enrollmentOrderReviews        EnrollmentOrderReview[]         @relation("EnrollmentOrderReviewActor")
   createdGroupCampaigns         GroupCampaign[]                 @relation("GroupCampaignCreator")
+  createdPartnerCampaignDrafts  PartnerCampaignDraft[]
+  closedFreeCampaigns           Campaign[] @relation("FreeCampaignCloser")
+  submittedFreeCampaignVersions CampaignVersion[] @relation("FreeCampaignSubmitter")
+  reviewedFreeCampaignVersions  CampaignVersion[] @relation("FreeCampaignReviewer")
+  freeCampaignRegistrations     CampaignRegistration[] @relation("FreeRegistrationParent")
+  cancelledFreeRegistrations    CampaignRegistration[] @relation("FreeRegistrationCanceller")
   ledGroupTeams                 GroupTeam[]                     @relation("GroupTeamLeader")
   groupMemberships              GroupMember[]                   @relation("GroupMemberParent")
 
@@ -342,6 +382,228 @@ model AuthIdentity {
   @@index([userId])
 }
 
+enum PartnerApplicationStatus {
+  DRAFT
+  SUBMITTED
+  REJECTED
+  APPROVED
+}
+
+model PartnerApplicant {
+  id        String                    @id @default(uuid()) @db.Uuid
+  userId    String                    @unique @db.Uuid
+  createdAt DateTime                  @default(now()) @db.Timestamptz(3)
+  user      User                      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  sessions  PartnerApplicantSession[]
+  application PartnerApplication?
+}
+
+model PartnerApplication {
+  id              String                   @id @default(uuid()) @db.Uuid
+  applicantId     String                   @unique @db.Uuid
+  status          PartnerApplicationStatus @default(DRAFT)
+  version         Int                      @default(1)
+  institutionName String?                  @db.VarChar(200)
+  province        String?                  @db.VarChar(100)
+  city            String?                  @db.VarChar(100)
+  district        String?                  @db.VarChar(100)
+  detailedAddress String?                  @db.VarChar(300)
+  contactPhone    String?                  @db.VarChar(30)
+  currentBankRecordId String?               @unique @db.Uuid
+  createdAt       DateTime                  @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime                  @updatedAt @db.Timestamptz(3)
+  applicant       PartnerApplicant         @relation(fields: [applicantId], references: [id], onDelete: Restrict)
+  currentBankRecord PartnerApplicationBankRecord? @relation("CurrentApplicationBank", fields: [currentBankRecordId], references: [id], onDelete: Restrict)
+  bankRecords     PartnerApplicationBankRecord[] @relation("ApplicationBankHistory")
+  currentMaterialRecordId String? @unique @db.Uuid
+  currentMaterialRecord PartnerApplicationMaterialRecord? @relation("CurrentApplicationMaterials", fields: [currentMaterialRecordId], references: [id], onDelete: Restrict)
+  materialRecords PartnerApplicationMaterialRecord[] @relation("ApplicationMaterialHistory")
+  materialUploads PartnerApplicationUpload[]
+  submissions PartnerApplicationSubmission[]
+  editSourceSubmissionId String? @db.Uuid
+  editSourceSubmission PartnerApplicationSubmission? @relation("ApplicationEditSource", fields: [editSourceSubmissionId], references: [id], onDelete: Restrict)
+
+  @@index([status, updatedAt])
+}
+
+model PartnerApplicationSubmission {
+  id String @id @default(uuid()) @db.Uuid
+  applicationId String @db.Uuid
+  applicationVersion Int
+  sourceVersion Int
+  institutionName String @db.VarChar(200)
+  province String @db.VarChar(100)
+  city String @db.VarChar(100)
+  district String @db.VarChar(100)
+  detailedAddress String @db.VarChar(300)
+  contactPhone String @db.VarChar(30)
+  regionCatalogVersion String @db.VarChar(100)
+  bankRecordId String @db.Uuid
+  materialRecordId String @db.Uuid
+  submittedAt DateTime @default(now()) @db.Timestamptz(3)
+  application PartnerApplication @relation(fields: [applicationId], references: [id], onDelete: Restrict)
+  bankRecord PartnerApplicationBankRecord @relation(fields: [bankRecordId], references: [id], onDelete: Restrict)
+  materialRecord PartnerApplicationMaterialRecord @relation(fields: [materialRecordId], references: [id], onDelete: Restrict)
+  review PartnerApplicationReview?
+  approval PartnerApplicationApproval?
+  derivedDrafts PartnerApplication[] @relation("ApplicationEditSource")
+
+  @@unique([applicationId, applicationVersion])
+  @@unique([applicationId, sourceVersion])
+}
+
+model PartnerApplicationApproval {
+  id String @id @default(uuid()) @db.Uuid
+  submissionId String @unique @db.Uuid
+  userId String @unique @db.Uuid
+  campusId String @unique @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  submission PartnerApplicationSubmission @relation(fields: [submissionId], references: [id], onDelete: Restrict)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  campus Campus @relation(fields: [campusId], references: [id], onDelete: Restrict)
+}
+
+model PartnerApplicationReview {
+  id String @id @default(uuid()) @db.Uuid
+  submissionId String @unique @db.Uuid
+  reviewerUserId String @db.Uuid
+  decision PartnerApplicationStatus
+  reason String @db.VarChar(1000)
+  sourceVersion Int
+  resultingVersion Int
+  reviewedAt DateTime @default(now()) @db.Timestamptz(3)
+  submission PartnerApplicationSubmission @relation(fields: [submissionId], references: [id], onDelete: Restrict)
+  reviewer User @relation(fields: [reviewerUserId], references: [id], onDelete: Restrict)
+
+  @@index([reviewerUserId, reviewedAt])
+}
+
+enum PartnerApplicationMaterialKind {
+  BUSINESS_LICENSE
+  INSTITUTION_LOGO
+  LEGAL_ID_FRONT
+  LEGAL_ID_BACK
+  STORE_FRONT
+  ENVIRONMENT
+}
+
+enum PartnerApplicationUploadState {
+  RESERVED
+  WRITING
+  COMPLETED
+}
+
+model PartnerApplicationUpload {
+  id String @id @default(uuid()) @db.Uuid
+  storedFileId String @unique @db.Uuid
+  applicationId String @db.Uuid
+  ownerUserId String @db.Uuid
+  requestKey String @db.Uuid
+  expectedVersion Int
+  kind PartnerApplicationMaterialKind
+  state PartnerApplicationUploadState @default(RESERVED)
+  runTag String @db.VarChar(100)
+  storageKey String @unique @db.VarChar(255)
+  keyId String? @db.VarChar(100)
+  nonce String? @db.VarChar(24)
+  authenticationTag String? @db.VarChar(32)
+  inputDigest String? @db.VarChar(64)
+  ciphertextDigest String? @db.VarChar(64)
+  mimeType String? @db.VarChar(100)
+  sizeBytes Int?
+  width Int?
+  height Int?
+  adoptedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  completedAt DateTime? @db.Timestamptz(3)
+  application PartnerApplication @relation(fields: [applicationId], references: [id], onDelete: Restrict)
+  owner User @relation(fields: [ownerUserId], references: [id], onDelete: Restrict)
+  fileCipher PartnerApplicationFileCipher?
+  objects PartnerApplicationUploadObject[]
+
+  @@unique([applicationId, requestKey])
+  @@index([ownerUserId, adoptedAt])
+}
+
+model PartnerApplicationUploadObject {
+  id String @id @default(uuid()) @db.Uuid
+  uploadId String @db.Uuid
+  storageKey String @unique @db.VarChar(255)
+  attempt Int
+  retainedAt DateTime? @db.Timestamptz(3)
+  completedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  upload PartnerApplicationUpload @relation(fields: [uploadId], references: [id], onDelete: Restrict)
+
+  @@unique([uploadId, attempt])
+}
+
+model PartnerApplicationMaterialRecord {
+  id String @id @default(uuid()) @db.Uuid
+  applicationId String @db.Uuid
+  applicationVersion Int
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  application PartnerApplication @relation("ApplicationMaterialHistory", fields: [applicationId], references: [id], onDelete: Restrict)
+  currentFor PartnerApplication? @relation("CurrentApplicationMaterials")
+  items PartnerApplicationMaterialItem[]
+  submissions PartnerApplicationSubmission[]
+
+  @@unique([applicationId, applicationVersion])
+}
+
+model PartnerApplicationMaterialItem {
+  id String @id @default(uuid()) @db.Uuid
+  recordId String @db.Uuid
+  storedFileId String @db.Uuid
+  kind PartnerApplicationMaterialKind
+  sortOrder Int
+  record PartnerApplicationMaterialRecord @relation(fields: [recordId], references: [id], onDelete: Restrict)
+  file StoredFile @relation(fields: [storedFileId], references: [id], onDelete: Restrict)
+
+  @@unique([recordId, sortOrder])
+  @@unique([recordId, storedFileId])
+}
+
+model PartnerApplicationFileCipher {
+  storedFileId String @id @db.Uuid
+  uploadId String @unique @db.Uuid
+  keyId String @db.VarChar(100)
+  nonce String @db.VarChar(24)
+  authenticationTag String @db.VarChar(32)
+  file StoredFile @relation(fields: [storedFileId], references: [id], onDelete: Restrict)
+  upload PartnerApplicationUpload @relation(fields: [uploadId], references: [id], onDelete: Restrict)
+}
+
+model PartnerApplicationBankRecord {
+  id                 String @id @default(uuid()) @db.Uuid
+  applicationId      String @db.Uuid
+  ownerUserId        String @db.Uuid
+  applicationVersion Int
+  keyId              String @db.VarChar(100)
+  nonce              String @db.VarChar(24)
+  authenticationTag  String @db.VarChar(32)
+  ciphertext         String @db.Text
+  createdAt          DateTime @default(now()) @db.Timestamptz(3)
+  application        PartnerApplication @relation("ApplicationBankHistory", fields: [applicationId], references: [id], onDelete: Restrict)
+  currentFor         PartnerApplication? @relation("CurrentApplicationBank")
+  owner              User @relation(fields: [ownerUserId], references: [id], onDelete: Restrict)
+  submissions PartnerApplicationSubmission[]
+
+  @@unique([applicationId, applicationVersion])
+  @@index([ownerUserId])
+}
+
+model PartnerApplicantSession {
+  id          String           @id @default(uuid()) @db.Uuid
+  applicantId String           @db.Uuid
+  createdAt   DateTime         @default(now()) @db.Timestamptz(3)
+  expiresAt   DateTime         @db.Timestamptz(3)
+  revokedAt   DateTime?        @db.Timestamptz(3)
+  applicant   PartnerApplicant @relation(fields: [applicantId], references: [id], onDelete: Restrict)
+
+  @@index([applicantId, createdAt])
+}
+
 model StaffBindToken {
   id          String    @id @default(uuid()) @db.Uuid
   userId      String    @db.Uuid
@@ -353,6 +615,154 @@ model StaffBindToken {
   user        User      @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@index([userId, expiresAt])
+}
+
+enum PartnerCampaignType {
+  REGULAR_GROUP
+  MULTI_SPEC_GROUP
+  FLASH_SALE
+  MULTI_SPEC_REGISTRATION_FEE
+  FREE_REGISTRATION
+}
+
+model PartnerCampaignDraft {
+  id                String               @id @default(uuid()) @db.Uuid
+  campusId          String               @db.Uuid
+  createdByUserId   String               @db.Uuid
+  title             String?              @db.VarChar(40)
+  campaignType      PartnerCampaignType?
+  shareDescription  String?              @db.VarChar(1000)
+  contactPhone      String?              @db.VarChar(30)
+  activityContent   String?              @db.VarChar(10000)
+  registrationForm  Json                 @default("[]") @db.JsonB
+  coverImageId      String?              @db.Uuid
+  shareImageId      String?              @db.Uuid
+  coverImage        StoredFile?          @relation("PartnerDraftCover", fields: [coverImageId], references: [id], onDelete: Restrict)
+  shareImage        StoredFile?          @relation("PartnerDraftShare", fields: [shareImageId], references: [id], onDelete: Restrict)
+  freeStartsAt      DateTime?            @db.Timestamptz(3)
+  freeEndsAt        DateTime?            @db.Timestamptz(3)
+  freeCapacityMode  FreeCampaignCapacityMode?
+  freeMaxRegistrations Int?
+  version           Int                  @default(1)
+  createdAt         DateTime             @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime             @updatedAt @db.Timestamptz(3)
+  campus            Campus               @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  createdBy         User                 @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  campaign          Campaign?
+
+  @@unique([id, campusId])
+  @@index([campusId, updatedAt(sort: Desc), id(sort: Desc)])
+}
+
+enum FreeCampaignCapacityMode {
+  UNLIMITED
+  LIMITED
+}
+
+enum CampaignLifecycle {
+  OPEN
+  CLOSED
+}
+
+enum CampaignReviewStatus {
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum CampaignRegistrationStatus {
+  REGISTERED
+  CANCELLED
+}
+
+model Campaign {
+  id String @id @default(uuid()) @db.Uuid
+  draftId String @unique @db.Uuid
+  campusId String @db.Uuid
+  publishedVersionId String? @db.Uuid
+  lifecycle CampaignLifecycle @default(OPEN)
+  version Int @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  closedAt DateTime? @db.Timestamptz(3)
+  closedByUserId String? @db.Uuid
+  closeReason String? @db.VarChar(1000)
+  draft PartnerCampaignDraft @relation(fields: [draftId, campusId], references: [id, campusId], onDelete: Restrict)
+  campus Campus @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  publishedVersion CampaignVersion? @relation("FreeCampaignPublication", fields: [publishedVersionId, id, campusId], references: [id, campaignId, campusId], onDelete: Restrict)
+  closedBy User? @relation("FreeCampaignCloser", fields: [closedByUserId], references: [id], onDelete: Restrict)
+  versions CampaignVersion[] @relation("FreeCampaignHistory")
+  registrations CampaignRegistration[]
+
+  @@unique([id, campusId])
+  @@unique([draftId, campusId])
+  @@index([campusId, createdAt(sort: Desc), id(sort: Desc)])
+}
+
+model CampaignVersion {
+  id String @id @default(uuid()) @db.Uuid
+  campaignId String @db.Uuid
+  campusId String @db.Uuid
+  sequence Int
+  sourceDraftVersion Int
+  snapshotSchemaVersion Int @default(1)
+  title String @db.VarChar(40)
+  campaignType PartnerCampaignType @default(FREE_REGISTRATION)
+  shareDescription String @db.VarChar(1000)
+  contactPhone String? @db.VarChar(30)
+  activityContent String? @db.VarChar(10000)
+  coverImageId String? @db.Uuid
+  shareImageId String? @db.Uuid
+  coverImage StoredFile? @relation("CampaignVersionCover", fields: [coverImageId], references: [id], onDelete: Restrict)
+  shareImage StoredFile? @relation("CampaignVersionShare", fields: [shareImageId], references: [id], onDelete: Restrict)
+  startsAt DateTime @db.Timestamptz(3)
+  endsAt DateTime @db.Timestamptz(3)
+  timezone String @db.VarChar(50)
+  capacityMode FreeCampaignCapacityMode
+  maxRegistrations Int?
+  feeFen Int @default(0)
+  benefitMode String @default("NONE") @db.VarChar(20)
+  registrationLimit String @default("ONCE_PER_STUDENT") @db.VarChar(30)
+  status CampaignReviewStatus @default(SUBMITTED)
+  version Int @default(1)
+  submittedAt DateTime @default(now()) @db.Timestamptz(3)
+  submittedByUserId String @db.Uuid
+  reviewedAt DateTime? @db.Timestamptz(3)
+  reviewedByUserId String? @db.Uuid
+  reviewReason String? @db.VarChar(1000)
+  campaign Campaign @relation("FreeCampaignHistory", fields: [campaignId, campusId], references: [id, campusId], onDelete: Restrict)
+  campus Campus @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  submittedBy User @relation("FreeCampaignSubmitter", fields: [submittedByUserId], references: [id], onDelete: Restrict)
+  reviewedBy User? @relation("FreeCampaignReviewer", fields: [reviewedByUserId], references: [id], onDelete: Restrict)
+  publishedFor Campaign[] @relation("FreeCampaignPublication")
+  registrations CampaignRegistration[]
+
+  @@unique([campaignId, sequence])
+  @@unique([id, campaignId, campusId])
+  @@index([status, submittedAt(sort: Desc), id(sort: Desc)])
+}
+
+model CampaignRegistration {
+  id String @id @default(uuid()) @db.Uuid
+  campaignId String @db.Uuid
+  campusId String @db.Uuid
+  versionId String @db.Uuid
+  parentUserId String @db.Uuid
+  studentId String @db.Uuid
+  status CampaignRegistrationStatus @default(REGISTERED)
+  version Int @default(1)
+  registeredAt DateTime @default(now()) @db.Timestamptz(3)
+  cancelledAt DateTime? @db.Timestamptz(3)
+  cancelledByUserId String? @db.Uuid
+  campaign Campaign @relation(fields: [campaignId, campusId], references: [id, campusId], onDelete: Restrict)
+  campus Campus @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  campaignVersion CampaignVersion @relation(fields: [versionId, campaignId, campusId], references: [id, campaignId, campusId], onDelete: Restrict)
+  parent User @relation("FreeRegistrationParent", fields: [parentUserId], references: [id], onDelete: Restrict)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  cancelledBy User? @relation("FreeRegistrationCanceller", fields: [cancelledByUserId], references: [id], onDelete: Restrict)
+
+  @@unique([campaignId, studentId])
+  @@index([campaignId, status, registeredAt(sort: Desc), id(sort: Desc)])
+  @@index([parentUserId, campusId, registeredAt(sort: Desc), id(sort: Desc)])
 }
 
 model UserRole {
@@ -368,7 +778,21 @@ model UserRole {
   @@index([campusId, roleCode])
 }
 
+model OperatorCampusReadGrant {
+  userId    String   @db.Uuid
+  campusId  String   @db.Uuid
+  isActive  Boolean  @default(true)
+  version   Int      @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  campus    Campus   @relation(fields: [campusId], references: [id], onDelete: Restrict)
+
+  @@id([userId, campusId])
+}
+
 model TeacherProfile {
+  partnerEvaluations PartnerTeacherEvaluation[]
   id              String                @id @default(uuid()) @db.Uuid
   userId          String                @unique @db.Uuid
   campusId        String                @db.Uuid
@@ -390,6 +814,46 @@ model TeacherProfile {
   hrRecords       HrTeacherRecord[]
 
   @@index([campusId])
+  @@unique([id, campusId])
+}
+
+model PartnerTeacherEvaluation {
+  id                  String @id @default(uuid()) @db.Uuid
+  campusId            String @db.Uuid
+  teacherId           String @db.Uuid
+  periodMonth         String @db.VarChar(7)
+  authorUserId        String @db.Uuid
+  authorName          String @db.VarChar(100)
+  version             Int @default(1)
+  teachingRating      Int
+  communicationRating Int
+  attendanceRating    Int
+  overallRating       Int
+  guidance            String @db.VarChar(1000)
+  createdAt           DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime @updatedAt @db.Timestamptz(3)
+  teacher             TeacherProfile @relation(fields: [teacherId, campusId], references: [id, campusId], onDelete: Restrict, onUpdate: Restrict)
+  author              User @relation(fields: [authorUserId], references: [id], onDelete: Restrict)
+  revisions           PartnerTeacherEvaluationRevision[]
+
+  @@unique([teacherId, periodMonth])
+  @@index([campusId, periodMonth])
+}
+
+model PartnerTeacherEvaluationRevision {
+  id                  String @id @default(uuid()) @db.Uuid
+  evaluationId        String @db.Uuid
+  version             Int
+  teachingRating      Int
+  communicationRating Int
+  attendanceRating    Int
+  overallRating       Int
+  guidance            String @db.VarChar(1000)
+  authorName          String @db.VarChar(100)
+  savedAt             DateTime @default(now()) @db.Timestamptz(3)
+  evaluation          PartnerTeacherEvaluation @relation(fields: [evaluationId], references: [id], onDelete: Restrict)
+
+  @@unique([evaluationId, version])
 }
 
 model HrTeacherRecord {
@@ -416,6 +880,10 @@ model HrTeacherRecord {
 }
 
 model Student {
+  profilePhotoFileId String? @unique @db.Uuid
+  profilePhotoFile StoredFile? @relation("StudentProfilePhoto", fields: [profilePhotoFileId], references: [id], onDelete: Restrict)
+  stagedPhotoFiles StoredFile[] @relation("StudentPhotoTarget")
+  parentLessonReviews ParentLessonReview[]
   financeReceipts     FinanceReceipt[]
   id                  String                 @id @default(uuid()) @db.Uuid
   campusId            String                 @db.Uuid
@@ -424,11 +892,13 @@ model Student {
   profileAge          Int?
   homeAddress         String?                @db.VarChar(300)
   profileVersion      Int                    @default(1)
+  parentProfileCompletedAt DateTime?         @db.Timestamptz(3)
   isActive            Boolean                @default(true)
   createdAt           DateTime               @default(now()) @db.Timestamptz(3)
   updatedAt           DateTime               @updatedAt @db.Timestamptz(3)
   campus              Campus                 @relation(fields: [campusId], references: [id], onDelete: Restrict)
   classMemberships    ClassMember[]
+  temporaryLessonMemberships LessonTemporaryMember[]
   coursePackages      CoursePackage[]
   attendanceRecords   AttendanceRecord[]
   lessonLedger        LessonLedgerEntry[]
@@ -437,11 +907,15 @@ model Student {
   parentLeaveRequests ParentLeaveRequest[]
   enrollmentOrders    EnrollmentOrder[]
   groupMemberships    GroupMember[]
+  freeCampaignRegistrations CampaignRegistration[]
 
   @@index([campusId, displayName])
 }
 
 model ClassGroup {
+  subjectId          String?          @db.Uuid
+  subjectVersion     Int              @default(1)
+  subject            CampusSubject?   @relation(fields: [subjectId, campusId], references: [id, campusId], onDelete: Restrict, onUpdate: Restrict)
   id                 String           @id @default(uuid()) @db.Uuid
   campusId           String           @db.Uuid
   teacherId          String           @db.Uuid
@@ -476,10 +950,27 @@ model ClassMember {
   @@index([studentId])
 }
 
+model LessonSeries {
+  id              String          @id @default(uuid()) @db.Uuid
+  campusId        String          @db.Uuid
+  createdByUserId String          @db.Uuid
+  configuration   Json
+  version         Int             @default(1)
+  createdAt       DateTime        @default(now()) @db.Timestamptz(3)
+  campus          Campus          @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  createdBy       User            @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  sessions        LessonSession[]
+
+  @@unique([id, campusId])
+  @@index([campusId, createdAt])
+}
+
 model LessonSession {
+  parentLessonReviews ParentLessonReview[]
   id                  String                @id @default(uuid()) @db.Uuid
   campusId            String                @db.Uuid
   classGroupId        String                @db.Uuid
+  seriesId            String?               @db.Uuid
   teacherId           String                @db.Uuid
   startsAt            DateTime              @db.Timestamptz(3)
   endsAt              DateTime              @db.Timestamptz(3)
@@ -494,6 +985,7 @@ model LessonSession {
   updatedAt           DateTime              @updatedAt @db.Timestamptz(3)
   campus              Campus                @relation(fields: [campusId], references: [id], onDelete: Restrict)
   classGroup          ClassGroup            @relation(fields: [classGroupId], references: [id], onDelete: Restrict)
+  series              LessonSeries?         @relation(fields: [seriesId, campusId], references: [id, campusId], onDelete: Restrict, onUpdate: Restrict)
   teacher             TeacherProfile        @relation(fields: [teacherId], references: [id], onDelete: Restrict)
   attendanceRecords   AttendanceRecord[]
   lessonLedger        LessonLedgerEntry[]
@@ -502,13 +994,41 @@ model LessonSession {
   parentLeaveRequests ParentLeaveRequest[]
   earningBases        TeacherEarningBasis[]
   partnerEarningBases PartnerEarningBasis[]
+  temporaryMembers    LessonTemporaryMember[]
 
+  @@unique([id, campusId])
   @@index([teacherId, startsAt])
   @@index([campusId])
   @@index([classGroupId, startsAt])
+  @@index([seriesId, startsAt])
+}
+
+model LessonTemporaryMember {
+  id              String        @id @default(uuid()) @db.Uuid
+  campusId        String        @db.Uuid
+  lessonSessionId String        @db.Uuid
+  studentId       String        @db.Uuid
+  joinedAt        DateTime      @default(now()) @db.Timestamptz(3)
+  removedAt       DateTime?     @db.Timestamptz(3)
+  addedByUserId   String        @db.Uuid
+  removedByUserId String?       @db.Uuid
+  campus          Campus        @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  lessonSession   LessonSession @relation(fields: [lessonSessionId, campusId], references: [id, campusId], onDelete: Restrict, onUpdate: Restrict)
+  student         Student       @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  addedBy         User          @relation("TemporaryLessonMemberAdder", fields: [addedByUserId], references: [id], onDelete: Restrict)
+  removedBy       User?         @relation("TemporaryLessonMemberRemover", fields: [removedByUserId], references: [id], onDelete: Restrict)
+  leaveRequests   ParentLeaveRequest[]
+
+  // The migration enforces one active episode per lesson/student.
+  @@unique([id, lessonSessionId, studentId, campusId])
+  @@index([campusId, lessonSessionId, removedAt])
+  @@index([studentId, removedAt])
 }
 
 model CoursePackage {
+  subjectId         String?                 @db.Uuid
+  subjectVersion    Int                     @default(1)
+  subject           CampusSubject?          @relation(fields: [subjectId, campusId], references: [id, campusId], onDelete: Restrict, onUpdate: Restrict)
   financeIssuance   FinancePackageIssuance?
   id                String                  @id @default(uuid()) @db.Uuid
   campusId          String                  @db.Uuid
@@ -539,6 +1059,8 @@ model CourseProduct {
   id              String              @id @default(uuid()) @db.Uuid
   campusId        String              @db.Uuid
   name            String              @db.VarChar(200)
+  courseName      String?             @db.VarChar(200)
+  classType       String?             @db.VarChar(50)
   summary         String              @db.VarChar(1000)
   coverFileId     String?             @db.Uuid
   priceFen        Int
@@ -557,6 +1079,7 @@ model CourseProduct {
   groupCampaigns  GroupCampaign[]
 
   @@index([campusId, status, createdAt])
+  @@index([status, courseName])
 }
 
 model EnrollmentOrder {
@@ -757,6 +1280,8 @@ model ParentStudentBinding {
 }
 
 model ParentLeaveRequest {
+  temporaryMemberId String?        @db.Uuid
+  temporaryMember LessonTemporaryMember? @relation(fields: [temporaryMemberId, lessonSessionId, studentId, campusId], references: [id, lessonSessionId, studentId, campusId], onDelete: Restrict, onUpdate: Restrict, map: "ParentLeaveRequest_temporaryMember_fkey")
   id              String            @id @default(uuid()) @db.Uuid
   campusId        String            @db.Uuid
   parentUserId    String            @db.Uuid
@@ -789,6 +1314,8 @@ model AttendanceRecord {
   lessonSessionId  String           @db.Uuid
   studentId        String           @db.Uuid
   status           AttendanceStatus
+  // Legacy rows retain their historical meaning; new drafts explicitly set false.
+  includedInFinalRoster Boolean     @default(true)
   recordedByUserId String           @db.Uuid
   recordedAt       DateTime         @default(now()) @db.Timestamptz(3)
   updatedAt        DateTime         @updatedAt @db.Timestamptz(3)
@@ -832,6 +1359,9 @@ model StudentFeedback {
   studentId       String                 @db.Uuid
   teacherId       String                 @db.Uuid
   content         String                 @db.VarChar(1000)
+  performanceRating Int?
+  teacherRatings  Json?
+  version         Int                    @default(1)
   createdAt       DateTime               @default(now()) @db.Timestamptz(3)
   updatedAt       DateTime               @updatedAt @db.Timestamptz(3)
   campus          Campus                 @relation(fields: [campusId], references: [id], onDelete: Restrict)
@@ -839,9 +1369,25 @@ model StudentFeedback {
   student         Student                @relation(fields: [studentId], references: [id], onDelete: Restrict)
   teacher         TeacherProfile         @relation(fields: [teacherId], references: [id], onDelete: Restrict)
   images          StudentFeedbackImage[]
+  revisions       StudentFeedbackRevision[]
 
   @@unique([lessonSessionId, studentId])
+  @@unique([id, campusId, teacherId])
   @@index([campusId, teacherId, updatedAt])
+}
+
+model StudentFeedbackRevision {
+  id         String          @id @default(uuid()) @db.Uuid
+  feedbackId String          @db.Uuid
+  campusId   String          @db.Uuid
+  teacherId  String          @db.Uuid
+  version    Int
+  snapshot   Json
+  createdAt  DateTime        @default(now()) @db.Timestamptz(3)
+  feedback   StudentFeedback @relation(fields: [feedbackId, campusId, teacherId], references: [id, campusId, teacherId], onDelete: Restrict, onUpdate: Restrict, map: "StudentFeedbackRevision_feedback_fkey")
+
+  @@unique([feedbackId, version])
+  @@index([campusId, teacherId, createdAt])
 }
 
 model StudentFeedbackImage {
@@ -858,6 +1404,9 @@ model StudentFeedbackImage {
 }
 
 model LessonLedgerEntry {
+  subjectId           String?                   @db.Uuid
+  subjectName         String?                   @db.VarChar(80)
+  subject             CampusSubject?            @relation(fields: [subjectId, campusId], references: [id, campusId], onDelete: Restrict, onUpdate: Restrict)
   financeCorrectionId String?                   @db.Uuid
   financeCorrection   FinanceReceiptCorrection? @relation(fields: [financeCorrectionId], references: [id], onDelete: Restrict)
   financeRefundId     String?                   @db.Uuid
@@ -890,6 +1439,24 @@ model LessonLedgerEntry {
   @@unique([financeRefundId, bucket])
   @@index([campusId, studentId, createdAt])
   @@index([lessonSessionId])
+  @@index([campusId, subjectId, createdAt, id])
+}
+
+model CampusSubject {
+  id         String              @id @default(uuid()) @db.Uuid
+  campusId   String              @db.Uuid
+  name       String              @db.VarChar(80)
+  isActive   Boolean             @default(true)
+  version    Int                 @default(1)
+  createdAt  DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime            @updatedAt @db.Timestamptz(3)
+  campus     Campus              @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  classes    ClassGroup[]
+  packages   CoursePackage[]
+  ledger     LessonLedgerEntry[]
+
+  @@unique([id, campusId])
+  @@unique([campusId, name])
 }
 
 model IdempotencyRecord {
@@ -1124,6 +1691,7 @@ model PartnerEarningBasis {
 }
 
 model PartnerEarningEntry {
+  settlementSource PartnerSettlementSource?
   id               String                  @id @default(uuid()) @db.Uuid
   campusId         String                  @db.Uuid
   earningBasisId   String                  @db.Uuid
@@ -1147,6 +1715,53 @@ model PartnerEarningEntry {
 
   @@index([campusId, status, createdAt])
   @@index([earningBasisId, entryType])
+}
+
+model PartnerRankingCoverage {
+  id        String   @id @db.VarChar(40)
+  startedAt DateTime @default(now()) @db.Timestamptz(3)
+}
+
+model PartnerRankingStudentFact {
+  id         BigInt   @id @default(autoincrement())
+  studentId  String   @db.Uuid
+  campusId   String   @db.Uuid
+  isActive   Boolean
+  recordedAt DateTime @default(dbgenerated("clock_timestamp()")) @db.Timestamptz(3)
+  campus     Campus   @relation(fields: [campusId], references: [id], onDelete: Restrict)
+
+  @@index([studentId, recordedAt, id])
+  @@index([campusId, recordedAt])
+}
+
+model PartnerRankingRevision {
+  id                 String              @id @default(uuid()) @db.Uuid
+  metric             String              @db.VarChar(30)
+  month              String              @db.VarChar(7)
+  timezone           String              @default("Asia/Shanghai") @db.VarChar(50)
+  asOf               DateTime            @db.Timestamptz(3)
+  calculationVersion String              @db.VarChar(40)
+  sourceHash         String              @db.VarChar(64)
+  createdAt          DateTime            @default(now()) @db.Timestamptz(3)
+  rows               PartnerRankingRow[]
+
+  @@unique([metric, month, sourceHash])
+  @@index([metric, month, createdAt])
+}
+
+model PartnerRankingRow {
+  revisionId   String                 @db.Uuid
+  campusId     String                 @db.Uuid
+  campusName   String                 @db.VarChar(200)
+  value        BigInt
+  rank         Int
+  previousRank Int?
+  position     Int
+  revision     PartnerRankingRevision @relation(fields: [revisionId], references: [id], onDelete: Restrict)
+  campus       Campus                 @relation(fields: [campusId], references: [id], onDelete: Restrict)
+
+  @@id([revisionId, campusId])
+  @@unique([revisionId, position])
 }
 
 model Withdrawal {
@@ -1200,6 +1815,14 @@ model WithdrawalAllocation {
 }
 
 model StoredFile {
+  partnerDraftCovers PartnerCampaignDraft[] @relation("PartnerDraftCover")
+  partnerDraftShares PartnerCampaignDraft[] @relation("PartnerDraftShare")
+  campaignVersionCovers CampaignVersion[] @relation("CampaignVersionCover")
+  campaignVersionShares CampaignVersion[] @relation("CampaignVersionShare")
+  partnerPayoutProof PartnerPayoutProof?
+  photoTargetStudentId String? @db.Uuid
+  photoTargetStudent Student? @relation("StudentPhotoTarget", fields: [photoTargetStudentId], references: [id], onDelete: Restrict)
+  profilePhotoStudent Student? @relation("StudentProfilePhoto")
   hrTeacherRecordAttachment HrTeacherRecord?          @relation("HrTeacherRecordAttachment")
   financeCorrectionProposal FinanceReceiptCorrection? @relation("FinanceCorrectionProposedProof")
   financeRefundPayment      FinanceRefundPayment?
@@ -1220,8 +1843,143 @@ model StoredFile {
   studentFeedbackImage      StudentFeedbackImage?
   customerServiceCampuses   Campus[]                  @relation("CampusCustomerServiceQr")
   groupCampaignPoster       GroupCampaignPoster?
+  partnerApplicationCipher  PartnerApplicationFileCipher?
+  partnerApplicationMaterials PartnerApplicationMaterialItem[]
 
   @@index([createdByUserId, createdAt])
+}
+
+enum PartnerWithdrawalStatus {
+  SUBMITTED
+  APPROVED
+  PAYING
+  RECONCILING
+  PAID
+  CANCELLED
+  REJECTED
+  FAILED
+  INVALIDATED
+}
+
+model PartnerSettlementProfile {
+  id String @id @default(uuid()) @db.Uuid
+  campusId String @unique @db.Uuid
+  version Int @default(1)
+  payerName String @db.VarChar(100)
+  beneficiaryName String @db.VarChar(100)
+  accountLastFour String @db.Char(4)
+  minimumAmountFen Int
+  dailyRequestLimit Int
+  configuredByUserId String @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  campus Campus @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  configuredBy User @relation("PartnerSettlementConfigurer", fields: [configuredByUserId], references: [id], onDelete: Restrict)
+}
+
+model PartnerSettlementSource {
+  id String @id @default(uuid()) @db.Uuid
+  campusId String @db.Uuid
+  earningEntryId String @unique @db.Uuid
+  amountFen Int
+  profileSnapshot Json
+  confirmedByUserId String @db.Uuid
+  reason String @db.VarChar(500)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  campus Campus @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  earningEntry PartnerEarningEntry @relation(fields: [earningEntryId], references: [id], onDelete: Restrict)
+  confirmedBy User @relation("PartnerSettlementConfirmer", fields: [confirmedByUserId], references: [id], onDelete: Restrict)
+  reversal PartnerSettlementReversal?
+  allocations PartnerWithdrawalAllocation[]
+  @@index([campusId, createdAt])
+}
+
+model PartnerSettlementReversal {
+  id String @id @default(uuid()) @db.Uuid
+  sourceId String @unique @db.Uuid
+  earningReversalId String @unique @db.Uuid
+  amountFen Int
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  source PartnerSettlementSource @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+}
+
+model PartnerWithdrawal {
+  id String @id @default(uuid()) @db.Uuid
+  campusId String @db.Uuid
+  requestNo String @unique @db.VarChar(64)
+  requestedByUserId String @db.Uuid
+  amountFen Int
+  status PartnerWithdrawalStatus @default(SUBMITTED)
+  profileSnapshot Json
+  reason String? @db.VarChar(500)
+  reviewedByUserId String? @db.Uuid
+  reviewedAt DateTime? @db.Timestamptz(3)
+  payingAt DateTime? @db.Timestamptz(3)
+  paidByUserId String? @db.Uuid
+  paidAt DateTime? @db.Timestamptz(3)
+  payoutReference String? @unique @db.VarChar(128)
+  version Int @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  campus Campus @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  requestedBy User @relation("PartnerWithdrawalRequester", fields: [requestedByUserId], references: [id], onDelete: Restrict)
+  reviewedBy User? @relation("PartnerWithdrawalReviewer", fields: [reviewedByUserId], references: [id], onDelete: Restrict)
+  paidBy User? @relation("PartnerWithdrawalPayer", fields: [paidByUserId], references: [id], onDelete: Restrict)
+  allocations PartnerWithdrawalAllocation[]
+  proof PartnerPayoutProof?
+  @@index([campusId, status, createdAt])
+}
+
+model PartnerWithdrawalAllocation {
+  id String @id @default(uuid()) @db.Uuid
+  withdrawalId String @db.Uuid
+  sourceId String @db.Uuid
+  amountFen Int
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  withdrawal PartnerWithdrawal @relation(fields: [withdrawalId], references: [id], onDelete: Restrict)
+  source PartnerSettlementSource @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+  issue PartnerSettlementIssue?
+  @@unique([withdrawalId, sourceId])
+  @@index([sourceId])
+}
+
+model PartnerSettlementIssue {
+  id String @id @default(uuid()) @db.Uuid
+  allocationId String @unique @db.Uuid
+  amountFen Int
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  allocation PartnerWithdrawalAllocation @relation(fields: [allocationId], references: [id], onDelete: Restrict)
+}
+
+model PartnerPayoutProof {
+  id String @id @default(uuid()) @db.Uuid
+  withdrawalId String @unique @db.Uuid
+  fileId String @unique @db.Uuid
+  outcome String? @db.VarChar(10)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  withdrawal PartnerWithdrawal @relation(fields: [withdrawalId], references: [id], onDelete: Restrict)
+  file StoredFile @relation(fields: [fileId], references: [id], onDelete: Restrict)
+}
+
+model ParentLessonReview {
+  id String @id @default(uuid()) @db.Uuid
+  campusId String @db.Uuid
+  lessonSessionId String @db.Uuid
+  studentId String @db.Uuid
+  parentUserId String @db.Uuid
+  teaching Int
+  communication Int
+  environment Int
+  overall Int
+  note String @default("") @db.VarChar(500)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  campus Campus @relation(fields: [campusId], references: [id], onDelete: Restrict)
+  lessonSession LessonSession @relation(fields: [lessonSessionId], references: [id], onDelete: Restrict)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  parentUser User @relation(fields: [parentUserId], references: [id], onDelete: Restrict)
+
+  @@unique([lessonSessionId, studentId])
+  @@index([campusId, createdAt])
 }
 
 enum FinanceRefundStatus {

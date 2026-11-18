@@ -18,23 +18,49 @@ const campus = {
 };
 
 describe('staff account management service', () => {
-  it.each(['HR', 'FINANCE'])('creates a headquarters %s without campus or teacher profile', async (roleCode) => {
-    const harness = createHarness();
-    const record = { ...accountRecord({ roleCode: 'PARTNER', bound: false }), roles: [{ roleCode, campusId: null, campus: null }] };
-    harness.transaction.user.findUnique.mockResolvedValueOnce(null).mockResolvedValueOnce(record);
-    harness.transaction.user.create.mockResolvedValue({ id: record.id });
-    const result = await harness.service.createAccount(actor, {
-      displayName: '总部工作人员', phone: '13800138000', roleCode, campusId: null,
-    } as never, `headquarters-create-${roleCode}`);
-    expect(result).toMatchObject({ roleCode, campusId: null, campusName: '总部' });
-    expect(harness.transaction.campus.findUnique).not.toHaveBeenCalled();
-    const data = harness.transaction.user.create.mock.calls[0][0].data as Record<string, unknown>;
-    expect(data.roles).toEqual({ create: { roleCode, campusId: null } });
-    expect(data).not.toHaveProperty('teacherProfile');
-    expect(harness.transaction.auditLog.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ campusId: null, action: 'STAFF_ACCOUNT_CREATE' }),
-    });
-  });
+  it.each(['HR', 'FINANCE'])(
+    'creates a headquarters %s without campus or teacher profile',
+    async (roleCode) => {
+      const harness = createHarness();
+      const record = {
+        ...accountRecord({ roleCode: 'PARTNER', bound: false }),
+        roles: [{ roleCode, campusId: null, campus: null }],
+      };
+      harness.transaction.user.findUnique
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(record);
+      harness.transaction.user.create.mockResolvedValue({ id: record.id });
+      const result = await harness.service.createAccount(
+        actor,
+        {
+          displayName: '总部工作人员',
+          phone: '13800138000',
+          roleCode,
+          campusId: null,
+        } as never,
+        `headquarters-create-${roleCode}`,
+      );
+      expect(result).toMatchObject({
+        roleCode,
+        campusId: null,
+        campusName: '总部',
+      });
+      expect(harness.transaction.campus.findUnique).not.toHaveBeenCalled();
+      const data = (
+        harness.transaction.user.create.mock.calls as unknown as Array<
+          [{ data: Record<string, unknown> }]
+        >
+      )[0][0].data;
+      expect(data.roles).toEqual({ create: { roleCode, campusId: null } });
+      expect(data).not.toHaveProperty('teacherProfile');
+      expect(harness.transaction.auditLog.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          campusId: null,
+          action: 'STAFF_ACCOUNT_CREATE',
+        }) as unknown,
+      });
+    },
+  );
 
   it.each([
     { roleCode: 'HR', campusId: campus.id },
@@ -42,20 +68,42 @@ describe('staff account management service', () => {
     { roleCode: 'PARTNER', campusId: null },
     { roleCode: 'TEACHER', campusId: null },
     { roleCode: 'CAMPUS_MANAGER', campusId: null },
-  ])('rejects invalid campus scope $roleCode/$campusId before writes', async (scope) => {
-    const harness = createHarness();
-    await expect(harness.service.createAccount(actor, {
-      displayName: '范围校验', phone: '13800138000', ...scope,
-    } as never, 'scope-invalid')).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
-    expect(harness.prisma.$transaction).not.toHaveBeenCalled();
-  });
+  ])(
+    'rejects invalid campus scope $roleCode/$campusId before writes',
+    async (scope) => {
+      const harness = createHarness();
+      await expect(
+        harness.service.createAccount(
+          actor,
+          {
+            displayName: '范围校验',
+            phone: '13800138000',
+            ...scope,
+          } as never,
+          'scope-invalid',
+        ),
+      ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
+      expect(harness.prisma.$transaction).not.toHaveBeenCalled();
+    },
+  );
 
   it('does not let a campus manager create headquarters accounts through the shared service', async () => {
     const harness = createHarness();
-    await expect(harness.service.createAccount({
-      userId: actor.userId, roles: [{ code: 'CAMPUS_MANAGER', campusId: campus.id }],
-    }, { displayName: '总部人力', phone: '13800138000', roleCode: 'HR', campusId: null } as never,
-    'unauthorized-hq')).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    await expect(
+      harness.service.createAccount(
+        {
+          userId: actor.userId,
+          roles: [{ code: 'CAMPUS_MANAGER', campusId: campus.id }],
+        },
+        {
+          displayName: '总部人力',
+          phone: '13800138000',
+          roleCode: 'HR',
+          campusId: null,
+        } as never,
+        'unauthorized-hq',
+      ),
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
     expect(harness.prisma.$transaction).not.toHaveBeenCalled();
   });
 
@@ -71,7 +119,9 @@ describe('staff account management service', () => {
     harness.transaction.campus.findUnique.mockResolvedValue(campus);
     harness.transaction.user.findUnique
       .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(accountRecord({ roleCode: 'TEACHER', bound: false }));
+      .mockResolvedValueOnce(
+        accountRecord({ roleCode: 'TEACHER', bound: false }),
+      );
     harness.transaction.user.create.mockResolvedValue({
       id: '70000000-0000-4000-8000-000000000001',
     });
@@ -110,8 +160,10 @@ describe('staff account management service', () => {
         action: 'STAFF_ACCOUNT_CREATE',
         resourceType: 'User',
         outcome: 'SUCCESS',
-        details: expect.not.objectContaining({ phone: expect.anything() }) as unknown,
-      }),
+        details: expect.not.objectContaining({
+          phone: expect.anything() as unknown,
+        }) as unknown,
+      }) as unknown,
     });
     expect(result).toMatchObject({
       displayName: '林老师',
@@ -177,6 +229,7 @@ describe('staff account management service', () => {
   it('updates status by expected version and synchronizes a teacher profile', async () => {
     const harness = createHarness();
     harness.transaction.user.findUnique
+      .mockResolvedValueOnce(administratorRecord())
       .mockResolvedValueOnce(accountRecord({ roleCode: 'TEACHER' }))
       .mockResolvedValueOnce(
         accountRecord({ roleCode: 'TEACHER', status: 'DISABLED', version: 2 }),
@@ -208,6 +261,7 @@ describe('staff account management service', () => {
   it('unbinds only the WeChat identity and increments the account version', async () => {
     const harness = createHarness();
     harness.transaction.user.findUnique
+      .mockResolvedValueOnce(administratorRecord())
       .mockResolvedValueOnce(accountRecord({ roleCode: 'PARTNER' }))
       .mockResolvedValueOnce(
         accountRecord({ roleCode: 'PARTNER', version: 2, bound: false }),
@@ -233,12 +287,18 @@ describe('staff account management service', () => {
 
   it('lists masked accounts without returning identity subjects', async () => {
     const harness = createHarness();
-    harness.prisma.user.count.mockResolvedValue(1);
-    harness.prisma.user.findMany.mockResolvedValue([
+    harness.transaction.$queryRaw
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ total: BigInt(1) }])
+      .mockResolvedValueOnce([{ id: '70000000-0000-4000-8000-000000000001' }]);
+    harness.transaction.user.findUnique.mockResolvedValue(
+      administratorRecord(),
+    );
+    harness.transaction.user.findMany.mockResolvedValue([
       accountRecord({ roleCode: 'CAMPUS_MANAGER', bound: true }),
     ]);
 
-    const result = await harness.service.list({
+    const result = await harness.service.list(actor, {
       page: 1,
       pageSize: 20,
       query: '1380',
@@ -251,15 +311,22 @@ describe('staff account management service', () => {
       }),
     );
     expect(JSON.stringify(result)).not.toContain('wx-openid');
-    expect(result.meta).toEqual({ page: 1, pageSize: 20, total: 1, totalPages: 1 });
+    expect(result.meta).toEqual({
+      page: 1,
+      pageSize: 20,
+      total: 1,
+      totalPages: 1,
+    });
   });
 });
 
 function createHarness(options?: { replayed?: Record<string, unknown> }) {
   const transaction = {
+    $queryRaw: jest.fn().mockResolvedValue([]),
     campus: { findUnique: jest.fn() },
     user: {
       findUnique: jest.fn(),
+      findMany: jest.fn(),
       create: jest.fn(),
       updateMany: jest.fn(),
     },
@@ -269,16 +336,18 @@ function createHarness(options?: { replayed?: Record<string, unknown> }) {
   };
   const prisma = {
     user: { count: jest.fn(), findMany: jest.fn() },
-    $transaction: jest.fn(async (callback: (client: typeof transaction) => unknown) =>
-      callback(transaction),
+    $transaction: jest.fn((callback: (client: typeof transaction) => unknown) =>
+      Promise.resolve(callback(transaction)),
     ),
   };
   const idempotency = {
-    claim: jest.fn().mockResolvedValue(
-      options?.replayed
-        ? { replayed: true, responseBody: options.replayed }
-        : { replayed: false, requestHash: 'hash' },
-    ),
+    claim: jest
+      .fn()
+      .mockResolvedValue(
+        options?.replayed
+          ? { replayed: true, responseBody: options.replayed }
+          : { replayed: false, requestHash: 'hash' },
+      ),
     complete: jest.fn().mockResolvedValue(undefined),
   };
   return {
@@ -313,7 +382,10 @@ function accountRecord(options: {
         campus,
       },
     ],
-    authIdentities: options.bound === false ? [] : [{ provider: 'WECHAT', subject: 'wx-openid' }],
+    authIdentities:
+      options.bound === false
+        ? []
+        : [{ provider: 'WECHAT', subject: 'wx-openid' }],
   };
 }
 
@@ -330,5 +402,12 @@ function viewFixture() {
     version: 1,
     createdAt: '2026-09-03T00:00:00.000Z',
     updatedAt: '2026-09-03T00:00:00.000Z',
+  };
+}
+
+function administratorRecord() {
+  return {
+    status: 'ACTIVE',
+    roles: [{ roleCode: 'SUPER_ADMIN', campusId: null }],
   };
 }

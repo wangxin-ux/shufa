@@ -1,5 +1,7 @@
 {
   "usingComponents": {
+    "teacher-performance": "/pages/partner/components/teacher-performance/index",
+    "partner-approved-role-badge": "/pages/partner/components/approved-role-badge/index",
     "partner-page-shell": "/components/partner-page-shell/partner-page-shell"
   },
   "enablePullDownRefresh": true

@@ -1,0 +1,20 @@
+[
+  {
+    "courseName": "专业美术与创意思维综合提升课程",
+    "classType": "创意思维综合提升常规班",
+    "productName": "专业美术课包",
+    "pricesFen": [0, 1, 488000, 388001, 1444444400, 2147483647],
+    "mainUnits": 99900,
+    "giftUnits": 99900,
+    "validityDays": 365,
+    "campus": {
+      "id": "10000000-0000-4000-8000-000000000001",
+      "name": "京南一品儿童美术综合教学中心校区",
+      "address": "测试路",
+      "contactPhone": null,
+      "latitude": 28.2,
+      "longitude": 112.9,
+      "distanceMeters": null
+    }
+  }
+]

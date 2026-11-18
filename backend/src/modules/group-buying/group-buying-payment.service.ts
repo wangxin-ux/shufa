@@ -10,6 +10,10 @@ import { PAYMENT_ADAPTER } from '../../infrastructure/payment/payment.constants'
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { loadGroupOrderView } from './group-buying-query.service';
 import { GroupBuyingSettlementService } from './group-buying-settlement.service';
+import {
+  createPaymentBusinessNo,
+  resolveGroupPaymentPayer,
+} from './group-buying-payment.utils';
 
 const prepayRoute = (memberId: string) =>
   `/parents/me/group-members/${memberId}/prepay`;
@@ -215,7 +219,12 @@ export class GroupBuyingPaymentService {
         outTradeNo: payment.outTradeNo,
         amountFen: payment.amountFen,
         description: member.campaign.title,
-        payerOpenId: scope.userId,
+        payerOpenId: await resolveGroupPaymentPayer(
+          transaction,
+          scope.userId,
+          this.paymentAdapter.mode,
+        ),
+        expiresAt: member.reservationExpiresAt,
       });
       const result = {
         ...invocation,
@@ -519,8 +528,4 @@ export class GroupBuyingPaymentService {
       },
     });
   }
-}
-
-function createPaymentBusinessNo(): string {
-  return `GPAY-${Date.now()}-${randomUUID().replaceAll('-', '').slice(0, 16)}`;
 }

@@ -19,7 +19,7 @@
   overflow-wrap: anywhere;
   font-family: var(--teacher-font-display);
   font-size: 62rpx;
-  font-weight: 700;
+  font-weight: 400;
   line-height: 1.08;
   color: #ffffff;
 }
@@ -93,8 +93,8 @@
 .lesson-card__time {
   max-width: 100%;
   font-family: var(--teacher-font-display);
-  font-size: 73rpx;
-  font-weight: 700;
+  font-size: 95rpx;
+  font-weight: 400;
   line-height: 1;
   color: #960900;
   white-space: nowrap;
@@ -106,7 +106,7 @@
   overflow: hidden;
   font-family: var(--teacher-font-display);
   font-size: 29rpx;
-  font-weight: 700;
+  font-weight: 400;
   color: #960900;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -146,20 +146,69 @@
   -webkit-line-clamp: 2;
   font-family: var(--teacher-font-display);
   font-size: 76rpx;
-  font-weight: 700;
+  font-weight: 400;
   line-height: 1.05;
   color: #ffffff;
 }
 
 .lesson-card__status-line {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   margin-top: 0;
   font-family: var(--teacher-font-display);
   font-size: 29rpx;
-  font-weight: 700;
+  font-weight: 400;
   transform: translateY(0);
-  white-space: nowrap;
+  white-space: normal;
+}
+
+.home__refresh {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+  margin-bottom: 24rpx;
+  color: #ffffff;
+  font-size: 25rpx;
+}
+
+.lesson-card__roster {
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin: 0 8rpx;
+  padding: 2rpx 0 26rpx;
+  color: #671b11;
+}
+
+.lesson-card__counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 18rpx;
+  font-size: 24rpx;
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.lesson-card__counts text {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.lesson-card__warning {
+  color: #9c1708;
+}
+
+.lesson-card__roster-note {
+  display: block;
+  max-width: 100%;
+  margin-top: 2rpx;
+  overflow-wrap: anywhere;
+  font-size: 18rpx;
+  line-height: 1.3;
 }
 
 .lesson-card__status-prefix,
@@ -200,7 +249,7 @@
 .lesson-empty__title {
   font-family: var(--teacher-font-display);
   font-size: 46rpx;
-  font-weight: 700;
+  font-weight: 400;
   color: #ffffff;
 }
 
@@ -212,7 +261,7 @@
 
 .home__stage {
   position: relative;
-  height: 800rpx;
+  height: 770rpx;
   margin: -74rpx -32rpx 0;
   overflow: visible;
 }
@@ -246,7 +295,7 @@
 .home__identity {
   position: absolute;
   right: 50rpx;
-  bottom: 232rpx;
+  bottom: 247rpx;
   left: 50rpx;
   z-index: 3;
   display: flex;
@@ -283,8 +332,8 @@
   max-width: 58%;
   overflow: hidden;
   font-family: var(--teacher-font-display);
-  font-size: 48rpx;
-  font-weight: 700;
+  font-size: 56rpx;
+  font-weight: 400;
   line-height: 1.1;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -296,8 +345,8 @@
   margin: 0;
   overflow: hidden;
   font-family: var(--teacher-font-display);
-  font-size: 28rpx;
-  font-weight: 700;
+  font-size: 32rpx;
+  font-weight: 400;
   line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -306,7 +355,7 @@
 .home__stats {
   position: absolute;
   right: var(--role-home-glass-right);
-  bottom: 68rpx;
+  bottom: 83rpx;
   left: var(--role-home-glass-left);
   z-index: 2;
 }
@@ -426,7 +475,7 @@
 .page-state__title {
   font-family: var(--teacher-font-display);
   font-size: 48rpx;
-  font-weight: 700;
+  font-weight: 400;
   color: #ffffff;
 }
 

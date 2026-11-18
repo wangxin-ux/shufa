@@ -7,6 +7,8 @@ import { ManagementWorkspaceController } from './management-workspace.controller
 import { ManagementWorkspaceService } from './management-workspace.service';
 import { StaffAccountManagementController } from './staff-account-management.controller';
 import { StaffAccountManagementService } from './staff-account-management.service';
+import { OperatorHeadquartersManagementController } from './operator-headquarters-management.controller';
+import { OperatorHeadquartersManagementService } from './operator-headquarters-management.service';
 
 @Module({
   imports: [AuthModule, FileModule],
@@ -14,11 +16,13 @@ import { StaffAccountManagementService } from './staff-account-management.servic
     ManagementDashboardController,
     ManagementWorkspaceController,
     StaffAccountManagementController,
+    OperatorHeadquartersManagementController,
   ],
   providers: [
     ManagementDashboardService,
     ManagementWorkspaceService,
     StaffAccountManagementService,
+    OperatorHeadquartersManagementService,
   ],
   exports: [StaffAccountManagementService],
 })

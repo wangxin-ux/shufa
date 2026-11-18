@@ -1,0 +1,503 @@
+{
+  "run": "f02-5fd3cea3-d308-458f-a7f9-292c41774e71",
+  "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+  "campusB": "d9e0b879-3d8d-4020-a5c5-202ba6239c9c",
+  "operator": "5cc3fc31-b76b-4d44-9bea-708152232844",
+  "teacherUser": "9d34293c-f57a-4fde-8431-7032bf71e1f3",
+  "otherTeacherUser": "d1728a7e-81a5-494b-8f50-d4b2bc05d846",
+  "parent": "3136836d-a7fd-4cfd-9881-d33752a4380a",
+  "teacher": "3759adef-f3a6-4103-88b6-2911da947c13",
+  "otherTeacher": "52ca3f7f-e709-48d7-90e5-8383aa850f95",
+  "student": "1873a59e-a568-44db-85f9-9a28a09119b2",
+  "unboundStudent": "c7cef559-ef24-4bff-a524-3794c9e31976",
+  "classA": "9d5c6ab8-4e7f-4703-b9f8-d15ea4a2fdf3",
+  "classB": "0b1182fd-b9dd-45ae-83c9-c93eb8405652",
+  "actors": [
+    "5cc3fc31-b76b-4d44-9bea-708152232844",
+    "9d34293c-f57a-4fde-8431-7032bf71e1f3",
+    "d1728a7e-81a5-494b-8f50-d4b2bc05d846",
+    "3136836d-a7fd-4cfd-9881-d33752a4380a",
+    "db55aae4-4a22-44b7-aa74-3ae693652ed9"
+  ],
+  "ids": {
+    "Campus": [
+      "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+      "d9e0b879-3d8d-4020-a5c5-202ba6239c9c"
+    ],
+    "User": [
+      "5cc3fc31-b76b-4d44-9bea-708152232844",
+      "9d34293c-f57a-4fde-8431-7032bf71e1f3",
+      "d1728a7e-81a5-494b-8f50-d4b2bc05d846",
+      "3136836d-a7fd-4cfd-9881-d33752a4380a",
+      "db55aae4-4a22-44b7-aa74-3ae693652ed9"
+    ],
+    "UserRole": [
+      "7e48bb93-6f03-46c6-90ea-8edde44fe19d",
+      "708e604b-ac98-4c1b-96fd-3cd6d35ced30",
+      "5af8b80f-e1dd-439c-af62-d68dd7fcd3e9",
+      "2f35a6fd-0047-4a13-bdd2-62ee5fb6c227",
+      "e077500b-c555-4742-8f87-db618a2a352d"
+    ],
+    "TeacherProfile": [
+      "3759adef-f3a6-4103-88b6-2911da947c13",
+      "52ca3f7f-e709-48d7-90e5-8383aa850f95"
+    ],
+    "CampusSubject": [
+      "6072c32d-8cf3-4945-95fd-8c172127f7b8"
+    ],
+    "Student": [
+      "1873a59e-a568-44db-85f9-9a28a09119b2",
+      "c7cef559-ef24-4bff-a524-3794c9e31976",
+      "c1666b61-a32a-4b74-a278-0a7ac0241b91"
+    ],
+    "ClassGroup": [
+      "9d5c6ab8-4e7f-4703-b9f8-d15ea4a2fdf3",
+      "0b1182fd-b9dd-45ae-83c9-c93eb8405652"
+    ],
+    "ClassMember": [
+      "320bfbc6-e0a9-44d3-bd76-932c38ede4e1"
+    ],
+    "ParentStudentBinding": [
+      "e7853ead-2323-417f-a0d9-5e57a1cd82e2"
+    ],
+    "StoredFile": [
+      "66ef3c5e-ef10-49c7-a8a4-04c553c06674"
+    ],
+    "FinanceReceipt": [
+      "0c7fef09-4f65-4f2b-ac86-6efa941afbab"
+    ],
+    "CoursePackage": [
+      "5e954fab-1ad9-4300-a23d-d67544cbbb56"
+    ],
+    "FinancePackageIssuance": [
+      "294a6eb9-dd1d-4d57-aeb0-cd0dca4f35cf"
+    ],
+    "LessonLedgerEntry": [
+      "e8711917-248b-49be-a736-3c33c949b832",
+      "b5e94ed7-4cba-4bdd-9e72-8d30fa00d662"
+    ],
+    "AuditLog": [
+      "32cf744c-b47d-4d50-b9d0-bf81cac428bd",
+      "15c8fdc6-34c1-487e-90d9-78c3ca56d8f3"
+    ]
+  },
+  "keys": [],
+  "commands": [],
+  "expected": {
+    "Campus": [
+      {
+        "id": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+        "code": "f02-5fd3cea3-d308-458f-a7f9-292c41774e71-0ddc",
+        "name": "F02 0ddc0c1a",
+        "timezone": "Asia/Shanghai"
+      },
+      {
+        "id": "d9e0b879-3d8d-4020-a5c5-202ba6239c9c",
+        "code": "f02-5fd3cea3-d308-458f-a7f9-292c41774e71-d9e0",
+        "name": "F02 d9e0b879",
+        "timezone": "Asia/Shanghai"
+      }
+    ],
+    "User": [
+      {
+        "id": "5cc3fc31-b76b-4d44-9bea-708152232844",
+        "displayName": "F02 OPERATOR 774e71",
+        "status": "ACTIVE",
+        "accountVersion": 1
+      },
+      {
+        "id": "9d34293c-f57a-4fde-8431-7032bf71e1f3",
+        "displayName": "F02 TEACHER 774e71",
+        "status": "ACTIVE",
+        "accountVersion": 1
+      },
+      {
+        "id": "d1728a7e-81a5-494b-8f50-d4b2bc05d846",
+        "displayName": "F02 TEACHER 774e71",
+        "status": "ACTIVE",
+        "accountVersion": 1
+      },
+      {
+        "id": "3136836d-a7fd-4cfd-9881-d33752a4380a",
+        "displayName": "F02 PARENT 774e71",
+        "status": "ACTIVE",
+        "accountVersion": 1
+      },
+      {
+        "id": "db55aae4-4a22-44b7-aa74-3ae693652ed9",
+        "displayName": "F02 FINANCE 774e71",
+        "status": "ACTIVE",
+        "accountVersion": 1
+      }
+    ],
+    "UserRole": [
+      {
+        "id": "7e48bb93-6f03-46c6-90ea-8edde44fe19d",
+        "userId": "5cc3fc31-b76b-4d44-9bea-708152232844",
+        "roleCode": "OPERATOR",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7"
+      },
+      {
+        "id": "708e604b-ac98-4c1b-96fd-3cd6d35ced30",
+        "userId": "9d34293c-f57a-4fde-8431-7032bf71e1f3",
+        "roleCode": "TEACHER",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7"
+      },
+      {
+        "id": "5af8b80f-e1dd-439c-af62-d68dd7fcd3e9",
+        "userId": "d1728a7e-81a5-494b-8f50-d4b2bc05d846",
+        "roleCode": "TEACHER",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7"
+      },
+      {
+        "id": "2f35a6fd-0047-4a13-bdd2-62ee5fb6c227",
+        "userId": "3136836d-a7fd-4cfd-9881-d33752a4380a",
+        "roleCode": "PARENT",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7"
+      },
+      {
+        "id": "e077500b-c555-4742-8f87-db618a2a352d",
+        "userId": "db55aae4-4a22-44b7-aa74-3ae693652ed9",
+        "roleCode": "FINANCE",
+        "campusId": null
+      }
+    ],
+    "TeacherProfile": [
+      {
+        "id": "3759adef-f3a6-4103-88b6-2911da947c13",
+        "userId": "9d34293c-f57a-4fde-8431-7032bf71e1f3",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+        "employeeCode": "f02-5fd3cea3-d308-458f-a7f9-292c41774e71-3759",
+        "isActive": true
+      },
+      {
+        "id": "52ca3f7f-e709-48d7-90e5-8383aa850f95",
+        "userId": "d1728a7e-81a5-494b-8f50-d4b2bc05d846",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+        "employeeCode": "f02-5fd3cea3-d308-458f-a7f9-292c41774e71-52ca",
+        "isActive": true
+      }
+    ],
+    "CampusSubject": [
+      {
+        "id": "6072c32d-8cf3-4945-95fd-8c172127f7b8",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+        "name": "F02 774e71",
+        "isActive": true,
+        "version": 1
+      }
+    ],
+    "Student": [
+      {
+        "id": "1873a59e-a568-44db-85f9-9a28a09119b2",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+        "displayName": "F02 student 1873a5",
+        "isActive": true,
+        "profileVersion": 1
+      },
+      {
+        "id": "c7cef559-ef24-4bff-a524-3794c9e31976",
+        "campusId": "d9e0b879-3d8d-4020-a5c5-202ba6239c9c",
+        "displayName": "F02 student c7cef5",
+        "isActive": true,
+        "profileVersion": 1
+      },
+      {
+        "id": "c1666b61-a32a-4b74-a278-0a7ac0241b91",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+        "displayName": "F02 contention temporary 41774e71",
+        "isActive": true,
+        "profileVersion": 1
+      }
+    ],
+    "ClassGroup": [
+      {
+        "id": "9d5c6ab8-4e7f-4703-b9f8-d15ea4a2fdf3",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+        "teacherId": "3759adef-f3a6-4103-88b6-2911da947c13",
+        "subjectId": "6072c32d-8cf3-4945-95fd-8c172127f7b8",
+        "subjectVersion": 1,
+        "name": "F02 9d5c6ab8",
+        "courseName": "F02 course",
+        "defaultLessonUnits": 100,
+        "status": "ACTIVE"
+      },
+      {
+        "id": "0b1182fd-b9dd-45ae-83c9-c93eb8405652",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+        "teacherId": "3759adef-f3a6-4103-88b6-2911da947c13",
+        "subjectId": "6072c32d-8cf3-4945-95fd-8c172127f7b8",
+        "subjectVersion": 1,
+        "name": "F02 0b1182fd",
+        "courseName": "F02 course",
+        "defaultLessonUnits": 100,
+        "status": "ACTIVE"
+      }
+    ],
+    "ClassMember": [
+      {
+        "id": "320bfbc6-e0a9-44d3-bd76-932c38ede4e1",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+        "classGroupId": "9d5c6ab8-4e7f-4703-b9f8-d15ea4a2fdf3",
+        "studentId": "1873a59e-a568-44db-85f9-9a28a09119b2",
+        "joinedAt": "2026-01-01T00:00:00.000Z"
+      }
+    ],
+    "ParentStudentBinding": [
+      {
+        "id": "e7853ead-2323-417f-a0d9-5e57a1cd82e2",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+        "parentUserId": "3136836d-a7fd-4cfd-9881-d33752a4380a",
+        "studentId": "1873a59e-a568-44db-85f9-9a28a09119b2",
+        "isPrimary": true
+      }
+    ],
+    "StoredFile": [
+      {
+        "id": "66ef3c5e-ef10-49c7-a8a4-04c553c06674",
+        "purpose": "FINANCE_RECEIPT_PROOF",
+        "storageKey": "isolated/f02-5fd3cea3-d308-458f-a7f9-292c41774e71/66ef3c5e-ef10-49c7-a8a4-04c553c06674",
+        "originalName": "synthetic-proof.png",
+        "mimeType": "image/png",
+        "sizeBytes": 1,
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "createdByUserId": "db55aae4-4a22-44b7-aa74-3ae693652ed9"
+      }
+    ],
+    "FinanceReceipt": [
+      {
+        "id": "0c7fef09-4f65-4f2b-ac86-6efa941afbab",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+        "studentId": "c1666b61-a32a-4b74-a278-0a7ac0241b91",
+        "amountFen": 100,
+        "receivedOn": "2026-01-01T00:00:00.000Z",
+        "channel": "CASH",
+        "proofFileId": "66ef3c5e-ef10-49c7-a8a4-04c553c06674",
+        "note": "Synthetic fixture only f02-5fd3cea3-d308-458f-a7f9-292c41774e71",
+        "createdByUserId": "db55aae4-4a22-44b7-aa74-3ae693652ed9"
+      }
+    ],
+    "CoursePackage": [
+      {
+        "id": "5e954fab-1ad9-4300-a23d-d67544cbbb56",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+        "studentId": "c1666b61-a32a-4b74-a278-0a7ac0241b91",
+        "name": "F02 isolated source fixture f02-5fd3cea3-d308-458f-a7f9-292c41774e71",
+        "mainBalanceUnits": 100,
+        "giftBalanceUnits": 200,
+        "mainReservedUnits": 0,
+        "giftReservedUnits": 0,
+        "paidAmountFen": 100,
+        "version": 1,
+        "validFrom": "2026-01-01T00:00:00.000Z",
+        "expiresAt": null,
+        "isActive": true,
+        "sourceOrderId": null
+      }
+    ],
+    "FinancePackageIssuance": [
+      {
+        "id": "294a6eb9-dd1d-4d57-aeb0-cd0dca4f35cf",
+        "receiptId": "0c7fef09-4f65-4f2b-ac86-6efa941afbab",
+        "coursePackageId": "5e954fab-1ad9-4300-a23d-d67544cbbb56",
+        "originalAmountFen": 100,
+        "initialMainUnits": 100,
+        "initialGiftUnits": 200,
+        "name": "F02 isolated source fixture f02-5fd3cea3-d308-458f-a7f9-292c41774e71",
+        "validFrom": "2026-01-01T00:00:00.000Z",
+        "expiresAt": null,
+        "issuedByUserId": "db55aae4-4a22-44b7-aa74-3ae693652ed9"
+      }
+    ],
+    "LessonLedgerEntry": [
+      {
+        "id": "e8711917-248b-49be-a736-3c33c949b832",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+        "studentId": "c1666b61-a32a-4b74-a278-0a7ac0241b91",
+        "coursePackageId": "5e954fab-1ad9-4300-a23d-d67544cbbb56",
+        "lessonSessionId": null,
+        "entryType": "GRANT",
+        "bucket": "MAIN",
+        "deltaUnits": 100,
+        "balanceBeforeUnits": 0,
+        "balanceAfterUnits": 100,
+        "idempotencyKey": "finance-issue:0c7fef09-4f65-4f2b-ac86-6efa941afbab:MAIN",
+        "actorUserId": "db55aae4-4a22-44b7-aa74-3ae693652ed9",
+        "reason": "Synthetic finance receipt issuance 0c7fef09-4f65-4f2b-ac86-6efa941afbab; fixture only"
+      },
+      {
+        "id": "b5e94ed7-4cba-4bdd-9e72-8d30fa00d662",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+        "studentId": "c1666b61-a32a-4b74-a278-0a7ac0241b91",
+        "coursePackageId": "5e954fab-1ad9-4300-a23d-d67544cbbb56",
+        "lessonSessionId": null,
+        "entryType": "GRANT",
+        "bucket": "GIFT",
+        "deltaUnits": 200,
+        "balanceBeforeUnits": 0,
+        "balanceAfterUnits": 200,
+        "idempotencyKey": "finance-issue:0c7fef09-4f65-4f2b-ac86-6efa941afbab:GIFT",
+        "actorUserId": "db55aae4-4a22-44b7-aa74-3ae693652ed9",
+        "reason": "Synthetic finance receipt issuance 0c7fef09-4f65-4f2b-ac86-6efa941afbab; fixture only"
+      }
+    ],
+    "AuditLog": [
+      {
+        "id": "32cf744c-b47d-4d50-b9d0-bf81cac428bd",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+        "actorUserId": "db55aae4-4a22-44b7-aa74-3ae693652ed9",
+        "action": "FINANCE_RECEIPT_CREATE",
+        "resourceType": "FinanceReceipt",
+        "resourceId": "0c7fef09-4f65-4f2b-ac86-6efa941afbab",
+        "outcome": "SUCCESS",
+        "details": {
+          "amountFen": 100,
+          "receivedOn": "2026-01-01",
+          "studentId": "c1666b61-a32a-4b74-a278-0a7ac0241b91"
+        }
+      },
+      {
+        "id": "15c8fdc6-34c1-487e-90d9-78c3ca56d8f3",
+        "campusId": "0ddc0c1a-d497-47c6-9dde-e897d2c9b5e7",
+        "actorUserId": "db55aae4-4a22-44b7-aa74-3ae693652ed9",
+        "action": "FINANCE_PACKAGE_ISSUE",
+        "resourceType": "FinanceReceipt",
+        "resourceId": "0c7fef09-4f65-4f2b-ac86-6efa941afbab",
+        "outcome": "SUCCESS",
+        "details": {
+          "coursePackageId": "5e954fab-1ad9-4300-a23d-d67544cbbb56",
+          "mainUnits": 100,
+          "giftUnits": 200
+        }
+      }
+    ]
+  },
+  "syntheticSessions": {},
+  "temporaryStudent": "c1666b61-a32a-4b74-a278-0a7ac0241b91",
+  "finance": "db55aae4-4a22-44b7-aa74-3ae693652ed9",
+  "commandAllowlist": {
+    "c01-a": "d4fb1e5c-e98f-4d4b-9a81-9e8a4eec3402",
+    "c01-b": "f7f00011-a841-45cb-b221-f03df93066f2",
+    "c01-setup": "06bdd5d5-6486-4858-8427-6eeddd16e3d1",
+    "c01-member": "f10f3755-f7ba-49b0-80c0-d91a84a02763",
+    "c02-a": "92ddb589-6464-4e8a-b63a-4b340b1a1daa",
+    "c02-b": "2f3e50c2-5127-4327-a5dd-23dbb7217e2b",
+    "c02-setup": "2c47609f-d19b-4a94-abe9-2309ed1a3cb1",
+    "c02-member": "52024e74-bfd9-45e3-ba38-432281942de1",
+    "c03-a": "02721acc-d3a7-4831-ae56-d207ff3831fa",
+    "c03-b": "2c430af6-224d-4116-9345-170f104f2bb2",
+    "c03-setup": "93bd665b-5ab6-4503-a36c-385e07b8c4d7",
+    "c03-member": "4e78c147-9641-48ee-8653-051e4d3278ff",
+    "c04-a": "63ed66f1-2436-4b4f-ba83-119a1b3f5e64",
+    "c04-b": "9122a72c-e43b-4606-86f4-536e812e94f4",
+    "c04-setup": "c38ce1f6-0888-4a5b-b28f-46edd4d1bb5d",
+    "c04-member": "9619aae3-49b4-4c4d-94de-53c6dd027bd9",
+    "c05-a": "88213717-8e34-4487-baf4-a29dba0f8907",
+    "c05-b": "1309c85b-48c2-42b2-802b-be5b7bdf2918",
+    "c05-setup": "f78445b4-ac86-48f7-820e-bed9a61a6ed3",
+    "c05-member": "01909543-49cf-4bc3-9ba9-9791a970d3d2",
+    "c06-a": "8e32ed2d-ffce-4fe5-97f8-0cf1285df199",
+    "c06-b": "8786180c-089c-4074-a471-9e2418f788ed",
+    "c06-setup": "c5c63194-e98c-4b06-b9ae-331633e3a1ce",
+    "c06-member": "45c2091a-fa7d-49b5-bf33-ec45049b7b7a",
+    "c07-a": "7d63587c-6f10-438a-b9a4-75d1749c0d2e",
+    "c07-b": "552912d7-31ab-4115-a0cb-237a798aac31",
+    "c07-setup": "24b8a1c7-a401-4648-9654-730d78c08dd3",
+    "c07-member": "6aa4b128-87dd-49f6-8c16-250852a9a509",
+    "c08-a": "35c7c04e-523c-4978-8019-b213f521f031",
+    "c08-b": "9a5ad6ee-833a-40e8-bcb1-53e3e6cb8a0c",
+    "c08-setup": "8638d70e-9828-423e-ba31-80382bf309e3",
+    "c08-member": "0d1d2e31-d15c-49ba-bd44-d31983a378be",
+    "c09-a": "f36ba1fb-1a4d-4eb6-b11e-f25812ce40cf",
+    "c09-b": "471db775-e556-41d6-a497-0332b1824146",
+    "c09-setup": "07dddccd-4b80-4a42-bb18-f2125863863c",
+    "c09-member": "dfda9a88-fc6d-4574-9bd2-7c8b88e57f0b",
+    "c10-a": "14319ef7-517b-473a-945f-ab24a004af10",
+    "c10-b": "7cd51948-cf80-4362-9fbc-9a50a3078cd9",
+    "c10-setup": "48dcb1a3-baec-45fd-95d5-21b382f470a3",
+    "c10-member": "7f7ba136-49e1-4bb9-aec2-7fde67b0df20",
+    "c11-a": "36471d43-0fee-458e-9875-b1f0e03a79f7",
+    "c11-b": "337c5077-1001-4593-934c-28627396cc2b",
+    "c11-setup": "38b2fc39-83a6-4389-b63f-9687d8d8b9b8",
+    "c11-member": "ba7ba187-051d-4818-8959-ff72e58166dd",
+    "c12-a": "1e0f3870-71d2-4844-9789-fef8ec4187a2",
+    "c12-b": "7c746543-16a4-4c73-9e2d-6ba66b0f2f3f",
+    "c12-setup": "4a595f1f-f482-4b77-b4c7-ead6baee0cf4",
+    "c12-member": "28d86acf-7e42-404f-a180-1db9ba017ede",
+    "c13-a": "82f84a7c-fe15-4fe4-90d8-c298e92167f9",
+    "c13-b": "8a265b2e-8a0d-45a9-b315-eeea48545e3d",
+    "c13-setup": "680656b3-97b4-4403-a458-e5d1a015ac82",
+    "c13-member": "b6b72e42-bcab-44a7-addb-9efb543b1eb1",
+    "c14-a": "1b656c81-ef23-47b1-8fec-f9c44c637592",
+    "c14-b": "d30ac9af-13fd-42b2-be0c-20d8a2193c45",
+    "c14-setup": "e4293536-fb5a-4b61-b82b-80adab01725d",
+    "c14-member": "81a4b88b-20d9-42c1-9a38-d0474f4b7224",
+    "c15-a": "bef7e43c-20d2-4549-ad7c-54accb0c2eff",
+    "c15-b": "fe1b4047-d7fe-4a09-8916-b39a8d2a577d",
+    "c15-setup": "2323b13d-38f9-47c1-bbdd-28536bf2c763",
+    "c15-member": "80ac830e-2ee2-4113-ab4c-22a0514d5809",
+    "c16-a": "8b9aa68f-6e13-4e16-94c2-3eb8c5dac5f5",
+    "c16-b": "814d6b92-c8cc-43d8-a769-2239e6e7da2b",
+    "c16-setup": "2a790f75-ebd5-466e-abc6-fda1f8914191",
+    "c16-member": "b3bb3112-0a30-4433-a484-f707210f2121",
+    "c17-a": "4a8f1356-90de-4c7e-bfd1-b62654f1252f",
+    "c17-b": "991c6989-4fb0-46ff-ba78-8fb9f4adf228",
+    "c17-setup": "73b99ee1-4264-4aa1-9611-44d23c8e8e0c",
+    "c17-member": "dc303fbb-6281-430a-a3e1-35a3188459b1",
+    "c18-a": "184ae93d-89aa-44c5-b28e-3d90fadad35b",
+    "c18-b": "f5fc1848-7632-4eeb-8a9c-a3dbb2efb65e",
+    "c18-setup": "d17395e9-e5a3-46db-a18d-39b80ae8d26c",
+    "c18-member": "0a803a78-a9a8-4c13-8c38-0a01345c80b4",
+    "c19-a": "0a9f3a89-c77c-4ca2-a747-e368df8cffb4",
+    "c19-b": "d4cf9dcb-3df0-4c83-99d7-76ce043578fb",
+    "c19-setup": "fb2c3ff8-aeb2-4d5e-b758-567ad2150319",
+    "c19-member": "1d8407db-6eb6-4ef5-bfea-9e847cd44eef",
+    "c20-a": "b3c37b33-dd0a-49c5-89bf-94aee4e2d81c",
+    "c20-b": "b2c49339-6bdc-42cd-8b5a-576a801032e3",
+    "c20-setup": "831800bb-7b65-4e68-9fa0-9aaa26a9208b",
+    "c20-member": "996105b4-70b1-4fe5-a918-5ebd0ae3e96f",
+    "c21-a": "a4186f68-3016-4d1a-a8f7-5e2dad9f859d",
+    "c21-b": "2a47a7fa-3259-4029-9f24-128a1a7c43ba",
+    "c21-setup": "4460bb85-45d0-458d-814b-9361fd7b30d5",
+    "c21-member": "e566e982-af6c-4a2d-8b86-4980ddf1594c",
+    "c22-a": "66ce521d-ae97-4b15-8105-b68a409f6ed4",
+    "c22-b": "12886631-3302-4984-ade0-97d75823dac1",
+    "c22-setup": "e34779a3-cabb-4a2a-a492-e1e1e268acff",
+    "c22-member": "e02c7ee8-14f2-4e9c-b2c5-ce95fb1c9390",
+    "c23-a": "83a40417-a09e-48c3-9084-9759ceded169",
+    "c23-b": "e2104ed4-cb2c-4403-8ed1-51df9a3a514c",
+    "c23-setup": "9a9edf4b-05ea-43ad-91c4-4038764eb5ea",
+    "c23-member": "6bd8155e-890c-45d9-8eeb-2910e17719b4",
+    "c24-a": "85188ca4-a3a1-43e8-8140-8593c9da744b",
+    "c24-b": "3277e82c-db9e-4f3c-8b2f-0b072aafa700",
+    "c24-setup": "ffbb3ebd-aca7-4bc8-a0d4-25ddda465b5b",
+    "c24-member": "ab7b4ae9-16b5-49fd-b89a-66c586104d97"
+  },
+  "auxiliary": [],
+  "expectedSessions": {},
+  "expectedAudits": [
+    {
+      "actor": "db55aae4-4a22-44b7-aa74-3ae693652ed9",
+      "action": "FINANCE_RECEIPT_CREATE",
+      "type": "FinanceReceipt",
+      "id": "0c7fef09-4f65-4f2b-ac86-6efa941afbab",
+      "details": {
+        "amountFen": 100,
+        "receivedOn": "2026-01-01",
+        "studentId": "c1666b61-a32a-4b74-a278-0a7ac0241b91"
+      }
+    },
+    {
+      "actor": "db55aae4-4a22-44b7-aa74-3ae693652ed9",
+      "action": "FINANCE_PACKAGE_ISSUE",
+      "type": "FinanceReceipt",
+      "id": "0c7fef09-4f65-4f2b-ac86-6efa941afbab",
+      "details": {
+        "coursePackageId": "5e954fab-1ad9-4300-a23d-d67544cbbb56",
+        "mainUnits": 100,
+        "giftUnits": 200
+      }
+    }
+  ],
+  "observedReceipts": []
+}

@@ -1,7 +1,11 @@
+import { loadTeacherDisplayFont } from '../runtime/teacher-display-font';
+
 import {
   buildTeacherProfilePageModel,
   resolveTeacherProfileAction,
   TEACHER_PROFILE_ACTIONS,
+  TEACHER_PRIMARY_PROFILE_ACTIONS,
+  TEACHER_MORE_PROFILE_ACTIONS,
   TeacherProfileActionKey,
 } from '../../../services/teacher-profile.presenter';
 import { teacherService } from '../../../services/teacher-runtime';
@@ -11,21 +15,26 @@ Page({
     viewState: 'loading',
     errorMessage: '',
     displayName: '',
+    avatarInitial: '',
     subjectLabel: '',
     subjectLines: [] as string[],
     campusName: '',
     studentCount: '0',
     studentCountCompact: false,
-    actions: TEACHER_PROFILE_ACTIONS,
+    actions: TEACHER_PRIMARY_PROFILE_ACTIONS,
+    moreActions: TEACHER_MORE_PROFILE_ACTIONS,
+    toolsOpen: false,
   },
 
   onLoad() {
+    void loadTeacherDisplayFont();
     void this.loadProfile();
   },
 
   onPullDownRefresh() {
     void this.loadProfile().finally(() => wx.stopPullDownRefresh());
   },
+  onHide() { this.setData({ toolsOpen: false }); },
 
   async loadProfile() {
     this.setData({ viewState: 'loading', errorMessage: '' });
@@ -52,6 +61,9 @@ Page({
   onRetry() {
     void this.loadProfile();
   },
+
+  onOpenTools() { this.setData({ toolsOpen: true }); },
+  onCloseTools() { this.setData({ toolsOpen: false }); },
 
   onAction(event: WechatMiniprogram.CustomEvent<{ key: string }>) {
     const key = event.detail.key as TeacherProfileActionKey;

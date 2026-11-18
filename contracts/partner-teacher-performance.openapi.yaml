@@ -1,0 +1,182 @@
+performance:
+  get:
+    operationId: getPartnerTeacherPerformance
+    summary: Read a teacher's monthly lesson fulfilment and evaluation
+    description: >-
+      Requires exactly one active campus-scoped PARTNER and PARTNER_TEACHER_READ.
+      Month uses the campus timezone and lesson startsAt. Only lessons whose
+      start time has arrived and whose status is not CANCELLED are scheduled.
+      Completion requires both lesson and matching teacher/campus teaching record
+      to be COMPLETED. REVERSED remains scheduled but is not completed.
+      No schedule returns a null rate. This is lesson fulfilment, not timeclock
+      or student attendance. Current authorization is rechecked after the snapshot.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: '#/parameters/Teacher' }
+      - { $ref: '#/parameters/Month' }
+    responses:
+      '200':
+        description: Monthly lesson counts and optional current evaluation
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [data, requestId]
+              properties:
+                requestId: { type: string }
+                data:
+                  type: object
+                  additionalProperties: false
+                  required: [teacherId, periodMonth, timezone, asOf, scheduledLessonCount, completedLessonCount, completionRateBasisPoints, evaluation]
+                  properties:
+                    teacherId: { type: string, format: uuid }
+                    periodMonth: { $ref: '#/schemas/Month' }
+                    timezone: { type: string }
+                    asOf: { type: string, format: date-time }
+                    scheduledLessonCount: { type: integer, minimum: 0 }
+                    completedLessonCount: { type: integer, minimum: 0 }
+                    completionRateBasisPoints: { type: [integer, 'null'], minimum: 0, maximum: 10000 }
+                    evaluation:
+                      anyOf:
+                        - { $ref: '#/schemas/Evaluation' }
+                        - { type: 'null' }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+evaluation:
+  put:
+    operationId: savePartnerTeacherEvaluation
+    summary: Save or revise the original author's monthly teacher evaluation
+    description: >-
+      Requires PARTNER_TEACHER_EVALUATE and exactly one active campus-scoped
+      PARTNER. Each teacher has one evaluation per campus calendar month.
+      expectedVersion is 0 for creation. Only the original author may change it.
+      The four independent ratings are integer half-stars from 1 through 10.
+      guidance may be empty and has at most 1000 Unicode scalar values.
+      Same normalized values and the current or immediately previous version are
+      naturally idempotent; an older or conflicting version returns 409.
+      Creation/revision, immutable history and redacted audit are one transaction.
+      No student, lesson, earnings or financial record is modified.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: '#/parameters/Teacher' }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [periodMonth, expectedVersion, teachingRating, communicationRating, attendanceRating, overallRating, guidance]
+            properties:
+              periodMonth: { $ref: '#/schemas/Month' }
+              expectedVersion: { type: integer, minimum: 0, maximum: 2147483646 }
+              teachingRating: { $ref: '#/schemas/Rating' }
+              communicationRating: { $ref: '#/schemas/Rating' }
+              attendanceRating: { $ref: '#/schemas/Rating' }
+              overallRating: { $ref: '#/schemas/Rating' }
+              guidance: { type: string, maxLength: 1000 }
+    responses:
+      '200':
+        description: Confirmed current evaluation; a replay does not add a revision
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [data, requestId]
+              properties:
+                data: { $ref: '#/schemas/Evaluation' }
+                requestId: { type: string }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '409': { $ref: './openapi.yaml#/components/responses/Conflict' }
+history:
+  get:
+    operationId: listPartnerTeacherEvaluationHistory
+    summary: Read immutable monthly teacher evaluation revisions
+    description: >-
+      Requires PARTNER_TEACHER_READ and exactly one active campus-scoped PARTNER.
+      Revisions are ordered by version descending with count and page from one
+      database snapshot; current actor and teacher scope are rechecked before
+      returning. Author display names are returned without User IDs.
+    tags: [Partner]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - { $ref: '#/parameters/Teacher' }
+      - { $ref: '#/parameters/Month' }
+      - { $ref: './openapi.yaml#/components/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+    responses:
+      '200':
+        description: Revision page, including the first saved version
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [data, meta, requestId]
+              properties:
+                data: { type: array, items: { $ref: '#/schemas/Revision' } }
+                meta: { $ref: './openapi.yaml#/components/schemas/PaginationMeta' }
+                requestId: { type: string }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+parameters:
+  Teacher:
+    name: teacherId
+    in: path
+    required: true
+    schema: { type: string, format: uuid }
+  Month:
+    name: month
+    in: query
+    description: Campus calendar month; defaults to the current campus month.
+    schema: { $ref: '#/schemas/Month' }
+schemas:
+  Month:
+    type: string
+    pattern: '^[1-9][0-9]{3}-(0[1-9]|1[0-2])$'
+  Rating:
+    type: integer
+    minimum: 1
+    maximum: 10
+  Evaluation:
+    type: object
+    additionalProperties: false
+    required: [id, teacherId, periodMonth, version, teachingRating, communicationRating, attendanceRating, overallRating, guidance, authorName, canEdit, createdAt, updatedAt]
+    properties:
+      id: { type: string, format: uuid }
+      teacherId: { type: string, format: uuid }
+      periodMonth: { $ref: '#/schemas/Month' }
+      version: { type: integer, minimum: 1, maximum: 2147483647 }
+      teachingRating: { $ref: '#/schemas/Rating' }
+      communicationRating: { $ref: '#/schemas/Rating' }
+      attendanceRating: { $ref: '#/schemas/Rating' }
+      overallRating: { $ref: '#/schemas/Rating' }
+      guidance: { type: string, maxLength: 1000 }
+      authorName: { type: string }
+      canEdit: { type: boolean }
+      createdAt: { type: string, format: date-time }
+      updatedAt: { type: string, format: date-time }
+  Revision:
+    type: object
+    additionalProperties: false
+    required: [version, teachingRating, communicationRating, attendanceRating, overallRating, guidance, authorName, savedAt]
+    properties:
+      version: { type: integer, minimum: 1 }
+      teachingRating: { $ref: '#/schemas/Rating' }
+      communicationRating: { $ref: '#/schemas/Rating' }
+      attendanceRating: { $ref: '#/schemas/Rating' }
+      overallRating: { $ref: '#/schemas/Rating' }
+      guidance: { type: string, maxLength: 1000 }
+      authorName: { type: string }
+      savedAt: { type: string, format: date-time }

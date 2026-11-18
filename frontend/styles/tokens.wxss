@@ -69,6 +69,10 @@ page {
   /* 教师端令牌独立命名，保留家长端现有视觉不变。 */
   --teacher-yellow: #ffd75e;
   --teacher-yellow-soft: #f6d468;
+  --teacher-yellow-top: #e4af2b;
+  --teacher-yellow-mid: #f1c856;
+  --teacher-yellow-bottom: #e5af28;
+  --teacher-gradient: linear-gradient(180deg, var(--teacher-yellow-top) 0%, var(--teacher-yellow-mid) 48%, var(--teacher-yellow-bottom) 100%);
   --teacher-orange: #fe8419;
   --teacher-ink: #243b36;
   --teacher-muted: rgba(36, 59, 54, 0.62);
@@ -76,9 +80,9 @@ page {
   --teacher-line: rgba(36, 59, 54, 0.14);
   --teacher-success: #238760;
   --teacher-danger: #c93f48;
-  --teacher-font-display: var(--parent-font-display);
+  --teacher-font-display: "TeacherDisplay", "Microsoft YaHei", sans-serif; /* 角色私有面，每页加载，见 pages/teacher/runtime/teacher-display-font.ts */
   --teacher-font-body: var(--parent-font-body);
-  --teacher-page-gap: 32rpx;
+  --teacher-page-gap: 50rpx;
   --teacher-card-radius: 16rpx;
   --teacher-touch-min: 88rpx;
   --teacher-shadow: 0 10rpx 24rpx rgba(66, 48, 15, 0.14);

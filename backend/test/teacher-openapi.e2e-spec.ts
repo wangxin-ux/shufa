@@ -200,6 +200,49 @@ function referencesSchema(
 describe('teacher OpenAPI contract', () => {
   const document = loadContract();
 
+  it('defines separate private teacher rankings and a valid conflict envelope', () => {
+    expect(document.paths['/teachers/me/rankings']).toEqual({
+      $ref: './teacher-rankings.openapi.yaml#/rankings',
+    });
+    const rankings = loadYaml(
+      fs.readFileSync(
+        path.resolve(
+          __dirname,
+          '../../contracts/teacher-rankings.openapi.yaml',
+        ),
+        'utf8',
+      ),
+    ) as {
+      rankings: { get: OpenApiOperation };
+      schemas: Record<string, OpenApiSchema>;
+    };
+    expect(rankings.rankings.get.security).toEqual([{ bearerAuth: [] }]);
+    expect(
+      rankings.rankings.get.parameters?.find((item) => item.name === 'metric')
+        ?.schema?.enum,
+    ).toEqual(['EARNINGS', 'ATTENDANCE']);
+    expect(rankings.schemas.Row.required).toEqual([
+      'position',
+      'displayName',
+      'rank',
+      'previousRank',
+      'rankDelta',
+      'isSelf',
+    ]);
+    expect(Object.keys(rankings.schemas.Row.properties ?? {})).toEqual(
+      rankings.schemas.Row.required,
+    );
+    expect(rankings.schemas.Own.required).toContain('value');
+    const conflict = rankings.rankings.get.responses?.[
+      '409'
+    ] as OpenApiResponse;
+    const reference = conflict.content?.['application/json']?.schema?.$ref;
+    expect(reference).toBe('./openapi.yaml#/components/schemas/ErrorEnvelope');
+    expect(
+      document.components.schemas[reference!.split('/').at(-1)!],
+    ).toBeDefined();
+  });
+
   it.each(Object.entries(teacherOperations))(
     'declares every teacher operation for %s',
     (route, methods) => {
@@ -379,9 +422,72 @@ describe('teacher OpenAPI contract', () => {
       expect.arrayContaining(['images']),
     );
     expect(document.components.schemas.TeacherLessonStudent.required).toEqual(
-      expect.arrayContaining(['feedbackImages']),
+      expect.arrayContaining(['feedbackImages', 'canEditFeedback']),
     );
+    expect(
+      document.components.schemas.TeacherLessonStudent.properties
+        ?.canEditFeedback,
+    ).toMatchObject({ type: 'boolean' });
     expect(document.components.schemas.FeedbackImageView).toBeDefined();
+  });
+
+  it('keeps independent teacher scores, feedback versions and a dedicated conflict code', () => {
+    const schemas = document.components.schemas;
+    expect(schemas.TeacherFeedbackRatings.required).toEqual([
+      'classroomPerformance',
+      'workCompletion',
+      'communication',
+      'overall',
+    ]);
+    expect(schemas.FeedbackUpsertRequest.properties?.teacherRatings.$ref).toBe(
+      '#/components/schemas/TeacherFeedbackRatings',
+    );
+    expect(
+      schemas.FeedbackUpsertRequest.properties?.expectedVersion,
+    ).toMatchObject({ type: 'integer' });
+    expect(schemas.StudentFeedbackView.required).toEqual(
+      expect.arrayContaining(['teacherRatings', 'version']),
+    );
+    expect(schemas.TeacherLessonStudent.properties).toHaveProperty(
+      'feedbackVersion',
+    );
+    expect(schemas.ParentUpdateRecordView.properties).toHaveProperty(
+      'teacherRatings',
+    );
+    expect(schemas.ErrorCode.enum).toContain('FEEDBACK_VERSION_CONFLICT');
+  });
+
+  it('defines the limited student archive and bounded own feedback history', () => {
+    const operation = document.paths['/teachers/me/students/{studentId}'].get;
+    expect(operation.parameters).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'feedbackPage',
+          schema: { type: 'integer', minimum: 1, default: 1 },
+        }),
+        expect.objectContaining({
+          name: 'feedbackPageSize',
+          schema: { type: 'integer', minimum: 1, maximum: 50, default: 10 },
+        }),
+      ]),
+    );
+    const archive = document.components.schemas.TeacherStudentArchive;
+    expect(archive.required).toEqual(['age', 'photo', 'enrollment', 'balance']);
+    expect(archive.properties).not.toHaveProperty('birthDate');
+    expect(
+      document.components.schemas.TeacherStudentFeedbackHistory.required,
+    ).toEqual(
+      expect.arrayContaining([
+        'lessonSessionId',
+        'lessonStatus',
+        'images',
+        'performanceRating',
+      ]),
+    );
+    expect(
+      document.components.schemas.TeacherStudentFeedbackHistory.properties
+        ?.lessonStatus.enum,
+    ).toEqual(['COMPLETED', 'REVERSED']);
   });
 
   it('defines campus customer-service QR upload and signed reads', () => {

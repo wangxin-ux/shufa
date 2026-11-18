@@ -1,47 +1,18 @@
+import { validTeacherRatings } from '../utils/teacher-ratings';
 import { TeacherMockScenario } from '../config/teacher-env';
 import {
   EMPTY_TEACHER_FIXTURE,
   NORMAL_TEACHER_FIXTURE,
   TeacherFixture,
 } from '../mock/fixtures/teacher.fixture';
-import {
-  AttendanceDraft,
-  CompleteLessonDraft,
-  CompleteLessonResult,
-  DatePageQuery,
-  FeedbackDraft,
-  FeedbackImage,
-  FeedbackImageUploadDraft,
-  LessonSessionQuery,
-  Page,
-  ReverseLessonDraft,
-  StudentFeedback,
-  TeacherDashboard,
-  TeacherEarningEntry,
-  TeacherEarningQuery,
-  TeacherEarningRuleView,
-  TeacherEarningSummary,
-  TeacherLedgerRecord,
-  TeacherLessonDetail,
-  TeacherLessonSession,
-  TeacherProfile,
-  TeacherStudent,
-  TeacherStudentDetail,
-  TeacherStudentQuery,
-  TeacherWithdrawal,
-  TeacherWithdrawalQuery,
-  TeachingRecord,
-} from '../types/teacher';
-import {
-  GroupPage,
-  GroupPromotionCampaignQuery,
-  GroupPromotionCampaignView,
-} from '../types/group-buying';
+import type * as T from '../types/teacher';
+import type * as G from '../types/group-buying';
 import { GROUP_PROMOTION_CAMPAIGN_FIXTURE } from '../mock/fixtures/group-promotion.fixture';
 import {
   TeacherDataSource,
   TeacherDataSourceError,
 } from './teacher-data-source';
+import type * as R from '../types/teacher-rankings';
 
 export interface MockTeacherDataSourceOptions {
   scenario?: TeacherMockScenario;
@@ -58,15 +29,16 @@ export class MockTeacherDataSource implements TeacherDataSource {
   private readonly fixture: TeacherFixture;
   private readonly mutationResults = new Map<
     string,
-    | TeacherLessonDetail
-    | CompleteLessonResult
-    | StudentFeedback
-    | TeacherWithdrawal
+    | T.TeacherLessonDetail
+    | T.CompleteLessonResult
+    | T.StudentFeedback
+    | T.TeacherWithdrawal
   >();
   private teachingSequence = 1;
   private withdrawalSequence = 2;
   private feedbackImageSequence = 1;
-  private readonly feedbackImages = new Map<string, FeedbackImage>();
+  private readonly feedbackSignatures = new Map<string, string>();
+  private readonly feedbackImages = new Map<string, T.FeedbackImage>();
 
   constructor(options: MockTeacherDataSourceOptions = {}) {
     this.scenario = options.scenario ?? 'normal';
@@ -77,19 +49,19 @@ export class MockTeacherDataSource implements TeacherDataSource {
     );
   }
 
-  async getDashboard(): Promise<TeacherDashboard> {
+  async getDashboard(): Promise<T.TeacherDashboard> {
     this.assertAvailable();
     return clone(this.fixture.dashboard);
   }
 
-  async getProfile(): Promise<TeacherProfile> {
+  async getProfile(): Promise<T.TeacherProfile> {
     this.assertAvailable();
     return clone(this.fixture.profile);
   }
 
   async listGroupPromotionCampaigns(
-    query: GroupPromotionCampaignQuery,
-  ): Promise<GroupPage<GroupPromotionCampaignView>> {
+    query: G.GroupPromotionCampaignQuery,
+  ): Promise<G.GroupPage<G.GroupPromotionCampaignView>> {
     this.assertAvailable();
     return this.page(
       this.scenario === 'empty' ? [] : [GROUP_PROMOTION_CAMPAIGN_FIXTURE],
@@ -100,7 +72,7 @@ export class MockTeacherDataSource implements TeacherDataSource {
 
   async getGroupPromotionCampaign(
     id: string,
-  ): Promise<GroupPromotionCampaignView> {
+  ): Promise<G.GroupPromotionCampaignView> {
     this.assertAvailable();
     if (this.scenario === 'empty' || id !== GROUP_PROMOTION_CAMPAIGN_FIXTURE.id) {
       throw new TeacherDataSourceError(
@@ -113,8 +85,8 @@ export class MockTeacherDataSource implements TeacherDataSource {
   }
 
   async listLessonSessions(
-    query: LessonSessionQuery,
-  ): Promise<Page<TeacherLessonSession>> {
+    query: T.LessonSessionQuery,
+  ): Promise<T.Page<T.TeacherLessonSession>> {
     this.assertAvailable();
     const filtered = this.fixture.lessonSessions.filter(
       (lesson) =>
@@ -125,7 +97,7 @@ export class MockTeacherDataSource implements TeacherDataSource {
     return this.page(filtered, query.page, query.pageSize);
   }
 
-  async getLessonSession(id: string): Promise<TeacherLessonDetail> {
+  async getLessonSession(id: string): Promise<T.TeacherLessonDetail> {
     this.assertAvailable();
     const lesson = this.fixture.lessonDetails[id];
     if (!lesson) {
@@ -135,12 +107,18 @@ export class MockTeacherDataSource implements TeacherDataSource {
         '未找到课次',
       );
     }
-    return clone(lesson);
+    return {
+      ...clone(lesson),
+      students: lesson.students.map((student) => ({
+        ...clone(student),
+        canEditFeedback: lesson.status === 'COMPLETED' && student.canEditFeedback === true,
+      })),
+    };
   }
 
   async listStudents(
-    query: TeacherStudentQuery,
-  ): Promise<Page<TeacherStudent>> {
+    query: T.TeacherStudentQuery,
+  ): Promise<T.Page<T.TeacherStudent>> {
     this.assertAvailable();
     const keyword = query.query?.trim().toLocaleLowerCase();
     return this.page(
@@ -153,14 +131,14 @@ export class MockTeacherDataSource implements TeacherDataSource {
     );
   }
 
-  async getStudent(id: string): Promise<TeacherStudentDetail> {
+  async getStudent(id: string, query: T.TeacherStudentDetailQuery = {}): Promise<T.TeacherStudentDetail> {
     this.assertAvailable();
     const student = this.fixture.students.find((item) => item.id === id);
     if (!student) {
       throw new TeacherDataSourceError(403, 'FORBIDDEN', '当前教师无权查看该学员');
     }
-    const recentAttendance = Object.values(this.fixture.lessonDetails)
-      .filter((lesson) => lesson.students.some((item) => item.id === id))
+    const allAttendance = Object.values(this.fixture.lessonDetails)
+      .filter((lesson) => lesson.status === 'COMPLETED' && lesson.students.some((item) => item.id === id))
       .flatMap((lesson) => {
         const lessonStudent = lesson.students.find((item) => item.id === id);
         return lessonStudent?.attendanceStatus
@@ -172,11 +150,11 @@ export class MockTeacherDataSource implements TeacherDataSource {
             }]
           : [];
       })
-      .sort((left, right) => right.startsAt.localeCompare(left.startsAt))
-      .slice(0, 5);
-    const presentCount = recentAttendance.filter(({ status }) => status === 'PRESENT').length;
-    const leaveCount = recentAttendance.filter(({ status }) => status === 'LEAVE').length;
-    const absentCount = recentAttendance.filter(({ status }) => status === 'ABSENT').length;
+      .sort((left, right) => right.startsAt.localeCompare(left.startsAt));
+    const recentAttendance = allAttendance.slice(0, 5);
+    const presentCount = allAttendance.filter(({ status }) => status === 'PRESENT').length;
+    const leaveCount = allAttendance.filter(({ status }) => status === 'LEAVE').length;
+    const absentCount = allAttendance.filter(({ status }) => status === 'ABSENT').length;
     const recordedCount = presentCount + leaveCount + absentCount;
     const nextLesson = this.fixture.lessonSessions
       .filter(
@@ -186,12 +164,30 @@ export class MockTeacherDataSource implements TeacherDataSource {
       )
       .sort((left, right) => left.startsAt.localeCompare(right.startsAt))[0];
     const latestFeedbackLesson = Object.values(this.fixture.lessonDetails)
-      .filter((lesson) => lesson.students.some((item) => item.id === id && item.feedback))
+      .filter((lesson) => ['COMPLETED', 'REVERSED'].includes(lesson.status)
+        && lesson.students.some((item) => item.id === id && item.feedback))
       .sort((left, right) => right.startsAt.localeCompare(left.startsAt))[0];
     const latestFeedback = latestFeedbackLesson?.students.find((item) => item.id === id)?.feedback;
+    const history: T.TeacherStudentFeedbackHistory[] = Object.values(this.fixture.lessonDetails)
+      .filter((lesson) => ['COMPLETED', 'REVERSED'].includes(lesson.status))
+      .flatMap((lesson) => {
+        const member = lesson.students.find((item) => item.id === id);
+        return member?.feedback ? [{
+          id: `${lesson.id}-${id}`, lessonSessionId: lesson.id,
+          courseName: lesson.courseName, className: lesson.className, startsAt: lesson.startsAt,
+          updatedAt: lesson.endsAt, lessonStatus: lesson.status as 'COMPLETED' | 'REVERSED',
+          content: member.feedback, performanceRating: member.performanceRating ?? null,
+          teacherRatings: member.teacherRatings ?? null,
+          feedbackVersion: member.feedbackVersion ?? 1,
+          feedbackAuthorName: member.feedbackAuthorName ?? this.fixture.dashboard.teacher.displayName,
+          images: member.feedbackImages,
+        }] : [];
+      }).sort((a, b) => b.startsAt.localeCompare(a.startsAt) || b.id.localeCompare(a.id));
 
     return clone({
       ...student,
+      archive: this.fixture.studentArchives?.[id],
+      feedbackHistory: this.page(history, query.feedbackPage ?? 1, query.feedbackPageSize ?? 10),
       classes: student.classNames.map((className, index) => ({
         id: `${id}-class-${index + 1}`,
         className,
@@ -227,11 +223,11 @@ export class MockTeacherDataSource implements TeacherDataSource {
   }
 
   async saveAttendance(
-    input: AttendanceDraft,
+    input: T.AttendanceDraft,
     idempotencyKey: string,
-  ): Promise<TeacherLessonDetail> {
+  ): Promise<T.TeacherLessonDetail> {
     this.assertMutationAvailable();
-    const replay = this.replay<TeacherLessonDetail>(
+    const replay = this.replay<T.TeacherLessonDetail>(
       'attendance',
       idempotencyKey,
     );
@@ -257,11 +253,11 @@ export class MockTeacherDataSource implements TeacherDataSource {
   }
 
   async completeLesson(
-    input: CompleteLessonDraft,
+    input: T.CompleteLessonDraft,
     idempotencyKey: string,
-  ): Promise<CompleteLessonResult> {
+  ): Promise<T.CompleteLessonResult> {
     this.assertMutationAvailable();
-    const replay = this.replay<CompleteLessonResult>(
+    const replay = this.replay<T.CompleteLessonResult>(
       'complete',
       idempotencyKey,
     );
@@ -283,11 +279,12 @@ export class MockTeacherDataSource implements TeacherDataSource {
       `${idempotencyKey}:attendance-snapshot`,
     );
     lesson.status = 'COMPLETED';
+    for (const student of lesson.students) student.canEditFeedback = true;
     lesson.version += 1;
     lesson.canComplete = false;
     lesson.canReverse = true;
     this.updateLessonSummary(lesson);
-    const result: CompleteLessonResult = {
+    const result: T.CompleteLessonResult = {
       lessonSessionId: lesson.id,
       lessonVersion: lesson.version,
       status: 'COMPLETED',
@@ -305,11 +302,11 @@ export class MockTeacherDataSource implements TeacherDataSource {
   }
 
   async reverseLesson(
-    input: ReverseLessonDraft,
+    input: T.ReverseLessonDraft,
     idempotencyKey: string,
-  ): Promise<CompleteLessonResult> {
+  ): Promise<T.CompleteLessonResult> {
     this.assertMutationAvailable();
-    const replay = this.replay<CompleteLessonResult>('reverse', idempotencyKey);
+    const replay = this.replay<T.CompleteLessonResult>('reverse', idempotencyKey);
     if (replay) {
       return replay;
     }
@@ -330,12 +327,12 @@ export class MockTeacherDataSource implements TeacherDataSource {
       .filter(([key]) => key.startsWith('complete:'))
       .map(([, value]) => value)
       .find(
-        (value): value is CompleteLessonResult =>
+        (value): value is T.CompleteLessonResult =>
           'lessonSessionId' in value &&
           value.lessonSessionId === input.lessonSessionId &&
           'teachingRecordId' in value,
       );
-    const result: CompleteLessonResult = {
+    const result: T.CompleteLessonResult = {
       lessonSessionId: lesson.id,
       lessonVersion: lesson.version,
       status: 'REVERSED',
@@ -353,12 +350,17 @@ export class MockTeacherDataSource implements TeacherDataSource {
   }
 
   async saveFeedback(
-    input: FeedbackDraft,
+    input: T.FeedbackDraft,
     idempotencyKey: string,
-  ): Promise<StudentFeedback> {
+  ): Promise<T.StudentFeedback> {
     this.assertMutationAvailable();
-    const replay = this.replay<StudentFeedback>('feedback', idempotencyKey);
+    const signature = JSON.stringify([input.lessonSessionId, input.studentId, input.content.trim(),
+      input.imageFileIds, input.performanceRating, input.teacherRatings, input.expectedVersion]);
+    const replay = this.replay<T.StudentFeedback>('feedback', idempotencyKey);
     if (replay) {
+      if (this.feedbackSignatures.get(idempotencyKey.trim()) !== signature) {
+        throw new TeacherDataSourceError(409, 'IDEMPOTENCY_CONFLICT', '同一请求标识不能用于不同反馈');
+      }
       return replay;
     }
     const lesson = this.mutableLesson(input.lessonSessionId);
@@ -371,7 +373,25 @@ export class MockTeacherDataSource implements TeacherDataSource {
         '当前课次不可填写反馈',
       );
     }
+    if (student.canEditFeedback !== true) {
+      throw new TeacherDataSourceError(403, 'FORBIDDEN', '该学员的历史反馈仅可查看');
+    }
+    if (input.teacherRatings !== undefined && !validTeacherRatings(input.teacherRatings)) {
+      throw new TeacherDataSourceError(400, 'VALIDATION_ERROR', '评分格式无效');
+    }
+    const currentVersion = student.feedbackVersion ?? (student.feedback ? 1 : 0);
+    if (((input.teacherRatings !== undefined || student.teacherRatings != null) &&
+      input.expectedVersion === undefined) ||
+      (input.expectedVersion !== undefined && input.expectedVersion !== currentVersion)) {
+      throw new TeacherDataSourceError(409, 'FEEDBACK_VERSION_CONFLICT', '反馈已更新，请重新加载后再保存');
+    }
     student.feedback = content;
+    student.feedbackVersion = currentVersion + 1;
+    student.feedbackAuthorName = this.fixture.dashboard.teacher.displayName;
+    if (input.teacherRatings !== undefined) student.teacherRatings = clone(input.teacherRatings);
+    if (input.performanceRating !== undefined) {
+      student.performanceRating = input.performanceRating;
+    }
     student.feedbackImages = input.imageFileIds.flatMap((id) => {
       const image = this.feedbackImages.get(id);
       return image ? [clone(image)] : [];
@@ -385,23 +405,27 @@ export class MockTeacherDataSource implements TeacherDataSource {
       ).length;
       teachingRecord.feedbackRequiredCount = lesson.students.length;
     }
+    this.feedbackSignatures.set(idempotencyKey.trim(), signature);
     return this.remember('feedback', idempotencyKey, {
       lessonSessionId: lesson.id,
       studentId: student.id,
       content,
+      performanceRating: student.performanceRating ?? null,
+      teacherRatings: student.teacherRatings ?? null,
+      version: student.feedbackVersion,
       images: clone(student.feedbackImages),
       updatedAt: '2026-08-29T08:30:00+08:00',
     });
   }
 
   async uploadFeedbackImage(
-    input: FeedbackImageUploadDraft,
-  ): Promise<FeedbackImage> {
+    input: T.FeedbackImageUploadDraft,
+  ): Promise<T.FeedbackImage> {
     this.assertMutationAvailable();
     const lesson = this.mutableLesson(input.lessonSessionId);
     if (
       lesson.status !== 'COMPLETED' ||
-      !lesson.students.some(({ id }) => id === input.studentId)
+      !lesson.students.some(({ id, canEditFeedback }) => id === input.studentId && canEditFeedback === true)
     ) {
       throw new TeacherDataSourceError(
         409,
@@ -411,7 +435,7 @@ export class MockTeacherDataSource implements TeacherDataSource {
     }
     const id = `mock-feedback-image-${this.feedbackImageSequence}`;
     this.feedbackImageSequence += 1;
-    const image: FeedbackImage = {
+    const image: T.FeedbackImage = {
       id,
       mimeType: input.filePath.toLowerCase().endsWith('.png')
         ? 'image/png'
@@ -425,32 +449,61 @@ export class MockTeacherDataSource implements TeacherDataSource {
   }
 
   async listTeachingRecords(
-    query: DatePageQuery,
-  ): Promise<Page<TeachingRecord>> {
+    query: T.DatePageQuery,
+  ): Promise<T.Page<T.TeachingRecord>> {
     this.assertAvailable();
     return this.page(this.fixture.teachingRecords, query.page, query.pageSize);
   }
 
   async listLessonLedger(
-    query: DatePageQuery,
-  ): Promise<Page<TeacherLedgerRecord>> {
+    query: T.DatePageQuery,
+  ): Promise<T.Page<T.TeacherLedgerRecord>> {
     this.assertAvailable();
     return this.page(this.fixture.lessonLedger, query.page, query.pageSize);
   }
 
-  async getEarningSummary(): Promise<TeacherEarningSummary> {
+  async getEarningSummary(): Promise<T.TeacherEarningSummary> {
     this.assertAvailable();
     return clone(this.fixture.earningSummary);
   }
 
-  async getCurrentEarningRule(): Promise<TeacherEarningRuleView | null> {
+  async getRankings(query: R.TeacherRankingQuery): Promise<R.TeacherRankingPage> {
+    this.assertAvailable();
+    const currentMonth = new Date(Date.now() + 28800000).toISOString().slice(0, 7);
+    const month = query.month ?? currentMonth;
+    if (!/^[1-9]\d{3}-(0[1-9]|1[0-2])$/.test(month) || month > currentMonth ||
+        !['EARNINGS', 'ATTENDANCE'].includes(query.metric) || query.page < 1 ||
+        query.pageSize < 1 || query.pageSize > 100 || (query.page > 1 && !query.revision)) {
+      throw new TeacherDataSourceError(400, 'VALIDATION_FAILED', '月份或分页版本无效');
+    }
+    const revision = `${query.metric === 'EARNINGS' ? 'e' : 'a'}${month.replace('-', '')}`.padEnd(64, '0');
+    if (query.revision && query.revision !== revision) {
+      throw new TeacherDataSourceError(409, 'CONFLICT', '榜单已更新，请刷新后继续');
+    }
+    const rows = this.scenario === 'empty' ? [] : [
+      { position: 1, displayName: '合成教师甲', rank: 1, previousRank: 2, rankDelta: 1, isSelf: false },
+      { position: 2, displayName: '合成教师乙', rank: 1, previousRank: 1, rankDelta: 0, isSelf: true },
+      { position: 3, displayName: '合成教师丙', rank: 3, previousRank: null, rankDelta: null, isSelf: false },
+    ];
+    return {
+      metric: query.metric, month, timezone: 'Asia/Shanghai', asOf: new Date().toISOString(), revision,
+      rows: rows.slice((query.page - 1) * query.pageSize, query.page * query.pageSize),
+      own: { value: rows.length ? query.metric === 'EARNINGS' ? 12000 : 24 : 0,
+        rank: rows.length ? 1 : null, previousRank: rows.length ? 1 : null,
+        rankDelta: rows.length ? 0 : null, hasActivity: !!rows.length },
+      meta: { page: query.page, pageSize: query.pageSize, total: rows.length,
+        totalPages: Math.ceil(rows.length / query.pageSize) },
+    };
+  }
+
+  async getCurrentEarningRule(): Promise<T.TeacherEarningRuleView | null> {
     this.assertAvailable();
     return clone(this.fixture.earningRule);
   }
 
   async getEarnings(
-    query: TeacherEarningQuery,
-  ): Promise<Page<TeacherEarningEntry>> {
+    query: T.TeacherEarningQuery,
+  ): Promise<T.Page<T.TeacherEarningEntry>> {
     this.assertAvailable();
     const filtered = this.fixture.earnings.filter(
       (entry) =>
@@ -462,8 +515,8 @@ export class MockTeacherDataSource implements TeacherDataSource {
   }
 
   async getWithdrawals(
-    query: TeacherWithdrawalQuery,
-  ): Promise<Page<TeacherWithdrawal>> {
+    query: T.TeacherWithdrawalQuery,
+  ): Promise<T.Page<T.TeacherWithdrawal>> {
     this.assertAvailable();
     const filtered = this.fixture.withdrawals.filter(
       (withdrawal) => !query.status || withdrawal.status === query.status,
@@ -474,9 +527,9 @@ export class MockTeacherDataSource implements TeacherDataSource {
   async createWithdrawal(
     amountFen: number,
     idempotencyKey: string,
-  ): Promise<TeacherWithdrawal> {
+  ): Promise<T.TeacherWithdrawal> {
     this.assertMutationAvailable();
-    const replay = this.replay<TeacherWithdrawal>(
+    const replay = this.replay<T.TeacherWithdrawal>(
       'create-withdrawal',
       idempotencyKey,
     );
@@ -508,7 +561,7 @@ export class MockTeacherDataSource implements TeacherDataSource {
     }
 
     const sequence = String(this.withdrawalSequence).padStart(4, '0');
-    const withdrawal: TeacherWithdrawal = {
+    const withdrawal: T.TeacherWithdrawal = {
       id: `83000000-0000-4000-8000-${sequence.padStart(12, '0')}`,
       requestNo: `TX20260830${sequence}`,
       campusId: '10000000-0000-4000-8000-000000000001',
@@ -536,9 +589,9 @@ export class MockTeacherDataSource implements TeacherDataSource {
     id: string,
     expectedVersion: number,
     idempotencyKey: string,
-  ): Promise<TeacherWithdrawal> {
+  ): Promise<T.TeacherWithdrawal> {
     this.assertMutationAvailable();
-    const replay = this.replay<TeacherWithdrawal>(
+    const replay = this.replay<T.TeacherWithdrawal>(
       'cancel-withdrawal',
       idempotencyKey,
     );
@@ -589,7 +642,7 @@ export class MockTeacherDataSource implements TeacherDataSource {
     }
   }
 
-  private mutableLesson(id: string): TeacherLessonDetail {
+  private mutableLesson(id: string): T.TeacherLessonDetail {
     const lesson = this.fixture.lessonDetails[id];
     if (!lesson) {
       throw new TeacherDataSourceError(
@@ -602,7 +655,7 @@ export class MockTeacherDataSource implements TeacherDataSource {
   }
 
   private assertVersion(
-    lesson: TeacherLessonDetail,
+    lesson: T.TeacherLessonDetail,
     requestedVersion: number,
   ): void {
     if (lesson.version !== requestedVersion) {
@@ -616,7 +669,7 @@ export class MockTeacherDataSource implements TeacherDataSource {
   }
 
   private assertCompleteRoster(
-    lesson: TeacherLessonDetail,
+    lesson: T.TeacherLessonDetail,
     requestedIds: string[],
   ): void {
     const unique = new Set(requestedIds);
@@ -633,7 +686,7 @@ export class MockTeacherDataSource implements TeacherDataSource {
     }
   }
 
-  private updateLessonSummary(detail: TeacherLessonDetail): void {
+  private updateLessonSummary(detail: T.TeacherLessonDetail): void {
     const index = this.fixture.lessonSessions.findIndex(
       ({ id }) => id === detail.id,
     );
@@ -660,10 +713,10 @@ export class MockTeacherDataSource implements TeacherDataSource {
   }
 
   private remember<T extends
-    | TeacherLessonDetail
-    | CompleteLessonResult
-    | StudentFeedback
-    | TeacherWithdrawal>(
+    | T.TeacherLessonDetail
+    | T.CompleteLessonResult
+    | T.StudentFeedback
+    | T.TeacherWithdrawal>(
     operation: string,
     key: string,
     value: T,
@@ -678,7 +731,7 @@ export class MockTeacherDataSource implements TeacherDataSource {
     }
   }
 
-  private page<T>(items: readonly T[], page: number, pageSize: number): Page<T> {
+  private page<T>(items: readonly T[], page: number, pageSize: number): T.Page<T> {
     const total = items.length;
     const start = (page - 1) * pageSize;
     return {

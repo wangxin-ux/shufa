@@ -1,0 +1,5 @@
+{
+  "usingComponents": {
+    "operator-page-shell": "/pages/operator/runtime/components/operator-page-shell/operator-page-shell"
+  }
+}

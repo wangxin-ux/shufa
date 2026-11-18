@@ -22,7 +22,7 @@ describe('teacher source-artboard page guards', () => {
     expect(homeMarkup).toContain('tone="home"');
     expect(shellMarkup).toContain("tone === 'home'");
     expect(shellStyles).toMatch(
-      /\.shell--home\s*\{[^}]*background:\s*var\(--role-home-yellow-gradient\)/s,
+      /\.shell--home\s*\{[^}]*background:\s*var\(--teacher-gradient\)/s,
     );
     expect(homeStyles).toMatch(
       /\.home__identity\s*\{[^}]*flex-direction:\s*row[^}]*background:\s*transparent/s,
@@ -37,7 +37,7 @@ describe('teacher source-artboard page guards', () => {
       /\.lesson-card__divider\s*\{[^}]*align-self:\s*start[^}]*width:\s*4rpx[^}]*height:\s*127rpx[^}]*margin-top:\s*37rpx/s,
     );
     expect(homeStyles).toMatch(/\.lesson-card__detail\s*\{[^}]*padding-left:\s*32rpx/s);
-    expect(homeStyles).toMatch(/\.lesson-card__time\s*\{[^}]*font-size:\s*73rpx/s);
+    expect(homeStyles).toMatch(/\.lesson-card__time\s*\{[^}]*font-size:\s*95rpx/s);
     expect(homeStyles).toMatch(/\.lesson-card__course\s*\{[^}]*font-size:\s*76rpx/s);
     expect(homeStyles).toMatch(
       /\.home__schedule-head\s*\{[^}]*justify-content:\s*flex-start[^}]*gap:\s*18rpx[^}]*margin-left:\s*8rpx/s,
@@ -107,43 +107,54 @@ describe('teacher source-artboard page guards', () => {
   it('uses the teacher theme on the schedule review sample', () => {
     const scheduleMarkup = read('pages/teacher/schedule/index.wxml');
     const scheduleStyles = read('pages/teacher/schedule/index.wxss');
-    const bannerMarkup = read(
-      'components/teacher-workspace-banner/teacher-workspace-banner.wxml',
-    );
-    const bannerStyles = read(
-      'components/teacher-workspace-banner/teacher-workspace-banner.wxss',
-    );
 
     expect(scheduleMarkup).toContain('tone="yellow"');
-    expect(scheduleMarkup).toContain('<teacher-workspace-banner');
-    expect(scheduleMarkup).toContain('{{items.length}} 个课次');
-    expect(bannerMarkup).toContain('/assets/teacher/home-mascot.png');
-    expect(bannerStyles).toMatch(
-      /\.workspace-banner\s*\{[^}]*position:\s*relative[^}]*overflow:\s*hidden[^}]*background:\s*var\(--teacher-orange\)[^}]*box-shadow:\s*var\(--teacher-shadow\)/s,
-    );
-    expect(bannerStyles).toMatch(
-      /\.workspace-banner__mascot\s*\{[^}]*position:\s*absolute[^}]*width:\s*238rpx/s,
+    // PSD 课表屏没有右上角日期/状态筛选入口，折叠态筛选条也不在屏上。
+    expect(scheduleMarkup).not.toContain('class="schedule-tools"');
+    expect(scheduleMarkup).not.toContain('class="status-filter"');
+    expect(scheduleStyles).toMatch(
+      /\.lesson-row__toggle\s*\{[^}]*border-radius:\s*38rpx[^}]*background:\s*var\(--teacher-orange\)/s,
     );
     expect(scheduleStyles).toMatch(
-      /\.lesson-row\s*\{[^}]*border-left:\s*8rpx solid var\(--teacher-orange\)[^}]*background:\s*var\(--teacher-surface\)/s,
+      /\.lesson-row--today\s+\.lesson-row__toggle\s*\{[^}]*background:\s*#2dc02d/s,
+    );
+    expect(scheduleStyles).toMatch(
+      /\.lesson-row__time-value\s*\{[^}]*font-size:\s*95rpx[^}]*color:\s*#ffffff/s,
     );
   });
 
   it('extends the approved workspace theme across every derived teacher page', () => {
     const bannerPages = [
-      'schedule',
-      'students',
       'lesson',
       'records',
       'ledger',
-      'earnings',
     ];
-    const derivedPages = [...bannerPages, 'settings'];
+    const derivedPages = ['schedule', 'students', ...bannerPages, 'settings'];
 
     for (const page of derivedPages) {
       const markup = read(`pages/teacher/${page}/index.wxml`);
       expect(markup).toContain('tone="yellow"');
     }
+
+    // PSD 学员档案屏没有工作区摘要条，卡片自带上屏标题。
+    const studentsMarkup = read('pages/teacher/students/index.wxml');
+    expect(studentsMarkup).not.toContain('teacher-workspace-banner');
+    expect(
+      (JSON.parse(read('pages/teacher/students/index.json')) as {
+        usingComponents: Record<string, string>;
+      }).usingComponents['teacher-workspace-banner'],
+    ).toBeUndefined();
+
+    // PSD a3 课时账户屏同样没有摘要条：屏标题 + 内部预计说明 + 三个区块。
+    const earningsMarkup = read('pages/teacher/earnings/index.wxml');
+    expect(earningsMarkup).toContain('tone="account"');
+    expect(earningsMarkup).toContain('/pages/teacher/assets/account-mascot.png');
+    expect(earningsMarkup).not.toContain('teacher-workspace-banner');
+    expect(earningsMarkup).toContain('<text class="section-title">课时流水</text>');
+    expect(earningsMarkup).toContain('>筛选</button>');
+    expect(earningsMarkup).toContain('<text class="section-title">教师贡献度排名</text>');
+    expect(earningsMarkup).toContain('查看更多</button>');
+    expect(earningsMarkup).not.toContain('rule-card');
 
     for (const page of bannerPages) {
       const markup = read(`pages/teacher/${page}/index.wxml`);
@@ -177,11 +188,13 @@ describe('teacher source-artboard page guards', () => {
     expect(markup).not.toMatch(
       /凯曼|KAIMAN|EDUCATION|brand-dog-head|brand-logo/i,
     );
+    // 提现走页面持有的 runtime 适配器（teacherService 已下沉），重复保护由
+    // canAct/withdrawalReady/recovery.inflight 组合守卫承担，见 2026-11 收益页重构。
     expect(logic).toMatch(
-      /if \(this\.data\.submitting\) \{\s*return;\s*\}/s,
+      /if \(!this\.canAct\(\) \|\| !this\.data\.withdrawalReady \|\| !this\.recovery \|\|\s*this\.recovery\.inflight \|\| \(this\.recovery\.command[\s\S]*?return Promise\.resolve\(\);/,
     );
-    expect(logic).toContain('teacherService.createWithdrawal');
-    expect(logic).toContain('teacherService.cancelWithdrawal');
+    expect(logic).toContain('runtime.createWithdrawal');
+    expect(logic).toContain('runtime.cancelWithdrawal');
   });
 
   it('keeps prohibited branding and design-example values out of both pages', () => {
@@ -222,27 +235,29 @@ describe('teacher source-artboard page guards', () => {
     expect(profileMarkup).toContain('showBack="{{true}}"');
     expect(profileMarkup).not.toContain('profile__campus');
     expect(profileMarkup).toContain('bullet="{{true}}"');
-    expect(profileMarkup).toContain('class="profile__subject-label">授课</text>');
+    expect(profileMarkup).not.toContain('class="profile__subject-label">授课</text>');
     expect(profileMarkup).toContain('wx:for="{{subjectLines}}"');
     expect(profileMarkup).toMatch(
-      /profile__student-count[^>]*>负责 {{studentCount}} 名学员<\/text>/,
+      /profile__student-count[^>]*>{{studentCount}}人<\/text>/,
     );
     expect(profileStyles).toMatch(
       /\.profile\s*\{[^}]*padding-top:\s*84rpx[^}]*padding-bottom:\s*0/s,
     );
     expect(profileStyles).toMatch(/\.profile__hero\s*\{[^}]*height:\s*456rpx/s);
+    // PDF P23 为左侧姓名、右侧完整人物；不存在独立圆头像。
+    expect(profileMarkup).not.toContain('class="profile__avatar"');
     expect(profileStyles).toMatch(
-      /\.profile__identity-card\s*\{[^}]*left:\s*14rpx[^}]*width:\s*653rpx[^}]*min-height:\s*265rpx/s,
+      /\.profile__identity-card\s*\{[^}]*flex-direction:\s*column[^}]*min-height:\s*263rpx/s,
     );
     expect(profileStyles).toMatch(
       /\.profile__card-mascot\s*\{[^}]*right:\s*-32rpx[^}]*width:\s*462rpx/s,
     );
-    expect(profileStyles).toMatch(/\.profile__name\s*\{[^}]*font-size:\s*78rpx/s);
+    expect(profileStyles).toMatch(/\.profile__name\s*\{[^}]*font-size:\s*95rpx/s);
     expect(profileStyles).toMatch(
-      /\.profile__subject\s*\{[^}]*font-size:\s*30rpx/s,
+      /\.profile__subject\s*\{[^}]*font-size:\s*63rpx/s,
     );
     expect(profileStyles).toMatch(
-      /\.profile__student-count\s*\{[^}]*font-size:\s*25rpx/s,
+      /\.profile__student-count\s*\{[^}]*font-size:\s*63rpx/s,
     );
     expect(profileStyles).toMatch(
       /\.profile__actions-stage\s*\{[^}]*margin-top:\s*54rpx/s,
@@ -251,7 +266,7 @@ describe('teacher source-artboard page guards', () => {
       /\.profile__footer-mascot\s*\{[^}]*top:\s*100rpx[^}]*left:\s*-32rpx[^}]*width:\s*573rpx[^}]*opacity:\s*1/s,
     );
     expect(profileStyles).toMatch(
-      /\.profile-actions\s*\{[^}]*width:\s*653rpx[^}]*margin-left:\s*14rpx/s,
+      /\.profile-actions\s*\{[^}]*width:\s*653rpx/s,
     );
     expect(actionMarkup).toContain('wx:if="{{bullet}}"');
     expect(actionLogic).toContain("bullet: { type: Boolean, value: false }");

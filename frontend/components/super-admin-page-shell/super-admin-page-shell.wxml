@@ -1,6 +1,6 @@
 <view class="shell {{surfacePage ? 'shell--surface' : ''}}">
   <view wx:if="{{!surfacePage}}" class="shell__wave" aria-hidden="true"></view>
-  <view class="shell__header" style="padding-top: {{headerTopPx}}px;">
+  <view class="shell__header header" style="padding-top: {{headerTopPx}}px;">
     <view
       class="shell__header-inner {{surfacePage ? 'shell__header-inner--surface' : ''}}"
       style="--super-admin-header-height: {{headerHeightPx}}px; min-height: {{headerHeightPx}}px; padding-right: {{headerRightPx}}px;"

@@ -1,0 +1,179 @@
+<operator-page-shell
+  markTitle="教师"
+  markIcon="/pages/operator/assets/page-mark-pdf.png" markIconSize="44"
+  showBack="{{true}}"
+>
+  <view class="teacher-page {{toolsOpen ? 'teacher-page--tools' : ''}}">
+    <view wx:if="{{viewState !== 'forbidden'}}" class="teacher-utility">
+      <button class="teacher-utility__filter" bindtap="onToggleTools" aria-expanded="{{toolsOpen}}">{{toolsOpen ? '收起筛选' : '筛选'}}</button>
+    </view>
+    <view wx:if="{{toolsOpen}}" class="teacher-heading">
+      <text class="teacher-heading__title">教师档案</text>
+      <text wx:if="{{viewState === 'ready' || viewState === 'empty'}}" class="teacher-heading__summary">{{activeQuery ? '匹配到' : '本校区共'}} {{total}} 名教师</text>
+    </view>
+
+    <view wx:if="{{toolsOpen && viewState !== 'forbidden'}}" class="teacher-search">
+      <button class="teacher-search__command" bindtap="onSearchSubmit" aria-label="搜索教师" hover-class="control--hover">⌕</button>
+      <input
+        class="teacher-search__input"
+        value="{{query}}"
+        placeholder="搜索教师姓名"
+        confirm-type="search"
+        maxlength="100"
+        bindinput="onSearchInput"
+        bindconfirm="onSearchSubmit"
+      />
+      <button wx:if="{{query || activeQuery}}" class="teacher-search__command" bindtap="onSearchClear" aria-label="清空搜索" hover-class="control--hover">×</button>
+    </view>
+
+    <view wx:if="{{viewState === 'loading'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">正在加载教师档案</text>
+    </view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">无访问权限</text>
+      <text class="page-state__message">{{errorMessage || '当前账号无法查看教师档案'}}</text>
+      <button class="teacher-command teacher-command--primary" bindtap="onLogin" hover-class="control--hover">重新登录</button>
+    </view>
+    <view wx:elif="{{viewState === 'error'}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">教师档案加载失败</text>
+      <text class="page-state__message">{{errorMessage}}</text>
+      <button class="teacher-command teacher-command--primary" disabled="{{listLoading}}" bindtap="onRetry" hover-class="control--hover">重试</button>
+    </view>
+    <view wx:elif="{{viewState === 'empty' && !items.length}}" class="page-state" aria-live="polite">
+      <text class="page-state__title">{{activeQuery ? '暂无匹配教师' : '暂无教师档案'}}</text>
+      <text class="page-state__message">{{activeQuery ? '可调整姓名关键词后重新搜索' : '本校区暂无可查看的教师档案'}}</text>
+    </view>
+
+    <block wx:if="{{viewState !== 'forbidden' && viewState !== 'loading'}}">
+      <view wx:if="{{listLoading || listError}}" class="teacher-notice" aria-live="polite">
+        <text class="teacher-notice__message">{{listError || '正在加载教师'}}</text>
+        <button wx:if="{{listError}}" class="teacher-command teacher-command--text" disabled="{{listLoading}}" bindtap="onRetry" hover-class="control--hover">重试</button>
+      </view>
+
+      <view class="teacher-list">
+        <view wx:for="{{items}}" wx:key="id" class="teacher-row">
+          <button
+            class="teacher-row__toggle"
+            data-id="{{item.id}}"
+            bindtap="onTeacherToggle"
+            aria-label="{{item.displayName}}的教师档案"
+            aria-expanded="{{expandedId === item.id}}"
+            hover-class="control--hover"
+          >
+            <text class="teacher-row__name {{item.displayName.length > 3 ? 'teacher-row__name--compact' : ''}}">{{item.displayName}}</text>
+            <text class="teacher-row__specialties-value {{item.specialtiesLabel.length > 4 ? 'teacher-row__specialties-value--compact' : ''}}">{{item.specialtiesLabel || '暂无专长资料'}}</text>
+            <text class="teacher-row__chevron" aria-hidden="true">{{expandedId === item.id ? '⌃' : '⌄'}}</text>
+          </button>
+
+          <view wx:if="{{expandedId === item.id}}" class="teacher-detail">
+            <view class="teacher-section">
+              <view class="teacher-section__head">
+                <text class="teacher-section__title">月度授课</text>
+                <picker class="month-picker" mode="date" fields="month" value="{{month}}" bindchange="onMonthChange">
+                  <view class="month-picker__value" aria-label="选择统计月份">
+                    <text>{{month || '校区本月'}}</text>
+                    <text class="month-picker__chevron" aria-hidden="true">⌄</text>
+                  </view>
+                </picker>
+              </view>
+              <text wx:if="{{performanceState === 'loading'}}" class="teacher-note" aria-live="polite">正在读取月度授课与评价</text>
+              <view wx:if="{{performanceState === 'error' || performanceError}}" class="teacher-notice" aria-live="polite">
+                <text class="teacher-notice__message">{{performanceError || '月度授课与评价读取失败'}}</text>
+                <button class="teacher-command teacher-command--text" bindtap="onPerformanceRetry" hover-class="control--hover">重试</button>
+              </view>
+              <block wx:if="{{performance}}">
+                <text class="teacher-meta">{{performance.periodMonth}} · {{performance.timezone}}</text>
+                <text class="teacher-meta">统计截至 {{performance.asOfLabel}}</text>
+                <view class="teacher-metrics">
+                  <view class="teacher-metric">
+                    <text class="teacher-label">应授课次</text>
+                    <text class="teacher-metric__value {{performance.scheduledLabel.length > 3 ? 'teacher-metric__value--compact' : ''}}">{{performance.scheduledLabel}}</text>
+                  </view>
+                  <view class="teacher-metric">
+                    <text class="teacher-label">实授课次</text>
+                    <text class="teacher-metric__value {{performance.completedLabel.length > 3 ? 'teacher-metric__value--compact' : ''}}">{{performance.completedLabel}}</text>
+                  </view>
+                  <view class="teacher-metric">
+                    <text class="teacher-label">完成率</text>
+                    <text class="teacher-metric__value teacher-metric__value--percent {{performance.completionLabel.length > 3 ? 'teacher-metric__value--long-percent' : ''}}">{{performance.completionLabel}}</text>
+                  </view>
+                </view>
+                <text wx:if="{{performance.completionLabel === '无计划'}}" class="teacher-note">本月暂无应授课次</text>
+              </block>
+            </view>
+
+            <view wx:if="{{performance}}" class="teacher-section">
+              <text class="teacher-section__title">月度评价</text>
+              <block wx:if="{{performance.evaluation}}">
+                <view class="evaluation-meta">
+                  <text class="evaluation-meta__author">原作者：{{performance.evaluation.authorName}}</text>
+                  <text class="teacher-meta">{{performance.evaluation.periodMonth}} · 版本 {{performance.evaluation.version}}</text>
+                  <text class="teacher-meta">更新于 {{performance.evaluation.updatedLabel}}</text>
+                </view>
+                <view class="teacher-ratings">
+                  <view wx:for="{{performance.evaluation.ratings}}" wx:for-item="rating" wx:key="key" class="teacher-rating">
+                    <text class="teacher-rating__label">{{rating.label}}</text>
+                    <view class="teacher-rating__score">
+                      <view class="rating-stars" aria-hidden="true">
+                        <view wx:for="{{rating.stars}}" wx:for-item="star" wx:key="index" class="rating-star">
+                          <image class="rating-star__base" src="/pages/operator/assets/rating-star.png" mode="aspectFit" aria-hidden="true" />
+                          <image class="rating-star__fill rating-star__fill--{{star.fill}}" src="/pages/operator/assets/rating-star.png" mode="aspectFit" aria-hidden="true" />
+                        </view>
+                      </view>
+                      <text class="teacher-rating__value">{{rating.valueLabel}}</text>
+                    </view>
+                  </view>
+                </view>
+                <text class="teacher-guidance__label">指导语</text>
+                <text class="teacher-guidance">{{performance.evaluation.guidance || '暂无指导语'}}</text>
+              </block>
+              <text wx:else class="teacher-note">{{performance.periodMonth}} 暂无已提交的月度评价</text>
+            </view>
+
+            <view class="teacher-section">
+              <text class="teacher-section__title">任教班级</text>
+              <view wx:for="{{item.classes}}" wx:for-item="teachingClass" wx:key="id" class="teaching-class">
+                <text class="teaching-class__name">{{teachingClass.className}}</text>
+                <text class="teacher-meta">{{teachingClass.courseName}}</text>
+              </view>
+              <text wx:if="{{!item.classes.length}}" class="teacher-note">暂无本校区任教班级</text>
+            </view>
+
+            <view wx:if="{{performance}}" class="teacher-section">
+              <text class="teacher-section__title">评价修订历史</text>
+              <text wx:if="{{historyState === 'loading' || historyLoading}}" class="teacher-note" aria-live="polite">正在读取修订历史</text>
+              <view wx:if="{{historyState === 'error' || historyError}}" class="teacher-notice" aria-live="polite">
+                <text class="teacher-notice__message">{{historyError || '修订历史读取失败'}}</text>
+                <button class="teacher-command teacher-command--text" disabled="{{historyLoading || historyState === 'loading'}}" bindtap="onHistoryRetry" hover-class="control--hover">重试</button>
+              </view>
+              <text wx:if="{{historyState === 'empty' && !historyItems.length}}" class="teacher-note">所选月份暂无评价修订记录</text>
+              <view wx:for="{{historyItems}}" wx:for-item="revision" wx:key="key" class="evaluation-revision">
+                <text class="evaluation-meta__author">原作者：{{revision.authorName}}</text>
+                <text class="teacher-meta">{{revision.periodMonth}} · 版本 {{revision.version}}</text>
+                <text class="teacher-meta">保存于 {{revision.savedLabel}}</text>
+                <view class="teacher-ratings">
+                  <view wx:for="{{revision.ratings}}" wx:for-item="rating" wx:key="key" class="teacher-rating">
+                    <text class="teacher-rating__label">{{rating.label}}</text>
+                    <view class="teacher-rating__score">
+                      <view class="rating-stars" aria-hidden="true">
+                        <view wx:for="{{rating.stars}}" wx:for-item="star" wx:key="index" class="rating-star">
+                          <image class="rating-star__base" src="/pages/operator/assets/rating-star.png" mode="aspectFit" aria-hidden="true" />
+                          <image class="rating-star__fill rating-star__fill--{{star.fill}}" src="/pages/operator/assets/rating-star.png" mode="aspectFit" aria-hidden="true" />
+                        </view>
+                      </view>
+                      <text class="teacher-rating__value">{{rating.valueLabel}}</text>
+                    </view>
+                  </view>
+                </view>
+                <text class="teacher-guidance__label">指导语</text>
+                <text class="teacher-guidance">{{revision.guidance || '暂无指导语'}}</text>
+              </view>
+              <button wx:if="{{historyHasMore}}" class="teacher-command teacher-command--more" disabled="{{historyLoading || historyState === 'loading'}}" bindtap="onHistoryMore" hover-class="control--hover">{{historyLoading ? '加载中' : '加载更多修订'}}</button>
+            </view>
+          </view>
+        </view>
+      </view>
+      <button wx:if="{{hasMore}}" class="teacher-command teacher-command--more" disabled="{{listLoading}}" bindtap="onLoadMore" hover-class="control--hover">{{listLoading ? '加载中' : '加载更多教师'}}</button>
+    </block>
+  </view>
+</operator-page-shell>

@@ -1,0 +1,20 @@
+.crop { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; box-sizing: border-box; padding: calc(env(safe-area-inset-top) + 52px) 24px calc(env(safe-area-inset-bottom) + 16px); background: #fff; color: #24352f; font-family: var(--partner-font-body); }
+.crop__header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex: none; margin-right: 100px; }
+.crop__title { min-width: 0; font-size: 20px; line-height: 1.5; overflow-wrap: anywhere; }
+.crop__size { flex: none; color: #52665b; font-size: 14px; }
+.crop__stage { display: flex; align-items: center; justify-content: center; flex: 1; min-height: 0; margin: 12px 0; background: #e8ece9; overflow: hidden; }
+.crop__viewport { position: relative; flex: none; overflow: hidden; background: #fff; }
+.crop__image { position: absolute; display: block; max-width: none; }
+.crop__canvas { position: absolute; left: -9999px; top: 0; }
+.crop__controls { flex: none; min-width: 0; }
+.crop__zoom { display: flex; align-items: center; gap: 8px; font-size: 16px; min-height: 44px; }
+.crop__slider { flex: 1; min-width: 0; margin: 8px; }
+.crop__reset { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; margin: 0; background: #fff; color: #24352f; font-size: 28px; line-height: 1; border-radius: 4px; }
+.crop__message { display: block; min-height: 24px; font-size: 14px; line-height: 1.5; color: #a52e25; overflow-wrap: anywhere; }
+.crop__actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.crop__cancel, .crop__confirm, .crop__retry { display: flex; align-items: center; justify-content: center; min-height: 44px; width: 100%; margin: 0; padding: 8px 12px; box-sizing: border-box; border-radius: 4px; font-size: 16px; line-height: 1.5; overflow-wrap: anywhere; }
+.crop__cancel, .crop__retry { background: #fff; color: #a23c0c; border: 1px solid #f86114; }
+.crop__confirm { background: #f86114; color: #fff; }
+.crop__confirm--disabled, .crop__reset--disabled { opacity: .6; }
+.crop__retry { margin-bottom: 8px; }
+.crop__cancel::after, .crop__confirm::after, .crop__retry::after, .crop__reset::after { border: 0; }

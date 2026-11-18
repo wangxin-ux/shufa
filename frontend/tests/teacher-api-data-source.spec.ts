@@ -5,6 +5,24 @@ import {
 } from '../data/api-teacher-data-source';
 
 describe('teacher API data source', () => {
+  it('resolves student photo URLs for both lesson reads and attendance writes', async () => {
+    const source = new ApiTeacherDataSource({
+      baseUrl: 'https://example.test', accessToken: 'teacher-token',
+      request: (options) => options.success({ statusCode: 200, data: { data: {
+        students: [{ id: 'student-1', feedbackImages: [],
+          photo: { id: 'photo-1', accessUrl: '/media/student-photos/photo-1?signature=test' },
+          parentReview: { id: 'review-1', valid: false },
+        }],
+      } } }),
+    });
+    for (const detail of [
+      await source.getLessonSession('lesson-1'),
+      await source.saveAttendance({ lessonSessionId: 'lesson-1', lessonVersion: 1, attendance: [] }, 'photo-read-key'),
+    ]) {
+      expect(detail.students[0].photo?.accessUrl).toBe('https://example.test/media/student-photos/photo-1?signature=test');
+      expect(detail.students[0].parentReview).toMatchObject({ id: 'review-1', valid: false });
+    }
+  });
   it('uploads a feedback image with teacher authentication and resolves its media URL', async () => {
     const uploads: Parameters<TeacherUploadFile>[0][] = [];
     const uploadFile: TeacherUploadFile = (options) => {

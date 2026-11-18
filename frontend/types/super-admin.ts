@@ -68,8 +68,8 @@ export interface SuperAdminPageQuery {
   pageSize: number;
 }
 
-export type ManageableStaffRole = "TEACHER" | "CAMPUS_MANAGER" | "PARTNER" | "HR" | "FINANCE";
-export type DirectlyCreatableStaffRole = "CAMPUS_MANAGER" | "PARTNER" | "HR" | "FINANCE";
+export type ManageableStaffRole = "TEACHER" | "CAMPUS_MANAGER" | "PARTNER" | "OPERATOR" | "HR" | "FINANCE";
+export type DirectlyCreatableStaffRole = "CAMPUS_MANAGER" | "PARTNER" | "OPERATOR" | "HR" | "FINANCE";
 
 export type StaffAccountStatus = "ACTIVE" | "DISABLED";
 export type StaffBindingStatus = "BOUND" | "UNBOUND";

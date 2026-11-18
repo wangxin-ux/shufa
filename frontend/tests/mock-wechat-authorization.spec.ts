@@ -15,6 +15,10 @@ const sessionService = {
   requestTestPhoneCode: jest.fn(),
   loginWithTestPhoneCode: jest.fn(),
   bindWechatStaffPhone: jest.fn(),
+  // Pages capture this predicate to discard a login result that landed after
+  // the session revision moved on; an always-current guard matches a page
+  // whose session never changed mid-request.
+  sessionGuard: jest.fn(() => () => true),
 };
 const resolveRoleBootstrap = jest.fn();
 
@@ -35,6 +39,8 @@ describe('local account selection', () => {
     jest.resetAllMocks();
     sessionService.usesMockWechatSimulation.mockReturnValue(true);
     sessionService.canSwitchTestAccount.mockReturnValue(true);
+    // resetAllMocks() above wipes implementations, so restate the guard each test.
+    sessionService.sessionGuard.mockReturnValue(() => true);
     Object.defineProperty(globalThis, 'wx', {
       configurable: true,
       value: { reLaunch, showToast },

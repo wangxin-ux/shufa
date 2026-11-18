@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "parent-page-shell": "/components/parent-page-shell/parent-page-shell",
+    "parent-primary-button": "/components/parent-primary-button/parent-primary-button",
+    "view-state": "/components/view-state/view-state"
+  },
+  "enablePullDownRefresh": true
+}

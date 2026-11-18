@@ -1,0 +1,10 @@
+@import "../../../styles/super-admin-workspace.wxss";
+@import "../runtime/free-campaign-navigation.wxss";
+.free-reviews .workspace__head { min-height: 120rpx; }
+.free-reviews .workspace__title { font-size: 34rpx; }
+.free-reviews .toolbar picker { flex: 1; min-width: 0; }
+.free-reviews .toolbar .button { flex: none; min-width: 120rpx; }
+.free-reviews__message { display: block; margin: 16rpx 0; font-size: 24rpx; line-height: 1.6; overflow-wrap: anywhere; }
+.free-reviews__row { align-items: flex-start; }
+.free-reviews__row .row__title { white-space: normal; overflow-wrap: anywhere; line-height: 1.5; }
+.free-reviews__row .status { flex: none; min-width: 76rpx; }

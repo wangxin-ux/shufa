@@ -1,14 +1,40 @@
+<partner-approved-role-badge id="partner-identity-badge" blocked="{{viewState === 'forbidden'}}" />
 <partner-page-shell
   markTitle="活动中心"
   markIcon="/pages/partner/assets/profile-mark-glyph.png"
   showBack="{{true}}"
-  plainGradient="{{true}}"
+  surfacePage="{{true}}"
+  plainMark="{{true}}"
 >
   <view class="partner-workspace campaign-page">
+    <image class="campaign-page__footer" src="/pages/partner/assets/campaign-footer.png" mode="scaleToFill" aria-hidden="true" />
+    <image class="campaign-page__character" src="/pages/partner/assets/profile-lower-character.png" mode="widthFix" aria-hidden="true" />
     <view class="campaign-head">
-      <text class="campaign-head__eyebrow">本校区活动</text>
-      <text class="campaign-head__title">招生推广</text>
-      <text class="campaign-head__subtitle">使用总部配置的活动素材开展本校区招生</text>
+      <button wx:if="{{viewState !== 'forbidden'}}" id="campaign-create" class="campaign-create" bindtap="onCreate" hover-class="campaign-card--pressed"><text>创建新活动</text><text class="campaign-create__icon" aria-hidden="true">+</text></button>
+    </view>
+
+    <radio-group wx:if="{{phase !== 'DRAFT' && viewState !== 'forbidden'}}" id="campaign-kind" class="campaign-kinds" bindchange="onCampaignKindChange" aria-label="活动类型">
+      <label wx:for="{{campaignKinds}}" wx:key="*this" class="campaign-kind">
+        <radio value="{{index}}" checked="{{campaignKindIndex === index}}" color="#f86114" />
+        <text>{{item}}</text>
+      </label>
+    </radio-group>
+    <radio-group wx:if="{{phase === 'DRAFT' && viewState !== 'forbidden'}}" id="campaign-draft-kind" class="campaign-kinds" bindchange="onCampaignKindChange" aria-label="草稿类型">
+      <label wx:for="{{draftKinds}}" wx:key="*this" class="campaign-kind">
+        <radio value="{{index}}" checked="{{draftKindIndex === index}}" color="#f86114" />
+        <text>{{item}}</text>
+      </label>
+    </radio-group>
+
+    <view class="campaign-phases" role="tablist">
+      <button id="campaign-ongoing" role="tab" aria-selected="{{phase === 'ONGOING'}}" class="campaign-phase {{phase === 'ONGOING' ? 'campaign-phase--active' : ''}}" data-phase="ONGOING" bindtap="onPhaseTap">进行中</button>
+      <button id="campaign-ended" role="tab" aria-selected="{{phase === 'ENDED'}}" class="campaign-phase {{phase === 'ENDED' ? 'campaign-phase--active' : ''}}" data-phase="ENDED" bindtap="onPhaseTap">已结束</button>
+      <button id="campaign-drafts" role="tab" aria-selected="{{phase === 'DRAFT'}}" class="campaign-phase {{phase === 'DRAFT' ? 'campaign-phase--active' : ''}}" data-phase="DRAFT" bindtap="onPhaseTap">草稿</button>
+    </view>
+
+    <view wx:if="{{refreshError}}" class="campaign-refresh-error" aria-live="polite">
+      <text>{{refreshError}}</text>
+      <button class="partner-command" bindtap="onRetry">重试</button>
     </view>
 
     <view wx:if="{{viewState === 'loading'}}" class="partner-state">
@@ -17,18 +43,46 @@
     <view wx:elif="{{viewState === 'forbidden'}}" class="partner-state">
       <text class="partner-state__title">无访问权限</text>
       <text class="partner-state__message">{{errorMessage}}</text>
+      <button class="partner-command" bindtap="onLogin">重新登录</button>
     </view>
     <view wx:elif="{{viewState === 'error'}}" class="partner-state">
       <text class="partner-state__title">活动加载失败</text>
       <text class="partner-state__message">{{errorMessage}}</text>
       <button class="partner-command" bindtap="onRetry">重试</button>
     </view>
+    <view wx:elif="{{viewState === 'draftOnly'}}" class="partner-state">
+      <text class="partner-state__title">{{campaignKinds[campaignKindIndex]}} · 待开放发布</text>
+      <text class="partner-state__message">报名与收费规则待确认</text>
+      <button id="campaign-view-drafts" class="partner-command" data-phase="DRAFT" bindtap="onPhaseTap">查看活动草稿</button>
+    </view>
     <view wx:elif="{{viewState === 'empty'}}" class="partner-state">
-      <text class="partner-state__title">暂无可推广活动</text>
-      <text class="partner-state__message">本校区当前没有正在进行的拼团活动</text>
+      <text class="partner-state__title">{{phase === 'DRAFT' ? (draftKindIndex ? '暂无' + campaignKinds[draftKindIndex - 1] + '草稿' : '暂无活动草稿') : phase === 'ENDED' ? '暂无已结束活动' : '暂无可推广活动'}}</text>
+      <text wx:if="{{phase !== 'DRAFT'}}" class="partner-state__message">{{phase === 'ENDED' ? '本校区没有已结束的活动记录' : campaignKindIndex === 4 ? '本校区暂无未结束的已批准免费活动' : '本校区当前没有正在进行的拼团活动'}}</text>
     </view>
 
     <view wx:elif="{{viewState === 'ready'}}" class="campaign-list">
+      <view wx:for="{{freeCampaigns}}" wx:key="campaignId" class="campaign-draft campaign-free" data-id="{{item.campaignId}}" bindtap="onOpen" hover-class="campaign-card--pressed">
+        <view class="campaign-row__main">
+          <text class="campaign-draft__title">{{item.title}}</text>
+          <text class="campaign-draft__type">免费报名 · {{item.statusLabel}}</text>
+          <text class="campaign-draft__review">{{item.sequenceLabel}} · {{item.countLabel}}</text>
+          <text class="campaign-draft__time">开始 {{item.startsLabel}}</text>
+          <text class="campaign-draft__time">结束 {{item.endsLabel}}（{{item.timezone}}）</text>
+        </view>
+        <text class="campaign-row__action">管理活动</text>
+      </view>
+      <view wx:for="{{drafts}}" wx:key="draftId" class="campaign-draft" data-id="{{item.draftId}}" bindtap="onOpen" hover-class="campaign-card--pressed">
+        <view class="campaign-row__main">
+          <text class="campaign-draft__title">{{item.titleLabel}}</text>
+          <text class="campaign-draft__type">{{item.typeLabel}} · 草稿</text>
+          <text class="campaign-draft__review">{{item.reviewLabel}}</text>
+          <text wx:if="{{item.closed}}" class="campaign-draft__notice">活动已关闭</text>
+          <text wx:elif="{{item.revisionLabel}}" class="campaign-draft__notice">{{item.revisionLabel}}</text>
+          <text wx:if="{{item.reviewReason}}" class="campaign-draft__reason">驳回原因：{{item.reviewReason}}</text>
+          <text class="campaign-draft__time">更新于 {{item.updatedLabel}}（北京时间）</text>
+        </view>
+        <text class="campaign-row__action">继续编辑</text>
+      </view>
       <view
         class="campaign-card"
         wx:for="{{campaigns}}"
@@ -37,32 +91,23 @@
         bindtap="onOpen"
         hover-class="campaign-card--pressed"
       >
-        <view class="campaign-card__visual">
-          <image
-            wx:if="{{item.posterImages.length}}"
-            class="campaign-card__cover"
-            src="{{item.posterImages[0].accessUrl}}"
-            mode="aspectFill"
-          />
-          <view wx:else class="campaign-card__fallback">
-            <text class="campaign-card__fallback-course">{{item.courseName}}</text>
-            <text class="campaign-card__fallback-title">限时拼团</text>
-          </view>
-          <text class="campaign-card__status">推广中</text>
-        </view>
-        <view class="campaign-card__body">
-          <text class="campaign-card__course">{{item.courseName}}</text>
+        <view class="campaign-row__main">
           <text class="campaign-card__title">{{item.title}}</text>
+          <text class="campaign-card__course">{{item.courseName}} · {{item.statusLabel}}</text>
           <text class="campaign-card__description">{{item.description}}</text>
           <view class="campaign-card__facts">
             <text class="campaign-card__price">{{item.priceLabel}}</text>
             <text class="campaign-card__deadline">{{item.deadlineLabel}}</text>
           </view>
-          <view class="campaign-card__command">查看活动 <text>›</text></view>
         </view>
+        <text class="campaign-row__action">查看活动</text>
+      </view>
+      <view wx:if="{{paginationError}}" class="campaign-pagination-error" aria-live="polite">
+        <text>{{paginationError}}</text>
+        <button class="partner-command" bindtap="onRetryMore">重试下一页</button>
       </view>
       <button
-        wx:if="{{hasMore}}"
+        wx:if="{{hasMore && !paginationError}}"
         class="partner-command load-more"
         loading="{{loadingMore}}"
         disabled="{{loadingMore}}"

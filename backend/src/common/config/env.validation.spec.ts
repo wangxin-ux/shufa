@@ -137,6 +137,47 @@ describe('validateEnvironment', () => {
     });
   });
 
+  const publicKeyEnvironment = () => ({
+    ...validEnvironment(),
+    PAYMENT_DRIVER: 'wechat',
+    WECHAT_APP_ID: 'wx-demo-app-id',
+    WECHAT_MCH_ID: '1900000001',
+    WECHAT_PAY_API_V3_KEY: '0123456789abcdef0123456789abcdef',
+    WECHAT_PAY_PRIVATE_KEY_FILE: 'C:/server-secrets/apiclient_key.pem',
+    WECHAT_PAY_CERT_SERIAL_NO: '7777777777777777777777777777777777777777',
+    WECHAT_PAY_PUBLIC_KEY_ID: 'PUB_KEY_ID_123456789',
+    WECHAT_PAY_PUBLIC_KEY_FILE: 'C:/server-secrets/wechatpay_public.pem',
+    WECHAT_PAY_NOTIFY_URL: 'https://example.test/payments/wechat/notifications',
+  });
+
+  it('accepts public-key mode and file paths without a platform certificate', () => {
+    expect(validateEnvironment(publicKeyEnvironment())).toMatchObject({
+      PAYMENT_DRIVER: 'wechat',
+      WECHAT_PAY_PUBLIC_KEY_ID: 'PUB_KEY_ID_123456789',
+      WECHAT_PAY_PRIVATE_KEY_FILE: 'C:/server-secrets/apiclient_key.pem',
+    });
+  });
+
+  it.each([
+    ['WECHAT_PAY_PUBLIC_KEY_ID', ''],
+    ['WECHAT_PAY_PUBLIC_KEY_FILE', ''],
+    ['WECHAT_PAY_API_V3_KEY', 'too-short'],
+    ['WECHAT_PAY_NOTIFY_URL', 'http://example.test/notify'],
+  ])('rejects incomplete or invalid payment parameter %s', (key, value) => {
+    expect(() =>
+      validateEnvironment({ ...publicKeyEnvironment(), [key]: value }),
+    ).toThrow(`Invalid environment configuration: ${key.replace('_FILE', '')}`);
+  });
+
+  it('rejects ambiguous inline and file private keys', () => {
+    expect(() =>
+      validateEnvironment({
+        ...publicKeyEnvironment(),
+        WECHAT_PAY_PRIVATE_KEY: 'inline-key',
+      }),
+    ).toThrow('Invalid environment configuration: WECHAT_PAY_PRIVATE_KEY');
+  });
+
   it('requires AppID and AppSecret when WeChat authentication is selected', () => {
     expect(() =>
       validateEnvironment({

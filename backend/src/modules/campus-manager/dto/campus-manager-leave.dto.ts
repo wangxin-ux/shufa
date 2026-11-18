@@ -1,5 +1,6 @@
 import { Transform, Type, type TransformFnParams } from 'class-transformer';
 import {
+  IsBoolean,
   IsIn,
   IsInt,
   IsOptional,
@@ -30,6 +31,13 @@ export class CampusManagerLeaveRequestsQueryDto {
   @IsOptional()
   @IsIn(LEAVE_STATUSES)
   status?: (typeof LEAVE_STATUSES)[number];
+
+  @Transform(({ value }: TransformFnParams): unknown =>
+    value === 'true' ? true : value === 'false' ? false : value,
+  )
+  @IsOptional()
+  @IsBoolean()
+  reviewedOnly?: boolean;
 }
 
 export class CampusManagerReviewLeaveDto {

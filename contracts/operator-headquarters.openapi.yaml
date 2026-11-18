@@ -1,0 +1,179 @@
+openapi: 3.1.0
+info:
+  title: Operator Headquarters Read Contract
+  version: 0.1.0
+  description: Approved H01 headquarters read contract. Source registration does not establish database or runtime acceptance.
+security: [{ bearerAuth: [] }]
+paths:
+  /operators/me/headquarters/campuses:
+    get:
+      operationId: listOperatorHeadquartersCampuses
+      summary: List explicitly granted headquarters campuses
+      tags: [Operator]
+      description: Exactly one active OPERATOR role with null campusId; every request reads current explicit grants. Empty grants yield an empty page. No personal records.
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, maximum: 2147483647, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+        - { name: query, in: query, schema: { type: string, maxLength: 100 } }
+      responses:
+        '200':
+          description: Authorized campuses ordered by name then ID; no first-page truncation.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [data, meta]
+                properties:
+                  data: { type: array, maxItems: 100, items: { $ref: '#/components/schemas/Campus' } }
+                  meta: { $ref: '#/components/schemas/Meta' }
+                  requestId: { type: string }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '500': { $ref: '#/components/responses/Error' }
+  /operators/me/headquarters/campuses/{campusId}/summary:
+    get:
+      operationId: getOperatorHeadquartersCampusSummary
+      summary: Read one explicitly granted campus aggregate
+      tags: [Operator]
+      description: Current grant required before read and immediately before return. Unassigned or removed campus yields 403. No ordinary operator data or writes.
+      parameters:
+        - { name: campusId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: One authorized campus aggregate, with no student/teacher IDs, names, individual ledger rows or pending approval records.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/CampusSummary' }
+                  requestId: { type: string }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '500': { $ref: '#/components/responses/Error' }
+  /operators/me/headquarters/summary:
+    get:
+      operationId: getOperatorHeadquartersSummary
+      summary: Read aggregates across the complete granted collection
+      tags: [Operator]
+      description: Aggregate all currently granted campuses, independent of directory search/page/selection. Recheck the exact complete grant set before return. Student count sums campus records without natural-person deduplication. Unknown historical fields propagate null field by field. Empty grants produce reliable zero aggregates.
+      responses:
+        '200':
+          description: Current authorized collection only; safe integer units/fen. No all-platform fallback.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/TotalSummary' }
+                  requestId: { type: string }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '500': { $ref: '#/components/responses/Error' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  responses:
+    Error:
+      description: Failure preserves its actual HTTP status. UI uses local Chinese error text.
+      content:
+        application/json:
+          schema: { type: object, required: [code, message], properties: { code: { type: string }, message: { type: string }, requestId: { type: string } } }
+  schemas:
+    Nonnegative: { type: integer, minimum: 0, maximum: 9007199254740991 }
+    NullableAmount:
+      anyOf: [{ type: integer, minimum: -9007199254740991, maximum: 9007199254740991 }, { type: 'null' }]
+    NullableNonnegative:
+      anyOf: [{ $ref: '#/components/schemas/Nonnegative' }, { type: 'null' }]
+    Campus:
+      type: object
+      additionalProperties: false
+      required: [id, name, timezone]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, minLength: 1 }
+        timezone: { type: string, minLength: 1 }
+    Meta:
+      type: object
+      additionalProperties: false
+      required: [page, pageSize, total, totalPages]
+      properties:
+        page: { type: integer, minimum: 1, maximum: 2147483647 }
+        pageSize: { type: integer, minimum: 1, maximum: 100 }
+        total: { $ref: '#/components/schemas/Nonnegative' }
+        totalPages: { $ref: '#/components/schemas/Nonnegative' }
+    Account:
+      type: object
+      additionalProperties: false
+      required: [mainBalanceUnits, giftBalanceUnits, totalBalanceUnits, mainReservedUnits, giftReservedUnits, reservedTotalUnits, mainAvailableUnits, giftAvailableUnits, availableTotalUnits, enrollmentSummary, lessonActivityTotals]
+      properties:
+        mainBalanceUnits: { $ref: '#/components/schemas/Nonnegative' }
+        giftBalanceUnits: { $ref: '#/components/schemas/Nonnegative' }
+        totalBalanceUnits: { $ref: '#/components/schemas/Nonnegative' }
+        mainReservedUnits: { $ref: '#/components/schemas/Nonnegative' }
+        giftReservedUnits: { $ref: '#/components/schemas/Nonnegative' }
+        reservedTotalUnits: { $ref: '#/components/schemas/Nonnegative' }
+        mainAvailableUnits: { $ref: '#/components/schemas/Nonnegative' }
+        giftAvailableUnits: { $ref: '#/components/schemas/Nonnegative' }
+        availableTotalUnits: { $ref: '#/components/schemas/Nonnegative' }
+        enrollmentSummary:
+          type: object
+          additionalProperties: false
+          required: [receivedAmountFen, refundedAmountFen, initialMainUnits, initialGiftUnits, pendingIssuanceCount]
+          properties:
+            receivedAmountFen: { $ref: '#/components/schemas/NullableNonnegative' }
+            refundedAmountFen: { $ref: '#/components/schemas/NullableNonnegative' }
+            initialMainUnits: { $ref: '#/components/schemas/NullableNonnegative' }
+            initialGiftUnits: { $ref: '#/components/schemas/NullableNonnegative' }
+            pendingIssuanceCount: { $ref: '#/components/schemas/Nonnegative' }
+        lessonActivityTotals:
+          type: array
+          minItems: 6
+          maxItems: 6
+          items:
+            type: object
+            additionalProperties: false
+            required: [entryType, mainDeltaUnits, giftDeltaUnits, totalDeltaUnits]
+            properties:
+              entryType: { enum: [GRANT, CONSUME, REVERSAL, REFUND, CORRECTION, ADJUSTMENT] }
+              mainDeltaUnits: { $ref: '#/components/schemas/NullableAmount' }
+              giftDeltaUnits: { $ref: '#/components/schemas/NullableAmount' }
+              totalDeltaUnits: { $ref: '#/components/schemas/NullableAmount' }
+    Earnings:
+      type: object
+      additionalProperties: false
+      required: [estimatedTotalFen, pendingReviewFen, currency]
+      properties:
+        estimatedTotalFen: { $ref: '#/components/schemas/NullableAmount' }
+        pendingReviewFen: { $ref: '#/components/schemas/NullableAmount' }
+        currency: { const: CNY }
+    CampusSummary:
+      type: object
+      additionalProperties: false
+      required: [campus, activeStudentCount, todayLessonCount, account, earnings, serverTime]
+      properties:
+        campus: { $ref: '#/components/schemas/Campus' }
+        activeStudentCount: { $ref: '#/components/schemas/Nonnegative' }
+        todayLessonCount: { $ref: '#/components/schemas/Nonnegative' }
+        account: { $ref: '#/components/schemas/Account' }
+        earnings: { $ref: '#/components/schemas/Earnings' }
+        serverTime: { type: string, format: date-time }
+    TotalSummary:
+      type: object
+      additionalProperties: false
+      required: [campusCount, activeStudentCount, todayLessonCount, studentCountBasis, account, earnings, serverTime]
+      properties:
+        campusCount: { $ref: '#/components/schemas/Nonnegative' }
+        activeStudentCount: { $ref: '#/components/schemas/Nonnegative' }
+        todayLessonCount: { $ref: '#/components/schemas/Nonnegative' }
+        studentCountBasis: { const: SUM_OF_CAMPUS_ACTIVE_STUDENT_RECORDS }
+        account: { $ref: '#/components/schemas/Account' }
+        earnings: { $ref: '#/components/schemas/Earnings' }
+        serverTime: { type: string, format: date-time }

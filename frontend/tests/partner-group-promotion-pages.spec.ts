@@ -4,6 +4,7 @@ import {
   PARTNER_PROFILE_ACTIONS,
   resolvePartnerProfileAction,
 } from '../services/partner-profile.presenter';
+import { resolvePartnerHomeAction } from '../services/partner-home.presenter';
 
 const root = path.resolve(__dirname, '..');
 
@@ -23,7 +24,7 @@ describe('partner group promotion pages', () => {
     );
   });
 
-  it('keeps activity-center entries in profile and the home more button', () => {
+  it('keeps the profile activity entry while home more opens student records', () => {
     expect(PARTNER_PROFILE_ACTIONS).toContainEqual({
       key: 'group-campaigns',
       label: '活动中心',
@@ -33,8 +34,12 @@ describe('partner group promotion pages', () => {
       url: '/pages/partner/group-campaigns/index',
     });
     expect(read('pages/partner/home/index.wxml')).toMatch(
-      /data-key="more"[\s\S]*aria-label="进入活动中心"/,
+      /<button\b[^>]*class="home__more"[^>]*data-key="students"[^>]*>\s*查看更多\s*<\/button>/,
     );
+    expect(resolvePartnerHomeAction('students')).toEqual({
+      kind: 'navigate',
+      url: '/pages/partner/students/index',
+    });
   });
 
   it('uses the partner shell and covers list request states', () => {

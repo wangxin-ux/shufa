@@ -1,0 +1,7 @@
+@import "../../../styles/super-admin-workspace.wxss";
+.product-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18rpx; }
+.product-row { align-items: flex-start; }
+.product-row .row__main { min-width: 0; }
+.product-row .row__title, .product-row .row__meta { overflow-wrap: anywhere; }
+.product-row .actions { margin-top: 14rpx; }
+.product-row .button { min-height: 58rpx; padding: 0 18rpx; font-size: 22rpx; }

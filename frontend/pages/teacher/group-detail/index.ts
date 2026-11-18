@@ -1,3 +1,5 @@
+import { loadTeacherDisplayFont } from '../runtime/teacher-display-font';
+
 import {
   buildGroupPromotionShareCopy,
   groupPromotionRecipientPath,
@@ -30,6 +32,7 @@ Page({
   },
 
   onLoad(options: Record<string, string | undefined>) {
+    void loadTeacherDisplayFont();
     this.setData({ campaignId: options.id ?? '' });
     void this.load();
   },

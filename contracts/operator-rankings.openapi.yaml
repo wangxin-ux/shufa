@@ -1,0 +1,120 @@
+rankings:
+  get:
+    operationId: listOperatorMonthlyRankings
+    summary: Read minimal monthly campus rankings as an independent operator
+    description: >-
+      Requires OPERATOR_RANKING_READ and exactly one active OPERATOR role with
+      one nonempty campus. Unscoped total accounts and mixed roles are rejected.
+      The campus comes only from the current authenticated scope; campus or
+      actor query parameters are not accepted.
+      Uses the existing three independent partner ranking metrics, Shanghai
+      calendar months, dense ties and immutable revisions. Students include
+      active entities without packages. Earnings include pending, exclude
+      rejected entries and net reversals by each entry's createdAt; they are
+      internal estimates, not cash or withdrawable balances.
+      Rows expose only campus display name, rank, rank change and own-campus
+      flag. Campus IDs, previous ranks, metric values, amounts, student counts
+      and personal data are not returned, including in ownCampus.
+      A read without revisionId may create or reuse derived ranking records;
+      it does not change business, money, lesson or earning facts.
+      Keep metric, month and revisionId when paging; refresh omits revisionId.
+      Wrong, unknown, cross-month or cross-metric revisions return 404.
+      Future months return 400. Missing history or invalid sources return
+      UNAVAILABLE with no fabricated ranks. The current active role and campus
+      are checked inside the read snapshot and again before returning.
+    tags: [Operator]
+    security: [{ bearerAuth: [] }]
+    parameters:
+      - name: metric
+        in: query
+        schema: { $ref: '#/schemas/Metric' }
+      - name: month
+        in: query
+        description: Asia/Shanghai month, defaulting to the current month.
+        schema: { $ref: '#/schemas/Month' }
+      - name: revisionId
+        in: query
+        schema: { $ref: '#/schemas/RevisionId' }
+      - { $ref: './openapi.yaml#/components/parameters/Page' }
+      - { $ref: './openapi.yaml#/components/parameters/PageSize' }
+    responses:
+      '200':
+        description: Minimal ranking page or explicit source unavailability.
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [data]
+              properties:
+                data: { $ref: '#/schemas/RankingPage' }
+                requestId: { type: string }
+      '400': { $ref: './openapi.yaml#/components/responses/BadRequest' }
+      '401': { $ref: './openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: './openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: './openapi.yaml#/components/responses/ResourceNotFound' }
+      '500': { $ref: './openapi.yaml#/components/responses/InternalServerError' }
+schemas:
+  Metric:
+    type: string
+    enum: [STUDENTS, PARTNER_EARNINGS, HEADQUARTERS_EARNINGS]
+    default: STUDENTS
+  Month:
+    type: string
+    pattern: '^[1-9]\d{3}-(0[1-9]|1[0-2])$'
+  RevisionId:
+    type: string
+    format: uuid
+    pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+  Row:
+    type: object
+    additionalProperties: false
+    required: [campusName, rank, rankDelta, isOwnCampus]
+    properties:
+      campusName: { type: string }
+      rank: { type: integer, minimum: 1 }
+      rankDelta: { type: [integer, 'null'] }
+      isOwnCampus: { type: boolean }
+  RankingPage:
+    type: object
+    additionalProperties: false
+    required: [metric, month, timezone, asOf, calculationVersion, availability, unavailableReason, revisionId, data, ownCampus, meta]
+    properties:
+      metric: { $ref: '#/schemas/Metric' }
+      month: { $ref: '#/schemas/Month' }
+      timezone: { type: string, const: Asia/Shanghai }
+      asOf: { type: string, format: date-time }
+      calculationVersion: { type: string }
+      availability: { type: string, enum: [LIVE, SNAPSHOT, UNAVAILABLE] }
+      unavailableReason: { type: [string, 'null'], enum: [HISTORY_UNAVAILABLE, SOURCE_DATA_INVALID, null] }
+      revisionId:
+        anyOf: [{ $ref: '#/schemas/RevisionId' }, { type: 'null' }]
+      data: { type: array, items: { $ref: '#/schemas/Row' } }
+      ownCampus: { anyOf: [{ $ref: '#/schemas/Row' }, { type: 'null' }] }
+      meta:
+        type: object
+        additionalProperties: false
+        required: [page, pageSize, total, totalPages]
+        properties:
+          page: { type: integer, minimum: 1 }
+          pageSize: { type: integer, minimum: 1, maximum: 100 }
+          total: { type: integer, minimum: 0 }
+          totalPages: { type: integer, minimum: 0 }
+    allOf:
+      - if:
+          properties:
+            availability: { const: UNAVAILABLE }
+        then:
+          properties:
+            unavailableReason: { enum: [HISTORY_UNAVAILABLE, SOURCE_DATA_INVALID] }
+            revisionId: { type: 'null' }
+            data: { maxItems: 0 }
+            ownCampus: { type: 'null' }
+            meta:
+              properties:
+                total: { const: 0 }
+                totalPages: { const: 0 }
+        else:
+          properties:
+            unavailableReason: { type: 'null' }
+            revisionId: { $ref: '#/schemas/RevisionId' }

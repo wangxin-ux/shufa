@@ -1,0 +1,91 @@
+<super-admin-page-shell mark-title="提现" mark-icon="/pages/super-admin/assets/profile-mark-glyph.png" show-back surface-page style="--super-admin-surface: #ffffff;">
+  <view class="workspace partner-settlement">
+    <view class="workspace__head"><text class="workspace__title">合作方提现</text><text class="workspace__subtitle">本地模拟 · 未发生真实转账</text></view>
+    <view wx:if="{{viewState === 'loading'}}" class="settlement-state">正在读取校区与结算资料</view>
+    <view wx:elif="{{viewState === 'forbidden'}}" class="settlement-state"><text>{{errorMessage}}</text><button class="button" bindtap="onLogin">重新登录</button></view>
+    <view wx:elif="{{viewState === 'disabled'}}" class="settlement-state">模拟提现暂未启用</view>
+    <block wx:else>
+      <view class="settlement-directory">
+        <input class="settlement-input" data-field="campusQuery" value="{{campusQuery}}" placeholder="校区名称或编号" bindinput="onField" disabled="{{busy || unknown}}" />
+        <button class="button button--secondary" bindtap="onCampusSearch" disabled="{{busy || refreshing || unknown}}">查询校区</button>
+        <picker range="{{campuses}}" range-key="name" value="{{campusIndex}}" bindchange="onCampusChange" disabled="{{busy || refreshing || unknown}}">
+          <view class="settlement-picker"><text>{{campusName || '暂无匹配校区'}}</text><text aria-hidden="true">⌄</text></view>
+        </picker>
+        <view class="settlement-actions">
+          <button class="button button--secondary" bindtap="onCampusPrevious" disabled="{{!(campusPage > 1) || busy || refreshing || unknown}}">上一页校区</button>
+          <button class="button button--secondary" bindtap="onCampusNext" disabled="{{!campusHasMore || busy || refreshing || unknown}}">下一页校区</button>
+        </view>
+      </view>
+      <text wx:if="{{errorMessage}}" class="settlement-error">{{errorMessage}}</text>
+      <text wx:if="{{actionMessage}}" class="settlement-message">{{actionMessage}}</text>
+      <button wx:if="{{unknown}}" class="button" bindtap="onRetryAction" disabled="{{busy}}" loading="{{busy}}">重试原请求</button>
+      <block wx:if="{{summary}}">
+        <view class="settlement-totals">
+          <view><text class="settlement-meta">可申请</text><text>{{availableLabel}}元</text></view>
+          <view><text class="settlement-meta">占用中</text><text>{{reservedLabel}}元</text></view>
+          <view><text class="settlement-meta">模拟已付</text><text>{{paidLabel}}元</text></view>
+        </view>
+        <text wx:if="{{summary.unresolvedFen}}" class="settlement-error">待处理差额 {{unresolvedLabel}}元 · 暂停新申请</text>
+        <view class="settlement-section">
+          <text class="settlement-title">结算资料</text>
+          <text wx:if="{{summary.profile}}" class="settlement-meta">当前 {{summary.profile.accountLabel}} · 版本{{summary.profile.version}}</text>
+          <view class="settlement-field"><text>模拟付款方</text><input class="settlement-input" data-field="payerName" value="{{payerName}}" maxlength="100" placeholder="以模拟开头" bindinput="onField" disabled="{{busy || unknown}}" /></view>
+          <view class="settlement-field"><text>模拟收款方</text><input class="settlement-input" data-field="beneficiaryName" value="{{beneficiaryName}}" maxlength="100" placeholder="以模拟开头" bindinput="onField" disabled="{{busy || unknown}}" /></view>
+          <view class="settlement-field"><text>账户尾号</text><input class="settlement-input" type="number" data-field="accountLastFour" value="{{accountLastFour}}" maxlength="4" placeholder="四位数字" bindinput="onField" disabled="{{busy || unknown}}" /></view>
+          <view class="settlement-field"><text>最低金额（元）</text><input class="settlement-input" type="digit" data-field="minimumAmount" value="{{minimumAmount}}" maxlength="11" bindinput="onField" disabled="{{busy || unknown}}" /></view>
+          <view class="settlement-field"><text>每日申请次数</text><input class="settlement-input" type="number" data-field="dailyLimit" value="{{dailyLimit}}" maxlength="3" bindinput="onField" disabled="{{busy || unknown}}" /></view>
+          <view class="settlement-field"><text>确认或处理原因</text><textarea class="settlement-reason" data-field="reason" value="{{reason}}" maxlength="500" bindinput="onField" disabled="{{busy || unknown}}" /></view>
+          <button class="button" bindtap="onConfigure" disabled="{{busy || refreshing || unknown}}" loading="{{busy}}">确认模拟结算资料</button>
+        </view>
+        <view class="settlement-section">
+          <text class="settlement-title">可确认的收益来源</text>
+          <text wx:if="{{sourcesEmpty}}" class="settlement-meta">暂无已审核来源</text>
+          <view wx:for="{{sources}}" wx:key="id" class="settlement-row">
+            <view class="settlement-row__body"><text>{{item.amountLabel}}元</text><text class="settlement-meta">{{item.timeLabel}} · 北京时间</text><text class="settlement-meta">{{item.confirmed ? '已确认结算权益' : '尚未确认结算权益'}}</text></view>
+            <button wx:if="{{!item.confirmed}}" class="button button--secondary" data-id="{{item.id}}" bindtap="onConfirmSource" disabled="{{busy || refreshing || unknown || !summary.profile}}">确认</button>
+          </view>
+          <button wx:if="{{sourceHasMore}}" class="button button--secondary" bindtap="onMoreSources" disabled="{{busy || refreshing}}">更多来源</button>
+        </view>
+        <view class="settlement-section">
+          <view class="settlement-heading"><text class="settlement-title">提现申请</text><text class="settlement-meta">共{{total}}笔</text></view>
+          <text wx:if="{{recordsEmpty}}" class="settlement-meta">暂无申请记录</text>
+          <button wx:for="{{rows}}" wx:key="id" class="settlement-record {{selected.id === item.id ? 'settlement-record--selected' : ''}}" data-id="{{item.id}}" bindtap="onSelect" disabled="{{busy || unknown}}">
+            <view class="settlement-heading"><text>{{item.amountLabel}}元</text><text>{{item.statusLabel}}</text></view>
+            <text class="settlement-meta">{{item.timeLabel}} · 北京时间</text>
+            <text class="settlement-meta">{{item.profile.beneficiaryName}} · {{item.profile.accountLabel}}</text>
+          </button>
+          <button wx:if="{{hasMore}}" class="button button--secondary" bindtap="onLoadMore" disabled="{{busy || refreshing}}">更多申请</button>
+        </view>
+        <view wx:if="{{selected}}" class="settlement-section">
+          <text class="settlement-title">当前申请 {{selected.amountLabel}}元</text>
+          <text class="settlement-meta">{{selected.statusLabel}} · 账户版本{{selected.profile.version}}</text>
+          <text class="settlement-meta">{{selected.profile.beneficiaryName}} · {{selected.profile.accountLabel}}</text>
+          <text wx:if="{{selected.reason}}" class="settlement-message">{{selected.reason}}</text>
+          <text wx:if="{{selected.unresolvedFen}}" class="settlement-error">待处理差额 {{selected.unresolvedLabel}}元</text>
+          <view class="settlement-field"><text>处理原因</text><textarea class="settlement-reason" data-field="reason" value="{{reason}}" maxlength="500" bindinput="onField" disabled="{{busy || unknown}}" /></view>
+          <text wx:if="{{actionMessage}}" class="settlement-message">{{actionMessage}}</text>
+          <view wx:if="{{selected.status === 'SUBMITTED'}}" class="settlement-actions">
+            <button class="button" data-action="approve" bindtap="onAction" disabled="{{busy || refreshing || unknown}}">批准申请</button>
+            <button class="button button--secondary" data-action="reject" bindtap="onAction" disabled="{{busy || refreshing || unknown}}">驳回申请</button>
+          </view>
+          <button wx:if="{{selected.status === 'APPROVED'}}" class="button" data-action="mark-paying" bindtap="onAction" disabled="{{busy || refreshing || unknown || selected.proofFileId}}">开始模拟出款</button>
+          <block wx:if="{{selected.status === 'APPROVED' || selected.status === 'PAYING' || selected.status === 'RECONCILING'}}">
+            <view wx:if="{{!selected.proofFileId}}" class="settlement-actions">
+              <button wx:if="{{selected.status !== 'APPROVED'}}" class="button button--secondary" data-action="mock-proof" data-outcome="PAID" bindtap="onAction" disabled="{{busy || refreshing || unknown}}">生成模拟已付证据</button>
+              <button class="button button--secondary" data-action="mock-proof" data-outcome="UNPAID" bindtap="onAction" disabled="{{busy || refreshing || unknown}}">生成模拟未付证据</button>
+            </view>
+            <text wx:else class="settlement-meta">{{selected.proofLabel}}</text>
+            <view wx:if="{{selected.status === 'PAYING' || selected.status === 'RECONCILING'}}" class="settlement-field">
+              <text>模拟付款参考号</text><input class="settlement-input" data-field="payoutReference" value="{{payoutReference}}" maxlength="128" placeholder="SIM-" bindinput="onField" disabled="{{busy || unknown}}" />
+              <button class="button" data-action="mark-paid" bindtap="onAction" disabled="{{busy || refreshing || unknown || selected.proofOutcome !== 'PAID'}}">确认模拟已付款</button>
+            </view>
+            <button wx:if="{{selected.status === 'PAYING'}}" class="button button--secondary" data-action="mark-unknown" bindtap="onAction" disabled="{{busy || refreshing || unknown}}">标记到账待核对</button>
+            <checkbox-group bindchange="onUnpaidChange"><label class="settlement-check"><checkbox value="unpaid" checked="{{confirmedUnpaid}}" disabled="{{busy || unknown || selected.proofOutcome !== 'UNPAID'}}" /><text>已核对本单模拟未付款证据，确认未付款</text></label></checkbox-group>
+            <button class="button button--secondary" data-action="mark-failed" bindtap="onAction" disabled="{{busy || refreshing || unknown || !confirmedUnpaid}}">确认未付款并释放有效额度</button>
+          </block>
+        </view>
+      </block>
+      <button class="button button--secondary" bindtap="onRetry" disabled="{{busy || refreshing}}">{{refreshing ? '读取中' : '重新读取'}}</button>
+    </block>
+  </view>
+</super-admin-page-shell>

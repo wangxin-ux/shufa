@@ -4,7 +4,7 @@ import {
 } from './local-runtime';
 
 export type PartnerDataDriver = 'mock' | 'api';
-export type PartnerMockScenario = 'normal' | 'empty' | 'error';
+export type PartnerMockScenario = 'normal' | 'empty' | 'error' | 'visual';
 
 export interface PartnerRuntimeEnv {
   dataDriver: PartnerDataDriver;
@@ -31,7 +31,9 @@ export function createPartnerRuntimeEnv(
       localOverrides.dataDriver ??
       DEFAULT_PARTNER_RUNTIME_ENV.dataDriver,
     mockScenario:
-      overrides.mockScenario ?? DEFAULT_PARTNER_RUNTIME_ENV.mockScenario,
+      overrides.mockScenario ??
+      localOverrides.partnerMockScenario ??
+      DEFAULT_PARTNER_RUNTIME_ENV.mockScenario,
     apiBaseUrl:
       overrides.apiBaseUrl ??
       localOverrides.apiBaseUrl ??
